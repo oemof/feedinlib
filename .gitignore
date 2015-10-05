@@ -1,0 +1,12 @@
+*.pyc
+/.spyderproject
+doc/_build/
+
+# Setuptools distribution folder.
+/dist/
+
+# Python egg metadata, regenerated from source files by setuptools.
+/*.egg-info
+
+# build folder
+/build/

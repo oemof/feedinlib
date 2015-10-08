@@ -61,7 +61,7 @@ If you have push rights clone this repository to your local system.
     
 If you do not have push rights, fork the project at github, clone your personal fork to your system and send a pull request.
 
-If the project is cloned you can install it using pip (or pip3) with the -e flag. Using this installation every change is directly applied.
+If the project is cloned you can install it using pip (or pip3) with the -e flag. Using this installation, every change is applied directly.
 
 ::
 

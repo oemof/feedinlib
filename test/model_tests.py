@@ -100,12 +100,23 @@ class ModelsPowerplantsInteraction_Tests:
         plant.WindPowerPlant(nominal_power=0,
                              model=model.Photovoltaic(["missing"]))
 
+    @nt.raises(FileNotFoundError)
+    def test_csv_weather_file(self):
+        my_weather = weather.FeedinWeather()
+        my_weather.read_feedinlib_csv(filename='')
+
     def type_pickel_test(self):
         nt.ok_(isinstance(self.weather_dc(), dict))
 
     def type_dataframe_test(self):
         nt.ok_(isinstance(self.weather_dc()[1135091]['data'],
                           pandas.core.frame.DataFrame))
+
+    def test_load_feedinlib(self):
+        my_weather = weather.FeedinWeather()
+        basic_path = os.path.dirname(os.path.abspath(__file__))
+        filename = os.path.join(basic_path, 'test_weather.csv')
+        my_weather.read_feedinlib_csv(filename=filename)
 
     def wind_result_test(self):
         wind_model = model.WindPowerPlant(

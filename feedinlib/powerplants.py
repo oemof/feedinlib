@@ -1,5 +1,8 @@
-#! /usr/bin/env python
-""" Classes in this module correspond to specific types of powerplants.
+# -*- coding: utf-8 -*-
+"""
+@author: oemof developing group
+ 
+Classes in this module correspond to specific types of powerplants.
 
 Powerplant objects act as data holders for the attributes making up a
 powerplants specification. These objects should only contain little logic.

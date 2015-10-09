@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 @author: oemof developing group
-
-https://github.com/oemof
 """
 
 import os

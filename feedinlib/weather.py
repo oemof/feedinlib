@@ -36,13 +36,6 @@ class FeedinWeather:
                 meta_dict[a] = b
                 skiprows += 1
 
-        # Read weather data
-        if self.data is None or overwrite:
-            df = pd.read_csv(filename, skiprows=skiprows)
-            self.data = df.set_index(
-                pd.to_datetime(df['Unnamed: 0'])).tz_localize(
-                'UTC').tz_convert('Europe/Berlin').drop('Unnamed: 0', 1)
-
         # Define attributes
         if self.latitude is None or overwrite:
             self.latitude = float(meta_dict.get('latitude'))
@@ -55,6 +48,13 @@ class FeedinWeather:
 
         if self.name is None or overwrite:
             self.name = meta_dict.get('name')
+
+        # Read weather data
+        if self.data is None or overwrite:
+            df = pd.read_csv(filename, skiprows=skiprows)
+            self.data = df.set_index(
+                pd.to_datetime(df['Unnamed: 0'])).tz_localize(
+                'UTC').tz_convert(self.timezone).drop('Unnamed: 0', 1)
 
         # Define height dict
         self.data_height = {}

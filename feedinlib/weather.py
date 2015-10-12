@@ -11,17 +11,79 @@ import pandas as pd
 class FeedinWeather:
     def __init__(self, **kwargs):
         r"""
+        Class, containing all meta informations regarding the weather data set.
+
+        Parameters
+        ----------
+        data : pandas.DataFrame, optional
+            Containing the time series of the different parameters as columns
+        timezone : string, optional
+            Containing the name of the time zone using the naming of the
+            IANA (Internet Assigned Numbers Authority) time zone database [20]_
+        longitude : float, optional
+            Longitude of the location of the weather data
+        latitude : float, optional
+            Latitude of the location of the weather data
+        data_height : dictionary, optional
+            Containing the heights of the weather measurements or weather
+            model in meters with the keys of the data parameter
+        name : string
+            Name of the weather data object
+
+        Notes
+        -----
+        Depending on the used feedin modell some of the optional parameters
+        might be mandatory.
+
+        References
+        ----------
+        .. [20] `IANA time zone database <http://www.iana.org/time-zones>`_.
+
         """
         self.data = kwargs.get('data', None)
         self.timezone = kwargs.get('timezone', None)
         self.longitude = kwargs.get('longitude', None)
         self.latitude = kwargs.get('latitude', None)
-        self.name = kwargs.get('name', None)
         self.data_height = kwargs.get('data_height', None)
+        self.name = kwargs.get('name', None)
 
-    def read_feedinlib_csv(self, filename=None, overwrite=True):
+    def read_feedinlib_csv(self, filename, overwrite=True):
         r"""
-        Raises: FileNotFoundError
+        Reading a csv-file with a header containg the meta data of the time
+        series.
+
+        The header has to contain the time zone and has to end with a blank
+        line. To add data of the data_height dictionary there should be space
+        between the parameter name and the key name (e.g. # data_height
+        v_wind: 10). Further more any number of parameters can be added.
+
+        The file should have the following form:
+        # timezone=
+        # name: NAME
+        # longitude: xx.xxx
+        # latitude: yy.yyy
+        # timezone: Continent/City
+        # data_height temp_air: zz
+        # data_height v_wind: vv
+
+        ,temp_air,v_wind,.....
+        2010-01-01 00:00:00+01:00,267.599,5.32697,...
+        2010-01-01 01:00:00+01:00,267.596,5.46199,....
+        ....
+
+        Parameters
+        ----------
+        filename : string
+            The filename with the full path and the suffix of the file.
+        overwrite : boolean
+            If False the only class attributes of NoneType will be overwritten
+            with the data of the csv file. If True all class attributes will
+            be overwriten with the data of the csv-file.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the file defined by filename can not be found.
         """
         # Read meta data (location of weather data)
         meta_dict = {}

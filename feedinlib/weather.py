@@ -17,16 +17,12 @@ class FeedinWeather:
         self.longitude = kwargs.get('longitude', None)
         self.latitude = kwargs.get('latitude', None)
         self.name = kwargs.get('name', None)
-        self.filename = kwargs.get('filename', None)
         self.data_height = kwargs.get('data_height', None)
 
     def read_feedinlib_csv(self, filename=None, overwrite=True):
         r"""
         Raises: FileNotFoundError
         """
-        if filename is None:
-            filename = self.filename
-
         # Read meta data (location of weather data)
         meta_dict = {}
         skiprows = 0

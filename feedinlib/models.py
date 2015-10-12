@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 @author: oemof developing group
-
-https://github.com/oemof
 """
 
 import os
@@ -503,7 +501,8 @@ class WindPowerPlant:
         if conn is None:
             res_df, df = self.fetch_cp_values_from_file(wind_conv_type='')
         else:
-            res_df, df = self.fetch_cp_values_from_db(wind_conv_type='')
+            res_df, df = self.fetch_cp_values_from_db(wind_conv_type='',
+                                                      connection=conn)
         if print_out:
             pd.set_option('display.max_rows', len(df))
             print(df[['rli_anlagen_id', 'p_nenn']])
@@ -700,7 +699,7 @@ class WindPowerPlant:
         fetch_cp_values_from_file
         """
         # TODO@Günni
-        sql = '''SELECT * FROM oemof_test.
+        sql = '''SELECT * FROM oemof_test.wea_cpcurves
             WHERE rli_anlagen_id = '{0}';
             '''.format(kwargs['wind_conv_type'])
         logging.info('Retrieving cp values from {0}'.format(

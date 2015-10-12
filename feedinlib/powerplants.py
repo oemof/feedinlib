@@ -1,5 +1,8 @@
-#! /usr/bin/env python
-""" Classes in this module correspond to specific types of powerplants.
+# -*- coding: utf-8 -*-
+"""
+@author: oemof developing group
+ 
+Classes in this module correspond to specific types of powerplants.
 
 Powerplant objects act as data holders for the attributes making up a
 powerplants specification. These objects should only contain little logic.
@@ -98,8 +101,9 @@ class Photovoltaic:
         if kwargs.get('number', None) is not None:
             feedin_pd = self.model.feedin(**combined) * kwargs['number']
         elif kwargs.get('peak_power', None) is not None:
-            feedin_pd = (self.model.feedin(**combined) / self.model.peak *
-                         10 ** 3 * kwargs['peak_power'])
+            feedin_pd = (self.model.feedin(**combined) /
+                         float(self.model.peak) * 1000 *
+                         float(kwargs['peak_power']))
         elif kwargs.get('area', None) is not None:
             feedin_pd = (self.model.feedin(**combined) / self.model.area *
                          kwargs['area'])
@@ -199,7 +203,7 @@ class WindPowerPlant:
         elif kwargs.get('installed_capacity', None) is not None:
             feedin_pd = (self.model.feedin(**combined) /
                          float(self.model.nominal_power_wind_turbine) *
-                         kwargs['installed_capacity'])
+                         float(kwargs['installed_capacity']))
         else:
             feedin_pd = self.model.feedin(**combined)
         return feedin_pd

@@ -41,7 +41,10 @@ class FeedinWeather:
 
         """
         self.data = kwargs.get('data', None)
-        self.timezone = kwargs.get('timezone', None)
+        try:
+            self.timezone = self.data.index.tz
+        except:
+            self.timezone = kwargs.get('timezone', None)
         self.longitude = kwargs.get('longitude', None)
         self.latitude = kwargs.get('latitude', None)
         self.data_height = kwargs.get('data_height', None)

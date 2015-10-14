@@ -11,26 +11,37 @@ import pickle
 import pandas
 import numpy
 
+try:
+    from urllib.request import urlopen
+except:
+    from urllib import urlopen
+
 from feedinlib import models as model
 from feedinlib import powerplants as plant
 
 
-class file_tests:
+class url_tests:
 
     @classmethod
     def setUpClass(self):
-        self.basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
+        self.basic_url = 'http://vernetzen.uni-flensburg.de/~git/'
+        self.sandia_url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/'
 
-    def basic_path_test(self):
-        nt.ok_(os.path.isdir(self.basic_path), 'Create "~/.oemof".')
+    def urlfile_test_weather_csv(self):
+        url = self.basic_url + 'weather.csv'
+        nt.ok_(urlopen(url).getcode() == 200)
 
-    def weather_data_file_test(self):
-        nt.ok_(os.path.isfile(os.path.join(self.basic_path, 'weather.pkl')),
-               'Copy the file "weather.pkl" to ~/.oemof.')
+    def urlfile_test_weather_wittenberg_csv(self):
+        url = self.basic_url + 'weather_wittenberg.csv'
+        nt.ok_(urlopen(url).getcode() == 200)
 
-    def cp_values_file_test(self):
-        nt.ok_(os.path.isfile(os.path.join(self.basic_path, 'cp_values.hf5')),
-               'Copy the file "cp_values.hf5" to ~/.oemof.')
+    def urlfile_test_cp_values_csv(self):
+        url = self.basic_url + 'cp_values.csv'
+        nt.ok_(urlopen(url).getcode() == 200)
+
+    def urlfile_test_sandia_modules_csv(self):
+        url = self.sandia_url + 'sam-library-sandia-modules-2015-6-30.csv'
+        nt.ok_(urlopen(url).getcode() == 200)
 
 
 class ModelsPowerplantsInteraction_Tests:

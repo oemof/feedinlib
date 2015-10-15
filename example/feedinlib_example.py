@@ -100,14 +100,15 @@ def ready_example_data():
 # Loading the weather data
 my_weather_df = ready_example_data()
 
-# Initialise the wind model. By now there is only one model but in future
-# version one can switch between different models.
-wind_model = models.WindPowerPlant(
-    required=list(required_parameter_wind.keys()))
+# TODO@gnn: remove required parameters
+required = list(required_parameter_wind.keys())
 
 # Initialise different power plants
-E126_power_plant = plants.WindPowerPlant(model=wind_model, **enerconE126)
-V90_power_plant = plants.WindPowerPlant(model=wind_model, **vestasV90)
+# TODO@gnn: make required parameters optional
+E126_power_plant = plants.WindPowerPlant(model=models.WindPowerPlant(required),
+                                         **enerconE126)
+V90_power_plant = plants.WindPowerPlant(model=models.WindPowerPlant(required),
+                                        **vestasV90)
 
 # Create a feedin series for a specific powerplant under specific weather
 # conditions. One can define the number of turbines or the over all capacity.
@@ -126,10 +127,15 @@ if plot_fkt:
 else:
     print(V90_feedin)
 
-# Initialise the pv model and apply it
-pv_model = models.Photovoltaic(required=list(required_parameter_pv.keys()))
-yingli_module = plants.Photovoltaic(model=pv_model, **yingli210)
-advent_module = plants.Photovoltaic(model=pv_model, **advent210)
+# TODO@gnn: remove required parameters
+required = list(required_parameter_pv.keys())
+
+# Initialise different power plants
+# TODO@gnn: make required parameters optional
+yingli_module = plants.Photovoltaic(model=models.Photovoltaic(required),
+                                    **yingli210)
+advent_module = plants.Photovoltaic(model=models.Photovoltaic(required),
+                                    **advent210)
 
 pv_feedin1 = yingli_module.feedin(data=my_weather_df, number=30000)
 pv_feedin2 = yingli_module.feedin(data=my_weather_df, area=15000)

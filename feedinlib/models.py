@@ -15,7 +15,7 @@ except:
     from urllib import urlretrieve
 
 
-class Photovoltaic:
+class PvlibBased:
     r"""Model to determine the output of a photovoltaik module
 
     The calculation is based on the library pvlib. [1]_
@@ -440,7 +440,7 @@ class Photovoltaic:
         return data
 
 
-class WindPowerPlant:
+class SimpleWindTurbine:
     r"""Model to determine the output of a wind turbine
 
     Parameters

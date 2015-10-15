@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 @author: oemof developing group
- 
+
 Classes in this module correspond to specific types of powerplants.
 
 Powerplant objects act as data holders for the attributes making up a
@@ -13,7 +13,7 @@ from . import models
 
 
 class Photovoltaic:
-    def __init__(self, model=models.Photovoltaic([]), **attributes):
+    def __init__(self, model=models.PvlibBased([]), **attributes):
         r"""
         Photovoltaic objects correspond to powerplants using solar power to
         generate electricity.
@@ -114,7 +114,7 @@ class Photovoltaic:
 
 
 class WindPowerPlant:
-    def __init__(self, model=models.WindPowerPlant([]), **attributes):
+    def __init__(self, model=models.SimpleWindTurbine([]), **attributes):
         r"""
         WindPowerPlant objects correspond to powerplants using wind power to
         generate electricity.

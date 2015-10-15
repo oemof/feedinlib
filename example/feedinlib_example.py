@@ -122,9 +122,11 @@ required = list(required_parameter_wind.keys())
 
 # Initialise different power plants
 # TODO@gnn: make required parameters optional
-E126_power_plant = plants.WindPowerPlant(model=models.WindPowerPlant(required),
+E126_power_plant = plants.WindPowerPlant(model=models.SimpleWindTurbine(
+                                         required),
                                          **enerconE126)
-V90_power_plant = plants.WindPowerPlant(model=models.WindPowerPlant(required),
+V90_power_plant = plants.WindPowerPlant(model=models.SimpleWindTurbine(
+                                        required),
                                         **vestasV90)
 
 # Create a feedin series for a specific powerplant under specific weather
@@ -149,9 +151,9 @@ required = list(required_parameter_pv.keys())
 
 # Initialise different power plants
 # TODO@gnn: make required parameters optional
-yingli_module = plants.Photovoltaic(model=models.Photovoltaic(required),
+yingli_module = plants.Photovoltaic(model=models.PvlibBased(required),
                                     **yingli210)
-advent_module = plants.Photovoltaic(model=models.Photovoltaic(required),
+advent_module = plants.Photovoltaic(model=models.PvlibBased(required),
                                     **advent210)
 
 pv_feedin1 = yingli_module.feedin(weather=my_weather, number=30000)
@@ -172,9 +174,9 @@ else:
     print(pv_feedin5)
 
 # Use directly methods of the model
-w_model = models.WindPowerPlant(required=[])
+w_model = models.SimpleWindTurbine([])
 w_model.get_wind_pp_types()
-cp_values = models.WindPowerPlant(required=[]).fetch_cp_values(
+cp_values = models.SimpleWindTurbine([]).fetch_cp_values(
     wind_conv_type='ENERCON E 126 7500')
 if plot_fkt:
     plt.plot(cp_values.loc[0, :][2:55].index,

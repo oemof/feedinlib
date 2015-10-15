@@ -118,7 +118,6 @@ Wind Model
  * h_hub: height of the hub in meters
  * d_rotor: diameter of the rotor in meters
  * wind_conv_type: Name of the wind converter according to the list in the csv file
- * data_height: dictionary containing the heights of the data model
 
 PV Model
 ++++++++
@@ -127,14 +126,39 @@ PV Model
  * tilt: Tilt angle of the pv module in degree
  * module_name: According to the sandia module library (see the link above)
  * albedo: Albedo value
- * tz: Time zone, where the weather data set is located
- * longitude: Position of the weather data (longitude)
- * latitude: Position of the weather data (latitude)
 
 ::
 
     your_wind_turbine = plants.WindPowerPlant(model=wp_model, **your_parameter_set)
     your_pv_module = plants.Photovoltaic(model=pv_model, **your_parameter_set)
+2. Initialise a weather object
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A weather object contains one weather data set and all its necessary meta data. You can define it passing all the information from your weather data source to the FeedinWeatehr class.
+
+.. code:: python
+
+    my_weather_a = weather.FeedinWeather(
+        data=my_weather_pandas_DataFrame,
+        timezone='Continent/City',  # e.g. Europe/Berlin or America/Caracas
+        latitude=x,  # float 
+        longitude=y,  # float
+        data_heigth=coastDat2  # Dictionary, that contains the columns of data as keys (see below).
+        )
+
+Depending on the model you do not need all of the optional parameters. For example the standard wind model does not need the longitude. If the DataFrame has a full time index with a time zone you don't have to set the time zone.
+
+The data_height dictionary should be of the following form.
+
+.. code:: python  
+     
+    coastDat2 = {
+        'dhi': 0,
+        'dirhi': 0,
+        'pressure': 0,
+        'temp_air': 2,
+        'v_wind': 10,
+        'Z0': 0}
     
 3. Get your Feedin Time Series
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

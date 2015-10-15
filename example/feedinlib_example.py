@@ -17,6 +17,7 @@ except:
 
 from feedinlib import powerplants as plants
 from feedinlib import models
+from feedinlib import weather
 
 # Feel free to remove or change these lines
 import warnings
@@ -27,18 +28,14 @@ logging.getLogger().setLevel(logging.INFO)
 required_parameter_wind = {
     'h_hub': 'height of the hub in meters',
     'd_rotor': 'diameter of the rotor in meters',
-    'wind_conv_type': 'wind converter according to the list in the csv file.',
-    'data_height': 'dictionary containing the heights of the data model'}
+    'wind_conv_type': 'wind converter according to the list in the csv file.'}
 
 # Specification of the pv model
 required_parameter_pv = {
     'azimuth': 'Azimuth angle of the pv module',
     'tilt': 'Tilt angle of the pv module',
     'module_name': 'According to the sandia module library.',
-    'albedo': 'Albedo value',
-    'tz': 'Time zone',
-    'longitude': 'Position of the weather data (longitude)',
-    'latitude': 'Position of the weather data (latitude)'}
+    'albedo': 'Albedo value'}
 
 # Specification of the weather data set CoastDat2
 coastDat2 = {
@@ -54,51 +51,71 @@ advent210 = {
     'module_name': 'Advent_Solar_Ventura_210___2008_',
     'azimuth': 180,
     'tilt': 30,
-    'albedo': 0.2,
-    'tz': 'Europe/Berlin',
-    'latitude': 52,
-    'longitude': 12}
+    'albedo': 0.2}
 
 # Specification of the pv module
 yingli210 = {
     'module_name': 'Yingli_YL210__2008__E__',
     'azimuth': 180,
     'tilt': 30,
-    'albedo': 0.2,
-    'tz': 'Europe/Berlin',
-    'latitude': 52,
-    'longitude': 12}
+    'albedo': 0.2}
 
 # Specifications of the wind turbines
 enerconE126 = {
     'h_hub': 135,
     'd_rotor': 127,
-    'wind_conv_type': 'ENERCON E 126 7500',
-    'data_height': coastDat2}
+    'wind_conv_type': 'ENERCON E 126 7500'}
 
 vestasV90 = {
     'h_hub': 105,
     'd_rotor': 90,
-    'wind_conv_type': 'VESTAS V 90 3000',
-    'data_height': coastDat2}
+    'wind_conv_type': 'VESTAS V 90 3000'}
 
 
-def ready_example_data():
-    basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
-    filename = os.path.join(basic_path, 'weather.csv')
-    url = 'http://vernetzen.uni-flensburg.de/~git/weather.csv'
-    if not os.path.exists(basic_path):
-        os.makedirs(basic_path)
+def download_file(filename, url):
     if not os.path.isfile(filename):
         logging.info('Copying weather data from {0} to {1}'.format(
             url, filename))
         urlretrieve(url, filename)
+
+
+def fetch_example_files():
+    basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
+    filename1 = os.path.join(basic_path, 'weather.csv')
+    url1 = 'http://vernetzen.uni-flensburg.de/~git/weather.csv'
+    filename2 = os.path.join(basic_path, 'weather_wittenberg.csv')
+    url2 = 'http://vernetzen.uni-flensburg.de/~git/weather_wittenberg.csv'
+    if not os.path.exists(basic_path):
+        os.makedirs(basic_path)
+    download_file(filename1, url1)
+    download_file(filename2, url2)
+    return filename1, filename2
+
+
+def ready_example_data(filename, datetime_column='Unnamed: 0'):
     df = pd.read_csv(filename)
-    return df.set_index(pd.to_datetime(df['Unnamed: 0'])).tz_localize(
-        'UTC').tz_convert('Europe/Berlin').drop('Unnamed: 0', 1)
+    return df.set_index(pd.to_datetime(df[datetime_column])).tz_localize(
+        'UTC').tz_convert('Europe/Berlin').drop(datetime_column, 1)
+
+
+filename1, filename2 = fetch_example_files()
+
+# Two Variants to create your weather object
+# 1. Variant: Passing all data to the weather class
+weather_df = ready_example_data(filename1)
+my_weather_a = weather.FeedinWeather(
+    data=weather_df,
+    timezone='Europe/Berlin',
+    latitude=52,
+    longitude=12,
+    data_heigth=coastDat2)
+
+# 2. Variant: Loading a csv-file that has the feedinlib-csv-header (see docs)
+my_weather_b = weather.FeedinWeather()
+my_weather_b.read_feedinlib_csv(filename=filename2)
 
 # Loading the weather data
-my_weather_df = ready_example_data()
+my_weather = my_weather_b
 
 # Initialise the wind model. By now there is only one model but in future
 # version one can switch between different models.
@@ -112,9 +129,9 @@ V90_power_plant = plants.WindPowerPlant(model=wind_model, **vestasV90)
 # Create a feedin series for a specific powerplant under specific weather
 # conditions. One can define the number of turbines or the over all capacity.
 # If no multiplier is set, the time series will be for one turbine.
-E126_feedin = E126_power_plant.feedin(data=my_weather_df, number=2)
+E126_feedin = E126_power_plant.feedin(weather=my_weather, number=2)
 V90_feedin = V90_power_plant.feedin(
-    data=my_weather_df, installed_capacity=15000)
+    weather=my_weather, installed_capacity=15000)
 
 E126_feedin.name = 'E126'
 V90_feedin.name = 'V90'
@@ -131,11 +148,11 @@ pv_model = models.Photovoltaic(required=list(required_parameter_pv.keys()))
 yingli_module = plants.Photovoltaic(model=pv_model, **yingli210)
 advent_module = plants.Photovoltaic(model=pv_model, **advent210)
 
-pv_feedin1 = yingli_module.feedin(data=my_weather_df, number=30000)
-pv_feedin2 = yingli_module.feedin(data=my_weather_df, area=15000)
-pv_feedin3 = yingli_module.feedin(data=my_weather_df, peak_power=15000)
-pv_feedin4 = yingli_module.feedin(data=my_weather_df)
-pv_feedin5 = advent_module.feedin(data=my_weather_df)
+pv_feedin1 = yingli_module.feedin(weather=my_weather, number=30000)
+pv_feedin2 = yingli_module.feedin(weather=my_weather, area=15000)
+pv_feedin3 = yingli_module.feedin(weather=my_weather, peak_power=15000)
+pv_feedin4 = yingli_module.feedin(weather=my_weather)
+pv_feedin5 = advent_module.feedin(weather=my_weather)
 
 pv_feedin4.name = 'Yingli'
 pv_feedin5.name = 'Advent'

@@ -525,7 +525,7 @@ class WindPowerPlant:
           * Temperature gradient of -6.5 K/km
           * Pressure gradient of -1/8 hPa/m
 
-        The following equations are used:
+        The following equations are used [22]_:
 
         .. math:: T_{hub}=T_{air, data}-0.0065\cdot\left(h_{hub}-h_{T,data}
             \right)
@@ -538,7 +538,8 @@ class WindPowerPlant:
 
         References
         ----------
-        Missing references.
+        .. [22] ICAO-Standardatmosphäre (ISA).
+            http://www.deutscher-wetterdienst.de/lexikon/download.php?file=Standardatmosphaere.pdf
 
         See Also
         --------
@@ -574,11 +575,10 @@ class WindPowerPlant:
 
         Notes
         -----
-        The following equation is used:
+        The following equation is used for the logarithmic wind profile [20]_:
 
         .. math:: v_{wind,hub}=v_{wind,data}\cdot\frac{\ln\left(\frac{h_{hub}}
             {z_{0}}\right)}{\ln\left(\frac{h_{data}}{z_{0}}\right)}
-
 
         with:
             v: wind speed [m/s], h: height [m], z0: roughnes length [m]
@@ -590,16 +590,17 @@ class WindPowerPlant:
 
         References
         ----------
-          *  Missing references.
+        .. [20] Gasch R., Twele J.: "Windkraftanlagen". 6. Auflage, Wiesbaden,
+                Vieweg + Teubner, 2010, page 129
 
         See Also
         --------
         rho_hub
         """
-        return (kwargs['weather'].data.v_wind * np.log(kwargs['h_hub'] /
-                kwargs['weather'].data.z0) /
+        return (kwargs['weather'].data.v_wind * np.log(
+                kwargs['h_hub'] / kwargs['weather'].data.z0) /
                 np.log(kwargs['weather'].data_height['v_wind'] /
-                kwargs['weather'].data.z0))
+                       kwargs['weather'].data.z0))
 
     def fetch_cp_values_from_file(self, **kwargs):
         r"""
@@ -811,7 +812,8 @@ class WindPowerPlant:
 
         Notes
         -----
-        The following equation is used:
+        The following equation is used for the power output :math:`P_{wpp}`
+        [21]_:
 
         .. math:: P_{wpp}=\frac{1}{8}\cdot\rho_{air,hub}\cdot d_{rotor}^{2}
             \cdot\pi\cdot v_{wind}^{3}\cdot cp\left(v_{wind}\right)
@@ -823,7 +825,8 @@ class WindPowerPlant:
 
         References
         ----------
-          *  Missing references.
+        .. [21] Gasch R., Twele J.: "Windkraftanlagen". 6. Auflage, Wiesbaden,
+                Vieweg + Teubner, 2010, pages 35ff, 208
 
         See Also
         --------

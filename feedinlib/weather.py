@@ -19,7 +19,7 @@ class FeedinWeather:
             Containing the time series of the different parameters as columns
         timezone : string, optional
             Containing the name of the time zone using the naming of the
-            IANA (Internet Assigned Numbers Authority) time zone database [20]_
+            IANA (Internet Assigned Numbers Authority) time zone database [40]_
         longitude : float, optional
             Longitude of the location of the weather data
         latitude : float, optional
@@ -37,7 +37,7 @@ class FeedinWeather:
 
         References
         ----------
-        .. [20] `IANA time zone database <http://www.iana.org/time-zones>`_.
+        .. [40] `IANA time zone database <http://www.iana.org/time-zones>`_.
 
         """
         self.data = kwargs.get('data', None)

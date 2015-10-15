@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 @author: oemof developing group
- 
+
 Classes in this module correspond to specific types of powerplants.
 
 Powerplant objects act as data holders for the attributes making up a
@@ -122,7 +122,7 @@ class Base(ABC):
 
 
 class Photovoltaic(Base):
-    def __init__(self, model=models.Photovoltaic, **attributes):
+    def __init__(self, model=models.PvlibBased, **attributes):
         r"""
         Photovoltaic objects correspond to powerplants using solar power to
         generate electricity.
@@ -131,7 +131,7 @@ class Photovoltaic(Base):
         ----------
         model :
           Used as the `model` parameter for :class:`Base`.
-          Defaults to :class:`feedinlib.models.Photovoltaic`.
+          Defaults to :class:`feedinlib.models.PvlibBased`.
         \**attributes : see :class:`Base`
         """
         super().__init__(model = model, **attributes)
@@ -152,7 +152,7 @@ class Photovoltaic(Base):
         super().feedin(**kwargs)
 
 class WindPowerPlant(Base):
-    def __init__(self, model=models.WindPowerPlant, **attributes):
+    def __init__(self, model=models.SimpleWindTurbine, **attributes):
         r"""
         WindPowerPlant objects correspond to powerplants using wind power to
         generate electricity.
@@ -161,7 +161,7 @@ class WindPowerPlant(Base):
         ----------
         model :
           Used as the model argument for :class:`Base`.
-          Defaults to :class:`feedinlib.models.WindPowerPlant`.
+          Defaults to :class:`feedinlib.models.SimpleWindTurbine`.
         \**attributes : See :class:`Base`
         See Also
         --------

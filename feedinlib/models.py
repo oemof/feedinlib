@@ -116,7 +116,7 @@ class Photovoltaic:
         data_5min = pd.DataFrame(
             index=pd.date_range(data.index[0],
                                 periods=data.shape[0]*12, freq='5Min',
-                                tz=kwargs['tz']))
+                                tz=kwargs['weather'].timezone))
 
         data_5min = pvlib.solarposition.get_solarposition(
             time=data_5min.index, location=location, method='ephemeris')
@@ -385,17 +385,10 @@ class Photovoltaic:
 
         Parameters
         ----------
-        latitude : float
-            latitude of the irradiation data
-        longitude: float
-            longitude of the irradiation data
-        tz : string
-            timezone of the irradiation data e.g. Europe/Berlin
-        data : pandas.DataFrame
-            Containing the timeseries as columns (temp_air, v_wind, dhi,
-            dirhi).
-        weather : oemof.energy_weather object
-            Containing a DataFrame with all needed data sets.
+        weather : feedinlib.weather.FeedinWeather object
+            Instance of the feedinlib weather object (see class
+            :py:class:`FeedinWeather<feedinlib.weather.FeedinWeather>` for more
+            details)
         modul_name : string
             name of a pv module from the sam.nrel database [12]_
         tilt : float
@@ -404,6 +397,7 @@ class Photovoltaic:
             azimuth angle of the pv module (south=180°)
         albedo : float
             albedo factor arround the module
+
         Returns
         -------
         pandas.DataFrame
@@ -421,17 +415,12 @@ class Photovoltaic:
         .. [12] `module library <https://sam.nrel.gov/sites/sam.nrel.gov/files/
                 sam-library-sandia-modules-2015-6-30.csv>`_.
         """
-        # If no DataFrame is given, try to get the data from a weather object
-        if kwargs.get('data', None) is None:
-            data = kwargs['weather'].get_feedin_data(
-                gid=kwargs.get('gid', None))
-        else:
-            data = kwargs.pop('data')
+        data = kwargs['weather'].data
 
         # Create a location object
-        location = pvlib.location.Location(kwargs['latitude'],
-                                           kwargs['longitude'],
-                                           kwargs['tz'])
+        location = pvlib.location.Location(kwargs['weather'].latitude,
+                                           kwargs['weather'].longitude,
+                                           kwargs['weather'].timezone)
 
         # Determine the position of the sun
         data = self.solarposition_hourly_mean(location, data, **kwargs)
@@ -509,15 +498,6 @@ class WindPowerPlant:
             pd.reset_option('display.max_rows')
         return df[['rli_anlagen_id', 'p_nenn']]
 
-    def fetch_data_heights_from_weather_object(self, **kwargs):
-        ''
-        dic = {}
-        for key in kwargs['data'].keys():
-            dic[key] = kwargs['weather'].get_data_heigth(key)
-            if dic[key] is None:
-                dic[key] = 0
-        return dic
-
     def rho_hub(self, **kwargs):
         r"""
         Calculates the density of air in kg/m³ at hub height.
@@ -564,12 +544,12 @@ class WindPowerPlant:
         --------
         v_wind_hub
         """
-        h_temperature_data = kwargs['data_height']['temp_air']
-        h_pressure_data = kwargs['data_height']['pressure']
-        T_hub = kwargs['data'].temp_air - 0.0065 * (
+        h_temperature_data = kwargs['weather'].data_height['temp_air']
+        h_pressure_data = kwargs['weather'].data_height['pressure']
+        T_hub = kwargs['weather'].data.temp_air - 0.0065 * (
             kwargs['h_hub'] - h_temperature_data)
         return (
-            kwargs['data'].pressure / 100 -
+            kwargs['weather'].data.pressure / 100 -
             (kwargs['h_hub'] - h_pressure_data) * 1 / 8) / (2.8706 * T_hub)
 
     def v_wind_hub(self, **kwargs):
@@ -616,9 +596,10 @@ class WindPowerPlant:
         --------
         rho_hub
         """
-        return (kwargs['data'].v_wind * np.log(kwargs['h_hub'] /
-                kwargs['data'].z0)
-                / np.log(kwargs['data_height']['v_wind'] / kwargs['data'].z0))
+        return (kwargs['weather'].data.v_wind * np.log(kwargs['h_hub'] /
+                kwargs['weather'].data.z0) /
+                np.log(kwargs['weather'].data_height['v_wind'] /
+                kwargs['weather'].data.z0))
 
     def fetch_cp_values_from_file(self, **kwargs):
         r"""
@@ -811,13 +792,10 @@ class WindPowerPlant:
 
         Parameters
         ----------
-        data : DataFrame
-            Containing columns with the timeseries for wind speed (v_wind),
-            roughness length (z0), temperature (temp_air) and pressure
-            (pressure).
-        data_height : DataFrame or Dictionary
-            Containing columns or keys with the height of the measurement or
-            model data for temperature (temp_air) and wind speed (v_wind).
+        weather : feedinlib.weather.FeedinWeather object
+            Instance of the feedinlib weather object (see class
+            :py:class:`FeedinWeather<feedinlib.weather.FeedinWeather>` for more
+            details)
         h_hub : float
             Height of the hub of the wind turbine
         d_rotor: float
@@ -851,19 +829,17 @@ class WindPowerPlant:
         --------
         get_normalized_wind_pp_time_series
         """
-        # If weather object is given, use it.
-        if kwargs.get('weather', None) is not None:
-            kwargs['data'] = kwargs['weather'].get_feedin_data(
-                gid=kwargs.get('gid', None))
-            kwargs['data_height'] = (
-                self.fetch_data_heights_from_weather_object(**kwargs))
-
-        kwargs['data'].p_wpp = (
+        p_wpp = (
             (self.rho_hub(**kwargs) / 2) *
             (((kwargs['d_rotor'] / 2) ** 2) * np.pi) *
             np.power(self.v_wind_hub(**kwargs), 3) *
             self.cp_values(self.v_wind_hub(**kwargs), **kwargs))
-        return kwargs['data'].p_wpp.clip(
+
+        p_wpp_series = pd.Series(data=p_wpp,
+                                 index=kwargs['weather'].data.index,
+                                 name='feedin_wind_pp')
+
+        return p_wpp_series.clip(
             upper=(float(self.nominal_power_wind_turbine * 10 ** 3)))
 
 

@@ -136,17 +136,6 @@ class Photovoltaic(Base):
         """
         super().__init__(model = model, **attributes)
 
-    def feedin_as_list(self, **kwargs):
-        r"""
-        Works as :py:func:`feedin<feedinlib.powerplants.Photovoltaic.feedin>`
-        but returns a list.
-
-        Returns
-        -------
-        feedin : list
-            The feedin provided by this poweplant as a time series.
-        """
-        return list(self.feedin_as_pd(**kwargs))
 
     def feedin(self, **kwargs):
         super().feedin(**kwargs)
@@ -172,17 +161,6 @@ class WindPowerPlant(Base):
         super().__init__(model = model, **attributes)
 
 
-    def feedin_as_list(self, **kwargs):
-        r"""
-        Works as :py:func:`feedin<feedinlib.powerplants.WindPowerPlant.feedin>`
-        but returns a list.
-
-        Returns
-        -------
-        feedin : list
-            The feedin provided by this poweplant as a time series.
-        """
-        return list(self.feedin(**kwargs))
 
     def feedin(self, **kwargs):
         super().feedin(**kwargs)

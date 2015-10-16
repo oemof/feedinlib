@@ -143,7 +143,7 @@ class Photovoltaic(Base):
         super().__init__(model=model, **attributes)
 
     def feedin(self, **kwargs):
-        super().feedin(**kwargs)
+        return super().feedin(**kwargs)
 
 
 class WindPowerPlant(Base):
@@ -166,4 +166,4 @@ class WindPowerPlant(Base):
         super().__init__(model=model, **attributes)
 
     def feedin(self, **kwargs):
-        super().feedin(**kwargs)
+        return super().feedin(**kwargs)

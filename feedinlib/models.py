@@ -191,7 +191,8 @@ class PvlibBased:
         """
         return pvlib.irradiance.aoi(
             solar_azimuth=data['azimuth'], solar_zenith=data['zenith'],
-            surface_tilt=kwargs['tilt'], surface_azimuth=kwargs['azimuth'])
+            surface_tilt=self.powerplant.tilt,
+            surface_azimuth=self.powerplant.azimuth)
 
     def global_in_plane_irradiation(self, data, **kwargs):
         r"""
@@ -249,8 +250,8 @@ class PvlibBased:
         # Determine the sky diffuse irradiation in plane
         # with model of Perez (modell switch would be good)
         data['poa_sky_diffuse'] = pvlib.irradiance.perez(
-            surface_tilt=kwargs['tilt'],
-            surface_azimuth=kwargs['azimuth'],
+            surface_tilt=self.powerplant.tilt,
+            surface_azimuth=self.powerplant.azimuth,
             dhi=data['dhi'],
             dni=data['dni'],
             dni_extra=data['dni_extra'],
@@ -265,8 +266,8 @@ class PvlibBased:
         # Determine the diffuse irradiation from ground reflection in plane
         data['poa_ground_diffuse'] = pvlib.irradiance.grounddiffuse(
             ghi=data['dirhi'] + data['dhi'],
-            albedo=kwargs['albedo'],
-            surface_tilt=kwargs['tilt'])
+            albedo=self.powerplant.albedo,
+            surface_tilt=self.powerplant.tilt)
 
         # Determine total in-plane irradiance
         data = pd.concat(
@@ -310,7 +311,7 @@ class PvlibBased:
             url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/' + url_file
             urlretrieve(url, filename)
         module_data = (pvlib.pvsystem.retrieve_sam(samfile=filename)
-                       [kwargs['module_name']])
+                       [self.powerplant.module_name])
         self.area = module_data.Area
         self.peak = module_data.Impo * module_data.Vmpo
         return module_data
@@ -498,7 +499,7 @@ class SimpleWindTurbine:
             pd.reset_option('display.max_rows')
         return df[['rli_anlagen_id', 'p_nenn']]
 
-    def rho_hub(self, **kwargs):
+    def rho_hub(self, weather):
         r"""
         Calculates the density of air in kg/m³ at hub height.
             (temperature in K, height in m, pressure in Pa)
@@ -544,15 +545,16 @@ class SimpleWindTurbine:
         --------
         v_wind_hub
         """
-        h_temperature_data = kwargs['weather'].data_height['temp_air']
-        h_pressure_data = kwargs['weather'].data_height['pressure']
-        T_hub = kwargs['weather'].data.temp_air - 0.0065 * (
-            kwargs['h_hub'] - h_temperature_data)
+        h_temperature_data = weather.data_height['temp_air']
+        h_pressure_data = weather.data_height['pressure']
+        T_hub = weather.data.temp_air - 0.0065 * (
+            self.powerplant.h_hub - h_temperature_data)
         return (
-            kwargs['weather'].data.pressure / 100 -
-            (kwargs['h_hub'] - h_pressure_data) * 1 / 8) / (2.8706 * T_hub)
+            weather.data.pressure / 100 -
+            (self.powerplant.h_hub - h_pressure_data) * 1 / 8
+            ) / (2.8706 * T_hub)
 
-    def v_wind_hub(self, **kwargs):
+    def v_wind_hub(self, weather):
         r"""
         Calculates the wind speed in m/s at hub height.
 
@@ -596,10 +598,10 @@ class SimpleWindTurbine:
         --------
         rho_hub
         """
-        return (kwargs['weather'].data.v_wind * np.log(kwargs['h_hub'] /
-                kwargs['weather'].data.z0) /
-                np.log(kwargs['weather'].data_height['v_wind'] /
-                kwargs['weather'].data.z0))
+        return (weather.data.v_wind * np.log(self.powerplant.h_hub /
+                weather.data.z0) /
+                np.log(weather.data_height['v_wind'] /
+                weather.data.z0))
 
     def fetch_cp_values_from_file(self, **kwargs):
         r"""
@@ -796,6 +798,10 @@ class SimpleWindTurbine:
             Instance of the feedinlib weather object (see class
             :py:class:`FeedinWeather<feedinlib.weather.FeedinWeather>` for more
             details)
+        \**kwargs :
+            Keyword arguments for underlaying methods like filename to name the
+            file of the cp_values.
+        # TODO Move the following parameters to a better place :-)
         h_hub : float
             Height of the hub of the wind turbine
         d_rotor: float
@@ -829,11 +835,12 @@ class SimpleWindTurbine:
         --------
         get_normalized_wind_pp_time_series
         """
+        weather = kwargs['weather']
         p_wpp = (
-            (self.rho_hub(**kwargs) / 2) *
-            (((kwargs['d_rotor'] / 2) ** 2) * np.pi) *
-            np.power(self.v_wind_hub(**kwargs), 3) *
-            self.cp_values(self.v_wind_hub(**kwargs), **kwargs))
+            (self.rho_hub(weather) / 2) *
+            (((self.powerplant.d_rotor / 2) ** 2) * np.pi) *
+            np.power(self.v_wind_hub(weather), 3) *
+            self.cp_values(self.v_wind_hub(weather), **kwargs))
 
         p_wpp_series = pd.Series(data=p_wpp,
                                  index=kwargs['weather'].data.index,

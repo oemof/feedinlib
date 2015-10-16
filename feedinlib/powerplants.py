@@ -14,6 +14,7 @@ from abc import ABC, abstractmethod
 
 from . import models
 
+
 class Base(ABC):
     # TODO: properly link/highlight the terms model and powerplant as they are
     #       referring to feedinlib internals.
@@ -66,7 +67,8 @@ class Base(ABC):
 
         """
         model = attributes.pop("model")
-        if isinstance(model, type): model = model()
+        if isinstance(model, type):
+            model = model()
         model.powerplant = self
         self.model = model
         for k in attributes:
@@ -134,11 +136,11 @@ class Photovoltaic(Base):
           Defaults to :class:`feedinlib.models.PvlibBased`.
         \**attributes : see :class:`Base`
         """
-        super().__init__(model = model, **attributes)
-
+        super().__init__(model=model, **attributes)
 
     def feedin(self, **kwargs):
         super().feedin(**kwargs)
+
 
 class WindPowerPlant(Base):
     def __init__(self, model=models.SimpleWindTurbine, **attributes):
@@ -156,11 +158,8 @@ class WindPowerPlant(Base):
         --------
         :mod:`feedinlib.models` : for and explanation of the model needed to
                                   actually calculate the feedin.
-
         """
-        super().__init__(model = model, **attributes)
-
-
+        super().__init__(model=model, **attributes)
 
     def feedin(self, **kwargs):
         super().feedin(**kwargs)

@@ -109,18 +109,22 @@ class Base(ABC):
         combined = {k: getattr(self, k) for k in self.model.required}
         combined.update(kwargs)
         if kwargs.get('number', None) is not None:
-            feedin_pd = self.model.feedin(**combined) * kwargs['number']
+            feedin = self.model.feedin(**combined) * kwargs['number']
         elif kwargs.get('peak_power', None) is not None:
-            feedin_pd = (self.model.feedin(**combined) /
-                         float(self.model.peak) * 1000 *
-                         float(kwargs['peak_power']))
+            feedin = (self.model.feedin(**combined) /
+                      float(self.model.peak) * 1000 *
+                      float(kwargs['peak_power']))
         elif kwargs.get('area', None) is not None:
-            feedin_pd = (self.model.feedin(**combined) / self.model.area *
-                         kwargs['area'])
+            feedin = (self.model.feedin(**combined) / self.model.area *
+                      kwargs['area'])
+        elif kwargs.get('installed_capacity', None) is not None:
+            feedin = (self.model.feedin(**combined) /
+                      float(self.model.nominal_power_wind_turbine) *
+                      float(kwargs['installed_capacity']))
         else:
-            feedin_pd = self.model.feedin(**combined)
+            feedin = self.model.feedin(**combined)
 
-        return feedin_pd
+        return feedin
 
 
 class Photovoltaic(Base):

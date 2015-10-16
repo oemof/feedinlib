@@ -24,18 +24,6 @@ import warnings
 warnings.simplefilter(action="ignore", category=RuntimeWarning)
 logging.getLogger().setLevel(logging.INFO)
 
-# Specification of the wind model
-required_parameter_wind = {
-    'h_hub': 'height of the hub in meters',
-    'd_rotor': 'diameter of the rotor in meters',
-    'wind_conv_type': 'wind converter according to the list in the csv file.'}
-
-# Specification of the pv model
-required_parameter_pv = {
-    'azimuth': 'Azimuth angle of the pv module',
-    'tilt': 'Tilt angle of the pv module',
-    'module_name': 'According to the sandia module library.',
-    'albedo': 'Albedo value'}
 
 # Specification of the weather data set CoastDat2
 coastDat2 = {
@@ -117,16 +105,11 @@ my_weather_b.read_feedinlib_csv(filename=filename2)
 # Loading the weather data
 my_weather = my_weather_b
 
-# TODO@gnn: remove required parameters
-required = list(required_parameter_wind.keys())
-
 # Initialise different power plants
-# TODO@gnn: make required parameters optional
-E126_power_plant = plants.WindPowerPlant(model=models.SimpleWindTurbine(
-                                         required),
-                                         **enerconE126)
-V90_power_plant = plants.WindPowerPlant(model=models.SimpleWindTurbine(
-                                        required),
+# If you do not pass a model the default model is used. So far there is only
+# one model available. This might change in future versions.
+E126_power_plant = plants.WindPowerPlant(**enerconE126)
+V90_power_plant = plants.WindPowerPlant(model=models.SimpleWindTurbine,
                                         **vestasV90)
 
 # Create a feedin series for a specific powerplant under specific weather
@@ -146,15 +129,11 @@ if plot_fkt:
 else:
     print(V90_feedin)
 
-# TODO@gnn: remove required parameters
-required = list(required_parameter_pv.keys())
-
 # Initialise different power plants
-# TODO@gnn: make required parameters optional
-yingli_module = plants.Photovoltaic(model=models.PvlibBased(required),
-                                    **yingli210)
-advent_module = plants.Photovoltaic(model=models.PvlibBased(required),
-                                    **advent210)
+# If you do not pass a model the default model is used. So far there is only
+# one model available. This might change in future versions.
+yingli_module = plants.Photovoltaic(**yingli210)
+advent_module = plants.Photovoltaic(model=models.PvlibBased, **advent210)
 
 pv_feedin1 = yingli_module.feedin(weather=my_weather, number=30000)
 pv_feedin2 = yingli_module.feedin(weather=my_weather, area=15000)
@@ -174,8 +153,11 @@ else:
     print(pv_feedin5)
 
 # Use directly methods of the model
+# Write out all possible wind turbines.
 w_model = models.SimpleWindTurbine([])
 w_model.get_wind_pp_types()
+
+# Plot the cp curve of a wind turbine.
 cp_values = models.SimpleWindTurbine([]).fetch_cp_values(
     wind_conv_type='ENERCON E 126 7500')
 if plot_fkt:

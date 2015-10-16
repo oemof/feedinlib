@@ -97,10 +97,6 @@ class ModelsPowerplantsInteraction_Tests:
             longitude=12,
             data_height=self.height_of_measurement)
 
-    def weather_dc(self):
-        return pickle.load(open(os.path.join(
-            os.path.expanduser("~"), '.oemof', 'weather.pkl'), "rb"))
-
     @nt.raises(AttributeError)
     def test_pv_model(self):
         plant.Photovoltaic(multiplier=0,
@@ -116,11 +112,8 @@ class ModelsPowerplantsInteraction_Tests:
         my_weather = weather.FeedinWeather()
         my_weather.read_feedinlib_csv(filename='')
 
-    def type_pickel_test(self):
-        nt.ok_(isinstance(self.weather_dc(), dict))
-
     def type_dataframe_test(self):
-        nt.ok_(isinstance(self.weather_dc()[1135091]['data'],
+        nt.ok_(isinstance(self.weather.data,
                           pandas.core.frame.DataFrame))
 
     def test_load_feedinlib(self):

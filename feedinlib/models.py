@@ -614,6 +614,13 @@ class SimpleWindTurbine:
         wind_conv_type : string
             Name of the wind converter type. Use self.get_wind_pp_types() to
             see a list of all possible wind converters.
+        cp_path : string, optional
+            Path where the cp file is stored
+        filename : string, optional
+            Filename of the cp file without suffix. The suffix should be csv or
+            hf5.
+        url : string, optional
+            URL from where the cp file is loaded if not present
 
         Returns
         -------
@@ -630,20 +637,26 @@ class SimpleWindTurbine:
         --------
         fetch_cp_values_from_db
         """
-        basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
-        filename = os.path.join(basic_path, 'cp_values')
-        url = 'http://vernetzen.uni-flensburg.de/~git/cp_values'
+        wpp_type = kwargs.get('wind_conv_type')
+        if wpp_type is None:
+            wpp_type = self.powerplant.wind_conv_type
+        cp_path = kwargs.get(
+            'basic_path', os.path.join(os.path.expanduser("~"), '.oemof'))
+        filename = kwargs.get('filename', 'cp_values')
+        filepath = os.path.join(cp_path, filename)
+        url = kwargs.get(
+            'url', 'http://vernetzen.uni-flensburg.de/~git/cp_values')
         suffix = '.hf5'
-        if not os.path.exists(basic_path):
-            os.makedirs(basic_path)
-        if not os.path.isfile(filename + suffix):
-            urlretrieve(url + suffix, filename + suffix)
+        if not os.path.exists(cp_path):
+            os.makedirs(cp_path)
+        if not os.path.isfile(filepath + suffix):
+            urlretrieve(url + suffix, filepath + suffix)
             logging.info('Copying cp_values from {0} to {1}'.format(
-                url, filename + suffix))
+                url, filepath + suffix))
         logging.debug('Retrieving cp values from {0}'.format(
             filename + suffix))
         try:
-            df = pd.read_hdf(filename + suffix, 'cp')
+            df = pd.read_hdf(filepath + suffix, 'cp')
         except:
             suffix = '.csv'
             logging.info('Failed loading cp values from hdf file, trying csv.')
@@ -654,8 +667,7 @@ class SimpleWindTurbine:
                 logging.info('Copying cp_values from {0} to {1}'.format(
                     url, filename + suffix))
             df = pd.read_csv(filename + suffix, index_col=0)
-        res_df = df[df.rli_anlagen_id == kwargs[
-            'wind_conv_type']].reset_index(drop=True)
+        res_df = df[df.rli_anlagen_id == wpp_type].reset_index(drop=True)
         return res_df, df
 
     def fetch_cp_values_from_db(self, **kwargs):

@@ -146,18 +146,10 @@ pv_feedin5 = advent_module.feedin(weather=my_weather)
 pv_feedin4.name = 'Yingli'
 pv_feedin5.name = 'Advent'
 
-smoothdata = pd.read_csv('/home/uwe/.oemof/smooth_pv_wittenberg.csv') * 5000
-smoothdata.set_index(my_weather.data.index, inplace=True)
-pv_smooth_series = smoothdata.pv_smooth
-pv_smooth_series.name = 'pv_smooth'
-
-print(pv_smooth_series)
-
 # Output
 if plot_fkt:
     pv_feedin4.plot(legend=True)
     pv_feedin5.plot(legend=True)
-    pv_smooth_series.plot(legend=True)
     plt.show()
 else:
     print(pv_feedin5)

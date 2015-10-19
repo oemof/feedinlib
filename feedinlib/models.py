@@ -58,10 +58,11 @@ class PvlibBased(Base):
 
     The calculation is based on the library pvlib. [1]_
 
-    See Also
-    --------
-    Base
-    SimpleWindTurbine
+    Parameters
+    ----------
+    PvlibBased.required (list of strings, optional)
+        List of required parameters of the model
+
 
     Notes
     -----
@@ -79,6 +80,10 @@ class PvlibBased(Base):
     >>> from feedinlib import models
     >>> pv_model = models.PvlibBased()
 
+    See Also
+    --------
+    Base
+    SimpleWindTurbine
     """
 
     def __init__(self, **kwargs):
@@ -92,11 +97,14 @@ class PvlibBased(Base):
 
         In this feedin model the required parameters are:
 
-          :azimuth: Azimuth angle of the pv module in degree
-          :tilt: Tilt angle of the pv module in degree
-          :module_name: According to the sandia module library
-            (see the link above)
-          :albedo: Albedo value
+        :modul_name: (string) -
+            name of a pv module from the sam.nrel database [12]_
+        :tilt: (float) -
+            tilt angle of the pv module (horizontal=0°)
+        :azimuth: (float) -
+            azimuth angle of the pv module (south=180°)
+        :albedo: (float) -
+            albedo factor arround the module
         """
         if super().required is not None:
             return super().required
@@ -173,7 +181,7 @@ class PvlibBased(Base):
             [data, data_5min.clip_lower(0).resample('H', how='mean')],
             axis=1, join='inner')
 
-    def solarposition(location, data, **kwargs):
+    def solarposition(self, location, data, **kwargs):
         r"""
         Determine the position of the sun unsing the time of the time index.
 
@@ -220,7 +228,8 @@ class PvlibBased(Base):
         """
         return pd.concat(
             [data, pvlib.solarposition.get_solarposition(
-                time=data.index, location=location, method='ephemeris')],
+                time=data.index, location=location,
+                method=kwargs.get('method', 'ephemeris'))],
             axis=1, join='inner')
 
     def angle_of_incidence(self, data, **kwargs):
@@ -284,16 +293,16 @@ class PvlibBased(Base):
             The DataFrame contains the following new columns: poa_global,
             poa_diffuse, poa_direct
 
-        See Also
-        --------
-        solarposition_hourly_mean, solarposition, angle_of_incidenc
-
         References
         ----------
         .. [5] `pvlib globalinplane <http://pvlib-python.readthedocs.org/en/
                 latest/pvlib.html#pvlib.irradiance.globalinplane>`_.
         .. [6] `pvlib atmosphere <http://pvlib-python.readthedocs.org/en/
                 latest/pvlib.html#module-pvlib.atmosphere>`_.
+
+        See Also
+        --------
+        solarposition_hourly_mean, solarposition, angle_of_incidenc
         """
         # Determine the extraterrestrial radiation
         data['dni_extra'] = pvlib.irradiance.extraradiation(
@@ -413,10 +422,6 @@ class PvlibBased(Base):
             The DataFrame contains the following new columns: p_pv_norm,
             p_pv_norm_area
 
-        See Also
-        --------
-        global_in_plane_irradiation
-
         References
         ----------
         .. [8] `pvlib pv-system <http://pvlib-python.readthedocs.org/en/
@@ -425,6 +430,10 @@ class PvlibBased(Base):
                 sam-library-sandia-modules-2015-6-30.csv>`_.
         .. [10] `pvlib get_solarposition <http://pvlib-python.readthedocs.org
                 /en/latest/pvlib.html#pvlib.solarposition.get_solarposition>`_.
+
+        See Also
+        --------
+        global_in_plane_irradiation
         """
         # Determine module and cell temperature
         data['temp_air_celsius'] = data['temp_air'] - 273.15
@@ -462,14 +471,12 @@ class PvlibBased(Base):
             Instance of the feedinlib weather object (see class
             :py:class:`FeedinWeather<feedinlib.weather.FeedinWeather>` for more
             details)
-        modul_name : string
-            name of a pv module from the sam.nrel database [12]_
-        tilt : float
-            tilt angle of the pv module (horizontal=0°)
-        azimuth : float
-            azimuth angle of the pv module (south=180°)
-        albedo : float
-            albedo factor arround the module
+
+        Notes
+        -----
+        See :py:func:`method required <feedinlib.models.PvlibBased.required>`
+        for all required parameters of this model.
+
 
         Returns
         -------
@@ -477,16 +484,16 @@ class PvlibBased(Base):
             The DataFrame contains the following new columns: p_pv_norm,
             p_pv_norm_area and all timeseries calculated before.
 
-        See Also
-        --------
-        pv_module_output, feedin
-
         References
         ----------
         .. [11] `pvlib documentation <https://readthedocs.org/projects/
                 pvlib-python/>`_.
         .. [12] `module library <https://sam.nrel.gov/sites/sam.nrel.gov/files/
                 sam-library-sandia-modules-2015-6-30.csv>`_.
+
+        See Also
+        --------
+        pv_module_output, feedin
         """
         data = kwargs['weather'].data
 
@@ -543,10 +550,13 @@ class SimpleWindTurbine(Base):
 
         In this feedin model the required parameters are:
 
-          :h_hub: height of the hub in meters
-          :d_rotor: diameter of the rotor in meters
-          :wind_conv_type: Name of the wind converter according to the list in
-                           the csv file
+        :h_hub: (float) -
+            Height of the hub of the wind turbine
+        :d_rotor: (float) -
+            'Diameter of the rotor [m]',
+        :wind_conv_type: (string) -
+            Name of the wind converter type. Use self.get_wind_pp_types() to
+            see a list of all possible wind converters.
         """
 
         if super().required is not None:
@@ -906,13 +916,6 @@ class SimpleWindTurbine(Base):
             Keyword arguments for underlaying methods like filename to name the
             file of the cp_values.
         # TODO Move the following parameters to a better place :-)
-        h_hub : float
-            Height of the hub of the wind turbine
-        d_rotor: float
-            'Diameter of the rotor [m]',
-        wind_conv_type : string
-            Name of the wind converter type. Use self.get_wind_pp_types() to
-            see a list of all possible wind converters.
 
         Returns
         -------

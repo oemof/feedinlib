@@ -196,14 +196,27 @@ class PvlibBased(Base):
             The DataFrame contains the following new columns: azimuth, zenith,
             elevation
 
+        Notes
+        -----
+        This method is not used in favour to solarposition_hourly_mean.
+
+        Examples
+        --------
+        >>> import pvlib
+        >>> import pandas as pd
+        >>> from feedinlib import models
+        >>> loc = pvlib.location.Location(52, 13, 'Europe/Berlin')
+        >>> pvmodel = models.PvlibBased()
+        >>> data = pd.DataFrame(index=pd.date_range(pd.datetime(2010, 1, 1, 0),
+        ... periods=8760, freq='H', tz=loc.tz))
+        >>> elevation = pvmodel.solarposition(loc, data).elevation
+        >>> print(round(elevation[12], 3))
+        14.968
+
         See Also
         --------
         solarposition_hourly_mean : calculates the position of the sun as an
             hourly mean.
-
-        Notes
-        -----
-        This method is not used in favour to solarposition_hourly_mean.
         """
         return pd.concat(
             [data, pvlib.solarposition.get_solarposition(
@@ -345,6 +358,14 @@ class PvlibBased(Base):
         dictionary
             The necessary module data for the selected module to use the
             pvlib sapm pv model. [8]_
+
+        Examples
+        --------
+        >>> from feedinlib import models
+        >>> pvmodel = models.PvlibBased()
+        >>> name = 'Yingli_YL210__2008__E__'
+        >>> print(pvmodel.fetch_module_data(module_name=name).Area)
+        1.7
 
         See Also
         --------

@@ -77,9 +77,7 @@ class PvlibBased(Base):
     Examples
     --------
     >>> from feedinlib import models
-    >>> required_ls = ['module_name', 'azimuth', 'tilt', 'albedo', 'tz']
-    >>> required_ls += ['latitude', 'longitude']
-    >>> pv_model = models.PvlibBased(required=required_ls)
+    >>> pv_model = models.PvlibBased()
 
     """
 
@@ -550,7 +548,7 @@ class SimpleWindTurbine(Base):
         Examples
         --------
         >>> from feedinlib import models
-        >>> w_model = models.SimpleWindTurbine(required=[])
+        >>> w_model = models.SimpleWindTurbine()
         >>> valid_types_df = w_model.get_wind_pp_types(print_out=False)
         >>> valid_types_df.shape
         (91, 2)
@@ -797,12 +795,14 @@ class SimpleWindTurbine(Base):
         pandas.DataFrame
             cp values, wind converter type, installed capacity
 
-
+        Examples
+        --------
         >>> from feedinlib import models
-        >>> w_model = models.SimpleWindTurbine(required=['wind_conv_type'])
+        >>> w_model = models.SimpleWindTurbine()
         >>> cp = w_model.fetch_cp_values(wind_conv_type='ENERCON E 126 7500')
-        >>> print(cp.loc[0, :][2:55].sum())
-        6.495
+        >>> index=cp.loc[0, :][2:55].index=='8'
+        >>> print(cp.loc[0, :][2:55].values[index][0])
+        0.478
 
         See Also
         --------

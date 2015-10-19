@@ -953,15 +953,6 @@ class SimpleWindTurbine(Base):
             upper=(float(self.nominal_power_wind_turbine * 10 ** 3)))
 
 
-class ConstantModell:
-    ''
-    def __init__(self, required=["nominal_power", "steps"]):
-        self.required = required
-
-    def feedin(self, **ks):
-        return [ks["nominal_power"]*0.9] * ks["steps"]
-
-
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

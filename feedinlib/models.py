@@ -27,7 +27,7 @@ class PvlibBased:
 
     See Also
     --------
-    WindPowerPlant
+    SimpleWindTurbine
 
     Notes
     -----
@@ -45,7 +45,7 @@ class PvlibBased:
     >>> from feedinlib import models
     >>> required_ls = ['module_name', 'azimuth', 'tilt', 'albedo', 'tz']
     >>> required_ls += ['latitude', 'longitude']
-    >>> pv_model = models.Photovoltaic(required=required_ls)
+    >>> pv_model = models.PvlibBased(required=required_ls)
 
     """
 
@@ -59,14 +59,14 @@ class PvlibBased:
         Feedin time series for the given pv module.
 
         In contrast to :py:func:`turbine_power_output
-        <feedinlib.models.Photovoltaic.get_pv_power_output>` it returns just
+        <feedinlib.models.PvlibBased.get_pv_power_output>` it returns just
         the feedin series instead of the whole DataFrame.
 
         Parameters
         ----------
         see :
             :py:func:`turbine_power_output
-            <feedinlib.models.Photovoltaic.get_pv_power_output>`
+            <feedinlib.models.PvlibBased.get_pv_power_output>`
 
         Returns
         -------
@@ -453,11 +453,11 @@ class SimpleWindTurbine:
     --------
     >>> from feedinlib import models
     >>> required_ls = ['h_hub', 'd_rotor', 'wind_conv_type', 'data_height']
-    >>> wind_model = models.WindPowerPlant(required=required_ls)
+    >>> wind_model = models.SimpleWindTurbine(required=required_ls)
 
     See Also
     --------
-    Photovoltaic
+    PvlibBased
     """
 
     def __init__(self, required):
@@ -467,7 +467,7 @@ class SimpleWindTurbine:
     def feedin(self, **kwargs):
         r"""
         Alias for :py:func:`turbine_power_output
-        <feedinlib.models.WindPowerPlant.turbine_power_output>`.
+        <feedinlib.models.SimpleWindTurbine.turbine_power_output>`.
         """
         return self.turbine_power_output(**kwargs)
 
@@ -483,7 +483,7 @@ class SimpleWindTurbine:
         Examples
         --------
         >>> from feedinlib import models
-        >>> w_model = models.WindPowerPlant(required=[])
+        >>> w_model = models.SimpleWindTurbine(required=[])
         >>> valid_types_df = w_model.get_wind_pp_types(print_out=False)
         >>> valid_types_df.shape
         (91, 2)
@@ -731,7 +731,7 @@ class SimpleWindTurbine:
 
 
         >>> from feedinlib import models
-        >>> w_model = models.WindPowerPlant(required=['wind_conv_type'])
+        >>> w_model = models.SimpleWindTurbine(required=['wind_conv_type'])
         >>> cp = w_model.fetch_cp_values(wind_conv_type='ENERCON E 126 7500')
         >>> print(cp.loc[0, :][2:55].sum())
         6.495
@@ -777,7 +777,7 @@ class SimpleWindTurbine:
         >>> from feedinlib import models
         >>> import numpy
         >>> v_wi = numpy.array([1,2,3,4,5,6,7,8])
-        >>> w = models.WindPowerPlant(required=['wind_conv_type', 'v_wind'])
+        >>> w = models.SimpleWindTurbine(required=['wind_conv_type', 'v_wind'])
         >>> cp = w.cp_values(wind_conv_type='ENERCON E 126 7500', v_wind=v_wi)
         >>> print(cp)
         [ 0.     0.     0.191  0.352  0.423  0.453  0.47   0.478]

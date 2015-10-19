@@ -123,14 +123,14 @@ class ModelsPowerplantsInteraction_Tests:
         my_weather.read_feedinlib_csv(filename=filename)
 
     def wind_result_test(self):
-        wind_model = model.WindPowerPlant(
+        wind_model = model.SimpleWindTurbine(
             required=list(self.required_parameter['wind_model'].keys()))
         wind_power_plant = plant.WindPowerPlant(model=wind_model, **self.site)
         wka_feedin = wind_power_plant.feedin(weather=self.weather)
         nt.eq_(round(wka_feedin.sum() / 1000), 1523340.0)
 
     def pv_result_test(self):
-        pv_model = model.Photovoltaic(
+        pv_model = model.PvlibBased(
             required=list(self.required_parameter['pv_model'].keys()))
         pv_plant = plant.Photovoltaic(model=pv_model, **self.site)
         pv_feedin = pv_plant.feedin(weather=self.weather)

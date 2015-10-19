@@ -58,10 +58,11 @@ class PvlibBased(Base):
 
     The calculation is based on the library pvlib. [1]_
 
-    See Also
-    --------
-    Base
-    SimpleWindTurbine
+    Parameters
+    ----------
+    PvlibBased.required (list of strings, optional)
+        List of required parameters of the model
+
 
     Notes
     -----
@@ -77,10 +78,12 @@ class PvlibBased(Base):
     Examples
     --------
     >>> from feedinlib import models
-    >>> required_ls = ['module_name', 'azimuth', 'tilt', 'albedo', 'tz']
-    >>> required_ls += ['latitude', 'longitude']
-    >>> pv_model = models.PvlibBased(required=required_ls)
+    >>> pv_model = models.PvlibBased()
 
+    See Also
+    --------
+    Base
+    SimpleWindTurbine
     """
 
     def __init__(self, **kwargs):
@@ -94,11 +97,14 @@ class PvlibBased(Base):
 
         In this feedin model the required parameters are:
 
-          :azimuth: Azimuth angle of the pv module in degree
-          :tilt: Tilt angle of the pv module in degree
-          :module_name: According to the sandia module library
-            (see the link above)
-          :albedo: Albedo value
+        :modul_name: (string) -
+            name of a pv module from the sam.nrel database [12]_
+        :tilt: (float) -
+            tilt angle of the pv module (horizontal=0°)
+        :azimuth: (float) -
+            azimuth angle of the pv module (south=180°)
+        :albedo: (float) -
+            albedo factor arround the module
         """
         if super().required is not None:
             return super().required
@@ -175,7 +181,7 @@ class PvlibBased(Base):
             [data, data_5min.clip_lower(0).resample('H', how='mean')],
             axis=1, join='inner')
 
-    def solarposition(location, data, **kwargs):
+    def solarposition(self, location, data, **kwargs):
         r"""
         Determine the position of the sun unsing the time of the time index.
 
@@ -198,18 +204,32 @@ class PvlibBased(Base):
             The DataFrame contains the following new columns: azimuth, zenith,
             elevation
 
+        Notes
+        -----
+        This method is not used in favour to solarposition_hourly_mean.
+
+        Examples
+        --------
+        >>> import pvlib
+        >>> import pandas as pd
+        >>> from feedinlib import models
+        >>> loc = pvlib.location.Location(52, 13, 'Europe/Berlin')
+        >>> pvmodel = models.PvlibBased()
+        >>> data = pd.DataFrame(index=pd.date_range(pd.datetime(2010, 1, 1, 0),
+        ... periods=8760, freq='H', tz=loc.tz))
+        >>> elevation = pvmodel.solarposition(loc, data).elevation
+        >>> print(round(elevation[12], 3))
+        14.968
+
         See Also
         --------
         solarposition_hourly_mean : calculates the position of the sun as an
             hourly mean.
-
-        Notes
-        -----
-        This method is not used in favour to solarposition_hourly_mean.
         """
         return pd.concat(
             [data, pvlib.solarposition.get_solarposition(
-                time=data.index, location=location, method='ephemeris')],
+                time=data.index, location=location,
+                method=kwargs.get('method', 'ephemeris'))],
             axis=1, join='inner')
 
     def angle_of_incidence(self, data, **kwargs):
@@ -273,16 +293,16 @@ class PvlibBased(Base):
             The DataFrame contains the following new columns: poa_global,
             poa_diffuse, poa_direct
 
-        See Also
-        --------
-        solarposition_hourly_mean, solarposition, angle_of_incidenc
-
         References
         ----------
         .. [5] `pvlib globalinplane <http://pvlib-python.readthedocs.org/en/
                 latest/pvlib.html#pvlib.irradiance.globalinplane>`_.
         .. [6] `pvlib atmosphere <http://pvlib-python.readthedocs.org/en/
                 latest/pvlib.html#module-pvlib.atmosphere>`_.
+
+        See Also
+        --------
+        solarposition_hourly_mean, solarposition, angle_of_incidenc
         """
         # Determine the extraterrestrial radiation
         data['dni_extra'] = pvlib.irradiance.extraradiation(
@@ -348,10 +368,21 @@ class PvlibBased(Base):
             The necessary module data for the selected module to use the
             pvlib sapm pv model. [8]_
 
+        Examples
+        --------
+        >>> from feedinlib import models
+        >>> pvmodel = models.PvlibBased()
+        >>> name = 'Yingli_YL210__2008__E__'
+        >>> print(pvmodel.fetch_module_data(module_name=name).Area)
+        1.7
+
         See Also
         --------
         pv_module_output
         """
+        if kwargs.get('module_name') is None:
+            kwargs['module_name'] = self.powerplant.module_name
+
         basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
         filename = os.path.join(basic_path, 'sam-library-sandia-modules.csv')
         if not os.path.exists(basic_path):
@@ -361,7 +392,7 @@ class PvlibBased(Base):
             url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/' + url_file
             urlretrieve(url, filename)
         module_data = (pvlib.pvsystem.retrieve_sam(samfile=filename)
-                       [self.powerplant.module_name])
+                       [kwargs['module_name']])
         self.area = module_data.Area
         self.peak = module_data.Impo * module_data.Vmpo
         return module_data
@@ -391,10 +422,6 @@ class PvlibBased(Base):
             The DataFrame contains the following new columns: p_pv_norm,
             p_pv_norm_area
 
-        See Also
-        --------
-        global_in_plane_irradiation
-
         References
         ----------
         .. [8] `pvlib pv-system <http://pvlib-python.readthedocs.org/en/
@@ -403,6 +430,10 @@ class PvlibBased(Base):
                 sam-library-sandia-modules-2015-6-30.csv>`_.
         .. [10] `pvlib get_solarposition <http://pvlib-python.readthedocs.org
                 /en/latest/pvlib.html#pvlib.solarposition.get_solarposition>`_.
+
+        See Also
+        --------
+        global_in_plane_irradiation
         """
         # Determine module and cell temperature
         data['temp_air_celsius'] = data['temp_air'] - 273.15
@@ -440,14 +471,12 @@ class PvlibBased(Base):
             Instance of the feedinlib weather object (see class
             :py:class:`FeedinWeather<feedinlib.weather.FeedinWeather>` for more
             details)
-        modul_name : string
-            name of a pv module from the sam.nrel database [12]_
-        tilt : float
-            tilt angle of the pv module (horizontal=0°)
-        azimuth : float
-            azimuth angle of the pv module (south=180°)
-        albedo : float
-            albedo factor arround the module
+
+        Notes
+        -----
+        See :py:func:`method required <feedinlib.models.PvlibBased.required>`
+        for all required parameters of this model.
+
 
         Returns
         -------
@@ -455,16 +484,16 @@ class PvlibBased(Base):
             The DataFrame contains the following new columns: p_pv_norm,
             p_pv_norm_area and all timeseries calculated before.
 
-        See Also
-        --------
-        pv_module_output, feedin
-
         References
         ----------
         .. [11] `pvlib documentation <https://readthedocs.org/projects/
                 pvlib-python/>`_.
         .. [12] `module library <https://sam.nrel.gov/sites/sam.nrel.gov/files/
                 sam-library-sandia-modules-2015-6-30.csv>`_.
+
+        See Also
+        --------
+        pv_module_output, feedin
         """
         data = kwargs['weather'].data
 
@@ -521,10 +550,13 @@ class SimpleWindTurbine(Base):
 
         In this feedin model the required parameters are:
 
-          :h_hub: height of the hub in meters
-          :d_rotor: diameter of the rotor in meters
-          :wind_conv_type: Name of the wind converter according to the list in
-                           the csv file
+        :h_hub: (float) -
+            Height of the hub of the wind turbine
+        :d_rotor: (float) -
+            'Diameter of the rotor [m]',
+        :wind_conv_type: (string) -
+            Name of the wind converter type. Use self.get_wind_pp_types() to
+            see a list of all possible wind converters.
         """
 
         if super().required is not None:
@@ -550,7 +582,7 @@ class SimpleWindTurbine(Base):
         Examples
         --------
         >>> from feedinlib import models
-        >>> w_model = models.SimpleWindTurbine(required=[])
+        >>> w_model = models.SimpleWindTurbine()
         >>> valid_types_df = w_model.get_wind_pp_types(print_out=False)
         >>> valid_types_df.shape
         (91, 2)
@@ -797,12 +829,14 @@ class SimpleWindTurbine(Base):
         pandas.DataFrame
             cp values, wind converter type, installed capacity
 
-
+        Examples
+        --------
         >>> from feedinlib import models
-        >>> w_model = models.SimpleWindTurbine(required=['wind_conv_type'])
+        >>> w_model = models.SimpleWindTurbine()
         >>> cp = w_model.fetch_cp_values(wind_conv_type='ENERCON E 126 7500')
-        >>> print(cp.loc[0, :][2:55].sum())
-        6.495
+        >>> index=cp.loc[0, :][2:55].index=='8'
+        >>> print(cp.loc[0, :][2:55].values[index][0])
+        0.478
 
         See Also
         --------
@@ -882,13 +916,6 @@ class SimpleWindTurbine(Base):
             Keyword arguments for underlaying methods like filename to name the
             file of the cp_values.
         # TODO Move the following parameters to a better place :-)
-        h_hub : float
-            Height of the hub of the wind turbine
-        d_rotor: float
-            'Diameter of the rotor [m]',
-        wind_conv_type : string
-            Name of the wind converter type. Use self.get_wind_pp_types() to
-            see a list of all possible wind converters.
 
         Returns
         -------
@@ -930,15 +957,6 @@ class SimpleWindTurbine(Base):
 
         return p_wpp_series.clip(
             upper=(float(self.nominal_power_wind_turbine * 10 ** 3)))
-
-
-class ConstantModell:
-    ''
-    def __init__(self, required=["nominal_power", "steps"]):
-        self.required = required
-
-    def feedin(self, **ks):
-        return [ks["nominal_power"]*0.9] * ks["steps"]
 
 
 if __name__ == "__main__":

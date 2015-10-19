@@ -95,8 +95,8 @@ my_weather_a = weather.FeedinWeather(
     data=weather_df,
     timezone='Europe/Berlin',
     latitude=52,
-    longitude=12,
-    data_heigth=coastDat2)
+    longitude=13,
+    data_height=coastDat2)
 
 # 2. Variant: Loading a csv-file that has the feedinlib-csv-header (see docs)
 my_weather_b = weather.FeedinWeather()
@@ -146,18 +146,10 @@ pv_feedin5 = advent_module.feedin(weather=my_weather)
 pv_feedin4.name = 'Yingli'
 pv_feedin5.name = 'Advent'
 
-smoothdata = pd.read_csv('/home/uwe/.oemof/smooth_pv_wittenberg.csv') * 5000
-smoothdata.set_index(my_weather.data.index, inplace=True)
-pv_smooth_series = smoothdata.pv_smooth
-pv_smooth_series.name = 'pv_smooth'
-
-print(pv_smooth_series)
-
 # Output
 if plot_fkt:
     pv_feedin4.plot(legend=True)
     pv_feedin5.plot(legend=True)
-    pv_smooth_series.plot(legend=True)
     plt.show()
 else:
     print(pv_feedin5)
@@ -175,6 +167,8 @@ if plot_fkt:
              cp_values.loc[0, :][2:55].values, '*')
     plt.show()
 else:
-    print(cp_values.loc[0, :][2:55].values)
+    # The value for 8 m/s
+    index = cp_values.loc[0, :][2:55].index == '8'
+    print(cp_values.loc[0, :][2:55].values[index][0])
 
 logging.info('Done!')

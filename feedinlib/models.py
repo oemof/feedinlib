@@ -3,6 +3,7 @@
 @author: oemof developing group
 """
 
+from abc import ABC, abstractmethod
 import os
 import sys
 import numpy as np
@@ -15,18 +16,50 @@ except:
     from urllib import urlretrieve
 
 
-class PvlibBased:
+class Base(ABC):
+    r""" The base class of feedinlib models.
+
+    Parameters
+    ----------
+    required
+
+    """
+    def __init__(self, **kwargs):
+        self._required = kwargs.get("required")
+
+    @property
+    @abstractmethod
+    def required(self):
+        """ The (names of the) parameters this model requires in order to
+        calculate the feedin.
+
+        As this is an abstract property, you have to override it in a subclass
+        so that the model can be instantiated. This forces implementors to make
+        the required parameters for a model explicit, even if they are empty,
+        and gives them a good place to document them.
+
+        By default, this property is settable and its value can be specified
+        via and argument on construction. If you want to keep this
+        functionality, simply delegate all calls to the superclass.
+        """
+        return self._required
+
+    @required.setter
+    def required(self, names):
+        self._required = names
+        # Returning None rarely makes sense, IMHO.
+        # Returning self at least allows for method chaining.
+        return self
+
+
+class PvlibBased(Base):
     r"""Model to determine the output of a photovoltaik module
 
     The calculation is based on the library pvlib. [1]_
 
-    Parameters
-    ----------
-    required : list of strings
-        Containing the names of the required parameters to use the model.
-
     See Also
     --------
+    Base
     SimpleWindTurbine
 
     Notes
@@ -49,10 +82,26 @@ class PvlibBased:
 
     """
 
-    def __init__(self, required):
-        self.required = required
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.area = None
         self.peak = None
+
+    @property
+    def required(self):
+        r""" The parameters this model requires to calculate a feedin.
+
+        In this feedin model the required parameters are:
+
+          :azimuth: Azimuth angle of the pv module in degree
+          :tilt: Tilt angle of the pv module in degree
+          :module_name: According to the sandia module library
+            (see the link above)
+          :albedo: Albedo value
+        """
+        if super().required is not None:
+            return super().required
+        return ["azimuth", "tilt", "module_name", "albedo"]
 
     def feedin(self, **kwargs):
         r"""
@@ -441,7 +490,7 @@ class PvlibBased:
         return data
 
 
-class SimpleWindTurbine:
+class SimpleWindTurbine(Base):
     r"""Model to determine the output of a wind turbine
 
     Parameters
@@ -457,12 +506,29 @@ class SimpleWindTurbine:
 
     See Also
     --------
+    Base
     PvlibBased
     """
 
-    def __init__(self, required):
-        self.required = required
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.nominal_power_wind_turbine = None
+
+    @property
+    def required(self):
+        r""" The parameters this model requires to calculate a feedin.
+
+        In this feedin model the required parameters are:
+
+          :h_hub: height of the hub in meters
+          :d_rotor: diameter of the rotor in meters
+          :wind_conv_type: Name of the wind converter according to the list in
+                           the csv file
+        """
+
+        if super().required is not None:
+            return super().required
+        return ["h_hub", "d_rotor", "wind_conv_type"]
 
     def feedin(self, **kwargs):
         r"""

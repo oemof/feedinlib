@@ -371,6 +371,9 @@ class PvlibBased(Base):
         --------
         pv_module_output
         """
+        if kwargs.get('module_name') is None:
+            kwargs['module_name'] = self.powerplant.module_name
+
         basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
         filename = os.path.join(basic_path, 'sam-library-sandia-modules.csv')
         if not os.path.exists(basic_path):
@@ -380,7 +383,7 @@ class PvlibBased(Base):
             url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/' + url_file
             urlretrieve(url, filename)
         module_data = (pvlib.pvsystem.retrieve_sam(samfile=filename)
-                       [self.powerplant.module_name])
+                       [kwargs['module_name']])
         self.area = module_data.Area
         self.peak = module_data.Impo * module_data.Vmpo
         return module_data

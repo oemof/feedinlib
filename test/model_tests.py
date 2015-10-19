@@ -99,13 +99,11 @@ class ModelsPowerplantsInteraction_Tests:
 
     @nt.raises(AttributeError)
     def test_pv_model(self):
-        plant.Photovoltaic(multiplier=0,
-                           model=model.Photovoltaic(["missing"]))
+        plant.Photovoltaic(model=model.PvlibBased(required=["missing"]))
 
     @nt.raises(AttributeError)
     def test_wind_model(self):
-        plant.WindPowerPlant(nominal_power=0,
-                             model=model.Photovoltaic(["missing"]))
+        plant.WindPowerPlant(model=model.SimplewindTurbine(["missing"]))
 
     @nt.raises(FileNotFoundError)
     def test_csv_weather_file(self):

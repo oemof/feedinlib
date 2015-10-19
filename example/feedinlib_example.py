@@ -106,8 +106,10 @@ my_weather_b.read_feedinlib_csv(filename=filename2)
 my_weather = my_weather_b
 
 # Initialise different power plants
-# If you do not pass a model the default model is used. So far there is only
-# one model available. This might change in future versions.
+# So far there is only one model available. So you do not have to pass a model
+# (s. E126). If model is passed the default model is used.
+# We hope that there will be different models in future versions. You can also
+# write your own model an pass it to the powerplant.
 E126_power_plant = plants.WindPowerPlant(**enerconE126)
 V90_power_plant = plants.WindPowerPlant(model=models.SimpleWindTurbine,
                                         **vestasV90)
@@ -116,8 +118,8 @@ V90_power_plant = plants.WindPowerPlant(model=models.SimpleWindTurbine,
 # conditions. One can define the number of turbines or the over all capacity.
 # If no multiplier is set, the time series will be for one turbine.
 E126_feedin = E126_power_plant.feedin(weather=my_weather, number=2)
-V90_feedin = V90_power_plant.feedin(
-    weather=my_weather, installed_capacity=15000)
+V90_feedin = V90_power_plant.feedin(weather=my_weather,
+                                    installed_capacity=15000)
 
 E126_feedin.name = 'E126'
 V90_feedin.name = 'V90'
@@ -144,21 +146,29 @@ pv_feedin5 = advent_module.feedin(weather=my_weather)
 pv_feedin4.name = 'Yingli'
 pv_feedin5.name = 'Advent'
 
+smoothdata = pd.read_csv('/home/uwe/.oemof/smooth_pv_wittenberg.csv') * 5000
+smoothdata.set_index(my_weather.data.index, inplace=True)
+pv_smooth_series = smoothdata.pv_smooth
+pv_smooth_series.name = 'pv_smooth'
+
+print(pv_smooth_series)
+
 # Output
 if plot_fkt:
     pv_feedin4.plot(legend=True)
     pv_feedin5.plot(legend=True)
+    pv_smooth_series.plot(legend=True)
     plt.show()
 else:
     print(pv_feedin5)
 
 # Use directly methods of the model
 # Write out all possible wind turbines.
-w_model = models.SimpleWindTurbine([])
+w_model = models.SimpleWindTurbine()
 w_model.get_wind_pp_types()
 
 # Plot the cp curve of a wind turbine.
-cp_values = models.SimpleWindTurbine([]).fetch_cp_values(
+cp_values = models.SimpleWindTurbine().fetch_cp_values(
     wind_conv_type='ENERCON E 126 7500')
 if plot_fkt:
     plt.plot(cp_values.loc[0, :][2:55].index,

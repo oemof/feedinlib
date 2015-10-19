@@ -97,30 +97,21 @@ class ModelsPowerplantsInteraction_Tests:
             longitude=12,
             data_height=self.height_of_measurement)
 
-    def weather_dc(self):
-        return pickle.load(open(os.path.join(
-            os.path.expanduser("~"), '.oemof', 'weather.pkl'), "rb"))
-
     @nt.raises(AttributeError)
     def test_pv_model(self):
-        plant.Photovoltaic(multiplier=0,
-                           model=model.Photovoltaic(["missing"]))
+        plant.Photovoltaic(model=model.PvlibBased(required=["missing"]))
 
     @nt.raises(AttributeError)
     def test_wind_model(self):
-        plant.WindPowerPlant(nominal_power=0,
-                             model=model.Photovoltaic(["missing"]))
+        plant.WindPowerPlant(model=model.SimplewindTurbine(["missing"]))
 
     @nt.raises(FileNotFoundError)
     def test_csv_weather_file(self):
         my_weather = weather.FeedinWeather()
         my_weather.read_feedinlib_csv(filename='')
 
-    def type_pickel_test(self):
-        nt.ok_(isinstance(self.weather_dc(), dict))
-
     def type_dataframe_test(self):
-        nt.ok_(isinstance(self.weather_dc()[1135091]['data'],
+        nt.ok_(isinstance(self.weather.data,
                           pandas.core.frame.DataFrame))
 
     def test_load_feedinlib(self):
@@ -130,14 +121,14 @@ class ModelsPowerplantsInteraction_Tests:
         my_weather.read_feedinlib_csv(filename=filename)
 
     def wind_result_test(self):
-        wind_model = model.WindPowerPlant(
+        wind_model = model.SimpleWindTurbine(
             required=list(self.required_parameter['wind_model'].keys()))
         wind_power_plant = plant.WindPowerPlant(model=wind_model, **self.site)
         wka_feedin = wind_power_plant.feedin(weather=self.weather)
         nt.eq_(round(wka_feedin.sum() / 1000), 1523340.0)
 
     def pv_result_test(self):
-        pv_model = model.Photovoltaic(
+        pv_model = model.PvlibBased(
             required=list(self.required_parameter['pv_model'].keys()))
         pv_plant = plant.Photovoltaic(model=pv_model, **self.site)
         pv_feedin = pv_plant.feedin(weather=self.weather)

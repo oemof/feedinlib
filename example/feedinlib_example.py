@@ -95,8 +95,8 @@ my_weather_a = weather.FeedinWeather(
     data=weather_df,
     timezone='Europe/Berlin',
     latitude=52,
-    longitude=12,
-    data_heigth=coastDat2)
+    longitude=13,
+    data_height=coastDat2)
 
 # 2. Variant: Loading a csv-file that has the feedinlib-csv-header (see docs)
 my_weather_b = weather.FeedinWeather()
@@ -167,6 +167,8 @@ if plot_fkt:
              cp_values.loc[0, :][2:55].values, '*')
     plt.show()
 else:
-    print(cp_values.loc[0, :][2:55].values)
+    # The value for 8 m/s
+    index = cp_values.loc[0, :][2:55].index == '8'
+    print(cp_values.loc[0, :][2:55].values[index][0])
 
 logging.info('Done!')

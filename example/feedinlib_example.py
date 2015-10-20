@@ -119,7 +119,7 @@ V90_power_plant = plants.WindPowerPlant(model=models.SimpleWindTurbine,
 # If no multiplier is set, the time series will be for one turbine.
 E126_feedin = E126_power_plant.feedin(weather=my_weather, number=2)
 V90_feedin = V90_power_plant.feedin(weather=my_weather,
-                                    installed_capacity=15000)
+                                    installed_capacity=15 * 10 ** 6)
 
 E126_feedin.name = 'E126'
 V90_feedin.name = 'V90'

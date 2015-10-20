@@ -112,7 +112,7 @@ class Base(ABC):
             feedin = self.model.feedin(**combined) * kwargs['number']
         elif kwargs.get('peak_power', None) is not None:
             feedin = (self.model.feedin(**combined) /
-                      float(self.model.peak) * 1000 *
+                      float(self.model.peak) *
                       float(kwargs['peak_power']))
         elif kwargs.get('area', None) is not None:
             feedin = (self.model.feedin(**combined) / self.model.area *

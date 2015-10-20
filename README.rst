@@ -91,6 +91,19 @@ Basic Usage
 
 You need three steps to get a time series.
 
+Warning
+~~~~~~~
+Be accurate with the units. In the example all units are given without a prefix.
+ * pressure [Pa]
+ * wind speed [m/s]
+ * irradiation [W/m²]
+ * peak power [W]
+ * installed capacity [W]
+ * nominal power [W]
+ * area [m²]
+
+You can also use kW instead of W but you have to make sure that all units change in the same way.
+
 1. Initialise your Turbine or Module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

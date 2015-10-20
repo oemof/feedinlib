@@ -131,8 +131,16 @@ PV Model
 .. code:: python
 
     your_wind_turbine = plants.WindPowerPlant(model=SimpleWindModel, **your_parameter_set)
-    your_pv_module = plants.Photovoltaic(model=SimplePV_Model, **your_parameter_set)
+    your_pv_module = plants.Photovoltaic(model=PvlibBased, **your_parameter_set)
     
+If you do not pass a model the default model is used. So far we only have one model, so the follwing lines will have the same effect than the lines above.
+
+
+ .. code:: python
+
+    your_wind_turbine = plants.WindPowerPlant(**your_parameter_set)
+    your_pv_module = plants.Photovoltaic(**your_parameter_set)
+       
 2. Initialise a weather object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -145,10 +153,12 @@ A weather object contains one weather data set and all its necessary meta data. 
         timezone='Continent/City',  # e.g. Europe/Berlin or America/Caracas
         latitude=x,  # float 
         longitude=y,  # float
-        data_heigth=coastDat2  # Dictionary, that contains the columns of data as keys (see below).
+        data_heigth=coastDat2  # Dictionary, for the data heights (see below).
         )
 
 Depending on the model you do not need all of the optional parameters. For example the standard wind model does not need the longitude. If the DataFrame has a full time index with a time zone you don't have to set the time zone.
+
+For wind and pv calculations the DataFrame needs to have radiation, temperature and wind speed for the pv model and pressure, wind speed, temperature and the roughness length for the wind model.
 
 The data_height dictionary should be of the following form.
 
@@ -161,11 +171,8 @@ The data_height dictionary should be of the following form.
         'temp_air': 2,
         'v_wind': 10,
         'Z0': 0}
-    
-3. Get your Feedin Time Series
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To get your time series you have to pass the weather data to your model. The weather data should contain the following time series and must be named as follows. If your DataFrame has different names you can easily rename it:
+        
+If your DataFrame has different column names you have to rename them. This can easily be done by using a conversion dictionary:
 
 .. code:: python
 
@@ -179,15 +186,16 @@ To get your time series you have to pass the weather data to your model. The wea
     
     your_weather_DataFrame.rename(columns=name_dc)
     
-You need radiation, temperature and wind speed for the pv model and pressure, wind speed, temperature and the roughness length for the wind model.
- 
-If you pass just the weather data, you get the electrical output of the turbine or module specified by your parameters. You can use optional parameters to calculated more than one module or turbine.
+3. Get your Feedin Time Series
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To get your time series you have to pass the weather object to your model. If you pass only the weather object, you get the electrical output of the turbine or module specified by your parameters. You can use optional parameters to calculated more than one module or turbine.
  
 The possible parameters are *number* and *installed capacity* for wind turbines and *number*, *peak_power* and *area* for pv modules.
  
 .. code:: python
  
-    feedin_series_pv1 = your_pv_module.feedin(data=my_weather_df)  # One Module
+    feedin_series_pv1 = your_pv_module.feedin(weather=my_weather_df)  # One Module
     feedin_series_wp1 = your_wind_turbine.feedin(data=my_weather_df, number=5)
     
 You always should know the nominal power, area or peak_power of your plant. An area of two square meters (area=2) of a specific module that has an area of 1.5 sqm per module might not be realistic. 

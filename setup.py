@@ -12,7 +12,7 @@ if not sys.version_info[:2] in ((2, 7), (3, 3), (3, 4)):
     sys.exit('%s requires Python 2.7, 3.3, or 3.4' % 'feedinlib')
 
 setup(name='feedinlib',
-      version='0.0.6',
+      version='0.0.7',
       description='Creating time series from pv or wind power plants.',
       url='http://github.com/oemof/feedinlib',
       author='oemof developing group',

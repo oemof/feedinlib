@@ -39,6 +39,6 @@ Other changes
 Contributors
 ############
 
-Uwe Krien
-Stephan Günther
-Cord Kaldemeyer
+ * Uwe Krien
+ * Stephan Günther
+ * Cord Kaldemeyer

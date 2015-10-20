@@ -898,7 +898,7 @@ class SimpleWindTurbine(Base):
                     cp_data = np.vstack((cp_data, np.array(
                         [float(col), float(res_df[col])])))
         cp_data = np.delete(cp_data, 0, 0)
-        self.nominal_power_wind_turbine = res_df['p_nenn'][0]
+        self.nominal_power_wind_turbine = res_df['p_nenn'][0] * 1000
         v_wind[v_wind > np.max(cp_data[:, 0])] = np.max(cp_data[:, 0])
         return np.interp(v_wind, cp_data[:, 0], cp_data[:, 1])
 
@@ -956,7 +956,7 @@ class SimpleWindTurbine(Base):
                                  name='feedin_wind_pp')
 
         return p_wpp_series.clip(
-            upper=(float(self.nominal_power_wind_turbine * 10 ** 3)))
+            upper=(float(self.nominal_power_wind_turbine)))
 
 
 if __name__ == "__main__":

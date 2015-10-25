@@ -15,6 +15,12 @@ from feedinlib import powerplants as plants
 from feedinlib import models
 from shapely.geometry import Point, Polygon
 import logging
+import os
+import pandas as pd
+try:
+    from urllib.request import urlretrieve
+except:
+    from urllib import urlretrieve
 
 
 def pv_generation_reference_data():
@@ -129,6 +135,27 @@ def wind_generation_reference_data():
             }
         }
     return reference_data
+    
+    
+def download_file(file, url, basic_path):
+    filename = os.path.join(basic_path, file)
+    if not os.path.isfile(filename):
+        logging.info('Copying weather data from {0} to {1}'.format(
+            url, filename))
+        urlretrieve(os.path.join(url, file), filename)
+    
+    
+def fetch_test_data_file(filename, basic_path):
+    url = 'http://vernetzen.uni-flensburg.de/~git/'
+    if not os.path.exists(basic_path):
+        os.makedirs(basic_path)
+    download_file(filename, url, basic_path)
+
+
+def read_test_data(filename, datetime_column='Unnamed: 0'):
+    df = pd.read_csv(filename)
+    return df.set_index(pd.to_datetime(df[datetime_column])).tz_localize(
+        'UTC').tz_convert('Europe/Berlin').drop(datetime_column, 1)
 
 
 def pv_apply_feedinlib(reference_data=None):
@@ -179,11 +206,11 @@ def pv_apply_feedinlib(reference_data=None):
 
         for year in set(years).intersection(coastDat_years):
             # get weather data
-            my_weather_df = w.Weather(conn, Point(
-                reference_data[unit]['location']['lon'],
-                reference_data[unit]['location']['lat']), 
-                int(year)
-                ).get_feedin_data()
+            file =  'weather_' + unit + '_' + str(year) + '.csv'
+            filename = os.path.join(basic_path, file)
+            if not os.path.isfile(filename):
+                fetch_test_data_file(file, basic_path)
+            my_weather_df = read_test_data(filename)
             if reference_data[unit].get('module_number') is not None:
                 pv_feedin_annual[unit][year] = pv_module.feedin(
                     data=my_weather_df, 
@@ -209,6 +236,7 @@ def wind_apply_feedinlib(reference_data):
         'temp_air': 2,
         'v_wind': 10,
         'Z0': 0}
+    basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
         
     # get database connection
     conn = db.connection()
@@ -233,11 +261,11 @@ def wind_apply_feedinlib(reference_data):
 
         for year in set(years).intersection(coastDat_years):
             # get weather data
-            my_weather_df = w.Weather(conn, Point(
-                reference_data[unit]['location']['lon'],
-                reference_data[unit]['location']['lat']), 
-                int(year)
-                ).get_feedin_data()
+            file =  'weather_' + unit + '_' + str(year) + '.csv'
+            filename = os.path.join(basic_path, file)
+            if not os.path.isfile(filename):
+                fetch_test_data_file(file, basic_path)
+            my_weather_df = read_test_data(filename)
             if reference_data[unit].get('number') is not None:
                 wind_feedin_annual[unit][year] = wind_model.feedin(
                     data=my_weather_df, 

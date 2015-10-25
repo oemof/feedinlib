@@ -4,27 +4,41 @@ v0.0.7 (October 20, 2015)
 New features
 ############
 
-add a weather class to define the structure of the weather data input
+ * add a weather class to define the structure of the weather data input
+ * add example file to pass your own model class to the feedinlib
 
 
 Documentation
 #############
 
+ * correct some typos
+ * some distribtions are clearer now
+ * describe the used units
+
 
 Testing
 ####### 
+
+ * add more doctests
+ * removed obsolete tests
 
 
 Bug fixes
 #########
 
+ * does not overwrite class attributes (issue 7)
+
 
 Other changes
 #############
+
+ * rename classes to more describing names
+ * initialisation of a power plant changed (see README for details)
 
 
 Contributors
 ############
 
-Uwe Krien
-
+ * Uwe Krien
+ * Stephan Günther
+ * Cord Kaldemeyer

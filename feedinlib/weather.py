@@ -24,6 +24,8 @@ class FeedinWeather:
             Longitude of the location of the weather data
         latitude : float, optional
             Latitude of the location of the weather data
+        geometry : shapely.geometry object
+            polygon or point representing the zone of the weather data
         data_height : dictionary, optional
             Containing the heights of the weather measurements or weather
             model in meters with the keys of the data parameter
@@ -47,6 +49,7 @@ class FeedinWeather:
             self.timezone = kwargs.get('timezone', None)
         self.longitude = kwargs.get('longitude', None)
         self.latitude = kwargs.get('latitude', None)
+        self.geometry = kwargs.get('geometry', None)
         self.data_height = kwargs.get('data_height', None)
         self.name = kwargs.get('name', None)
 

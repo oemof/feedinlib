@@ -3,6 +3,7 @@
 @author: oemof developing group
 """
 
+from abc import ABC, abstractmethod
 import os
 import sys
 import numpy as np
@@ -15,19 +16,53 @@ except:
     from urllib import urlretrieve
 
 
-class Photovoltaic:
+class Base(ABC):
+    r""" The base class of feedinlib models.
+
+    Parameters
+    ----------
+    required : list of strings, optional
+        Containing the names of the required parameters to use the model.
+
+    """
+    def __init__(self, **kwargs):
+        self._required = kwargs.get("required")
+
+    @property
+    @abstractmethod
+    def required(self):
+        """ The (names of the) parameters this model requires in order to
+        calculate the feedin.
+
+        As this is an abstract property, you have to override it in a subclass
+        so that the model can be instantiated. This forces implementors to make
+        the required parameters for a model explicit, even if they are empty,
+        and gives them a good place to document them.
+
+        By default, this property is settable and its value can be specified
+        via and argument on construction. If you want to keep this
+        functionality, simply delegate all calls to the superclass.
+        """
+        return self._required
+
+    @required.setter
+    def required(self, names):
+        self._required = names
+        # Returning None rarely makes sense, IMHO.
+        # Returning self at least allows for method chaining.
+        return self
+
+
+class PvlibBased(Base):
     r"""Model to determine the output of a photovoltaik module
 
     The calculation is based on the library pvlib. [1]_
 
     Parameters
     ----------
-    required : list of strings
-        Containing the names of the required parameters to use the model.
+    PvlibBased.required (list of strings, optional)
+        List of required parameters of the model
 
-    See Also
-    --------
-    WindPowerPlant
 
     Notes
     -----
@@ -43,30 +78,51 @@ class Photovoltaic:
     Examples
     --------
     >>> from feedinlib import models
-    >>> required_ls = ['module_name', 'azimuth', 'tilt', 'albedo', 'tz']
-    >>> required_ls += ['latitude', 'longitude']
-    >>> pv_model = models.Photovoltaic(required=required_ls)
+    >>> pv_model = models.PvlibBased()
 
+    See Also
+    --------
+    Base
+    SimpleWindTurbine
     """
 
-    def __init__(self, required):
-        self.required = required
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.area = None
         self.peak = None
+
+    @property
+    def required(self):
+        r""" The parameters this model requires to calculate a feedin.
+
+        In this feedin model the required parameters are:
+
+        :modul_name: (string) -
+            name of a pv module from the sam.nrel database [12]_
+        :tilt: (float) -
+            tilt angle of the pv module (horizontal=0°)
+        :azimuth: (float) -
+            azimuth angle of the pv module (south=180°)
+        :albedo: (float) -
+            albedo factor arround the module
+        """
+        if super().required is not None:
+            return super().required
+        return ["azimuth", "tilt", "module_name", "albedo"]
 
     def feedin(self, **kwargs):
         r"""
         Feedin time series for the given pv module.
 
         In contrast to :py:func:`turbine_power_output
-        <feedinlib.models.Photovoltaic.get_pv_power_output>` it returns just
+        <feedinlib.models.PvlibBased.get_pv_power_output>` it returns just
         the feedin series instead of the whole DataFrame.
 
         Parameters
         ----------
         see :
             :py:func:`turbine_power_output
-            <feedinlib.models.Photovoltaic.get_pv_power_output>`
+            <feedinlib.models.PvlibBased.get_pv_power_output>`
 
         Returns
         -------
@@ -125,7 +181,7 @@ class Photovoltaic:
             [data, data_5min.clip_lower(0).resample('H', how='mean')],
             axis=1, join='inner')
 
-    def solarposition(location, data, **kwargs):
+    def solarposition(self, location, data, **kwargs):
         r"""
         Determine the position of the sun unsing the time of the time index.
 
@@ -148,18 +204,32 @@ class Photovoltaic:
             The DataFrame contains the following new columns: azimuth, zenith,
             elevation
 
+        Notes
+        -----
+        This method is not used in favour to solarposition_hourly_mean.
+
+        Examples
+        --------
+        >>> import pvlib
+        >>> import pandas as pd
+        >>> from feedinlib import models
+        >>> loc = pvlib.location.Location(52, 13, 'Europe/Berlin')
+        >>> pvmodel = models.PvlibBased()
+        >>> data = pd.DataFrame(index=pd.date_range(pd.datetime(2010, 1, 1, 0),
+        ... periods=8760, freq='H', tz=loc.tz))
+        >>> elevation = pvmodel.solarposition(loc, data).elevation
+        >>> print(round(elevation[12], 3))
+        14.968
+
         See Also
         --------
         solarposition_hourly_mean : calculates the position of the sun as an
             hourly mean.
-
-        Notes
-        -----
-        This method is not used in favour to solarposition_hourly_mean.
         """
         return pd.concat(
             [data, pvlib.solarposition.get_solarposition(
-                time=data.index, location=location, method='ephemeris')],
+                time=data.index, location=location,
+                method=kwargs.get('method', 'ephemeris'))],
             axis=1, join='inner')
 
     def angle_of_incidence(self, data, **kwargs):
@@ -191,7 +261,8 @@ class Photovoltaic:
         """
         return pvlib.irradiance.aoi(
             solar_azimuth=data['azimuth'], solar_zenith=data['zenith'],
-            surface_tilt=kwargs['tilt'], surface_azimuth=kwargs['azimuth'])
+            surface_tilt=self.powerplant.tilt,
+            surface_azimuth=self.powerplant.azimuth)
 
     def global_in_plane_irradiation(self, data, **kwargs):
         r"""
@@ -222,16 +293,16 @@ class Photovoltaic:
             The DataFrame contains the following new columns: poa_global,
             poa_diffuse, poa_direct
 
-        See Also
-        --------
-        solarposition_hourly_mean, solarposition, angle_of_incidenc
-
         References
         ----------
         .. [5] `pvlib globalinplane <http://pvlib-python.readthedocs.org/en/
                 latest/pvlib.html#pvlib.irradiance.globalinplane>`_.
         .. [6] `pvlib atmosphere <http://pvlib-python.readthedocs.org/en/
                 latest/pvlib.html#module-pvlib.atmosphere>`_.
+
+        See Also
+        --------
+        solarposition_hourly_mean, solarposition, angle_of_incidenc
         """
         # Determine the extraterrestrial radiation
         data['dni_extra'] = pvlib.irradiance.extraradiation(
@@ -249,8 +320,8 @@ class Photovoltaic:
         # Determine the sky diffuse irradiation in plane
         # with model of Perez (modell switch would be good)
         data['poa_sky_diffuse'] = pvlib.irradiance.perez(
-            surface_tilt=kwargs['tilt'],
-            surface_azimuth=kwargs['azimuth'],
+            surface_tilt=self.powerplant.tilt,
+            surface_azimuth=self.powerplant.azimuth,
             dhi=data['dhi'],
             dni=data['dni'],
             dni_extra=data['dni_extra'],
@@ -265,8 +336,8 @@ class Photovoltaic:
         # Determine the diffuse irradiation from ground reflection in plane
         data['poa_ground_diffuse'] = pvlib.irradiance.grounddiffuse(
             ghi=data['dirhi'] + data['dhi'],
-            albedo=kwargs['albedo'],
-            surface_tilt=kwargs['tilt'])
+            albedo=self.powerplant.albedo,
+            surface_tilt=self.powerplant.tilt)
 
         # Determine total in-plane irradiance
         data = pd.concat(
@@ -297,10 +368,21 @@ class Photovoltaic:
             The necessary module data for the selected module to use the
             pvlib sapm pv model. [8]_
 
+        Examples
+        --------
+        >>> from feedinlib import models
+        >>> pvmodel = models.PvlibBased()
+        >>> name = 'Yingli_YL210__2008__E__'
+        >>> print(pvmodel.fetch_module_data(module_name=name).Area)
+        1.7
+
         See Also
         --------
         pv_module_output
         """
+        if kwargs.get('module_name') is None:
+            kwargs['module_name'] = self.powerplant.module_name
+
         basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
         filename = os.path.join(basic_path, 'sam-library-sandia-modules.csv')
         if not os.path.exists(basic_path):
@@ -340,10 +422,6 @@ class Photovoltaic:
             The DataFrame contains the following new columns: p_pv_norm,
             p_pv_norm_area
 
-        See Also
-        --------
-        global_in_plane_irradiation
-
         References
         ----------
         .. [8] `pvlib pv-system <http://pvlib-python.readthedocs.org/en/
@@ -352,6 +430,10 @@ class Photovoltaic:
                 sam-library-sandia-modules-2015-6-30.csv>`_.
         .. [10] `pvlib get_solarposition <http://pvlib-python.readthedocs.org
                 /en/latest/pvlib.html#pvlib.solarposition.get_solarposition>`_.
+
+        See Also
+        --------
+        global_in_plane_irradiation
         """
         # Determine module and cell temperature
         data['temp_air_celsius'] = data['temp_air'] - 273.15
@@ -389,14 +471,12 @@ class Photovoltaic:
             Instance of the feedinlib weather object (see class
             :py:class:`FeedinWeather<feedinlib.weather.FeedinWeather>` for more
             details)
-        modul_name : string
-            name of a pv module from the sam.nrel database [12]_
-        tilt : float
-            tilt angle of the pv module (horizontal=0°)
-        azimuth : float
-            azimuth angle of the pv module (south=180°)
-        albedo : float
-            albedo factor arround the module
+
+        Notes
+        -----
+        See :py:func:`method required <feedinlib.models.PvlibBased.required>`
+        for all required parameters of this model.
+
 
         Returns
         -------
@@ -404,16 +484,16 @@ class Photovoltaic:
             The DataFrame contains the following new columns: p_pv_norm,
             p_pv_norm_area and all timeseries calculated before.
 
-        See Also
-        --------
-        pv_module_output, feedin
-
         References
         ----------
         .. [11] `pvlib documentation <https://readthedocs.org/projects/
                 pvlib-python/>`_.
         .. [12] `module library <https://sam.nrel.gov/sites/sam.nrel.gov/files/
                 sam-library-sandia-modules-2015-6-30.csv>`_.
+
+        See Also
+        --------
+        pv_module_output, feedin
         """
         data = kwargs['weather'].data
 
@@ -440,7 +520,7 @@ class Photovoltaic:
         return data
 
 
-class WindPowerPlant:
+class SimpleWindTurbine(Base):
     r"""Model to determine the output of a wind turbine
 
     Parameters
@@ -452,21 +532,41 @@ class WindPowerPlant:
     --------
     >>> from feedinlib import models
     >>> required_ls = ['h_hub', 'd_rotor', 'wind_conv_type', 'data_height']
-    >>> wind_model = models.WindPowerPlant(required=required_ls)
+    >>> wind_model = models.SimpleWindTurbine(required=required_ls)
 
     See Also
     --------
-    Photovoltaic
+    Base
+    PvlibBased
     """
 
-    def __init__(self, required):
-        self.required = required
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.nominal_power_wind_turbine = None
+
+    @property
+    def required(self):
+        r""" The parameters this model requires to calculate a feedin.
+
+        In this feedin model the required parameters are:
+
+        :h_hub: (float) -
+            Height of the hub of the wind turbine
+        :d_rotor: (float) -
+            'Diameter of the rotor [m]',
+        :wind_conv_type: (string) -
+            Name of the wind converter type. Use self.get_wind_pp_types() to
+            see a list of all possible wind converters.
+        """
+
+        if super().required is not None:
+            return super().required
+        return ["h_hub", "d_rotor", "wind_conv_type"]
 
     def feedin(self, **kwargs):
         r"""
         Alias for :py:func:`turbine_power_output
-        <feedinlib.models.WindPowerPlant.turbine_power_output>`.
+        <feedinlib.models.SimpleWindTurbine.turbine_power_output>`.
         """
         return self.turbine_power_output(**kwargs)
 
@@ -482,7 +582,7 @@ class WindPowerPlant:
         Examples
         --------
         >>> from feedinlib import models
-        >>> w_model = models.WindPowerPlant(required=[])
+        >>> w_model = models.SimpleWindTurbine()
         >>> valid_types_df = w_model.get_wind_pp_types(print_out=False)
         >>> valid_types_df.shape
         (91, 2)
@@ -498,7 +598,7 @@ class WindPowerPlant:
             pd.reset_option('display.max_rows')
         return df[['rli_anlagen_id', 'p_nenn']]
 
-    def rho_hub(self, **kwargs):
+    def rho_hub(self, weather):
         r"""
         Calculates the density of air in kg/m³ at hub height.
             (temperature in K, height in m, pressure in Pa)
@@ -545,15 +645,16 @@ class WindPowerPlant:
         --------
         v_wind_hub
         """
-        h_temperature_data = kwargs['weather'].data_height['temp_air']
-        h_pressure_data = kwargs['weather'].data_height['pressure']
-        T_hub = kwargs['weather'].data.temp_air - 0.0065 * (
-            kwargs['h_hub'] - h_temperature_data)
+        h_temperature_data = weather.data_height['temp_air']
+        h_pressure_data = weather.data_height['pressure']
+        T_hub = weather.data.temp_air - 0.0065 * (
+            self.powerplant.h_hub - h_temperature_data)
         return (
-            kwargs['weather'].data.pressure / 100 -
-            (kwargs['h_hub'] - h_pressure_data) * 1 / 8) / (2.8706 * T_hub)
+            weather.data.pressure / 100 -
+            (self.powerplant.h_hub - h_pressure_data) * 1 / 8
+            ) / (2.8706 * T_hub)
 
-    def v_wind_hub(self, **kwargs):
+    def v_wind_hub(self, weather):
         r"""
         Calculates the wind speed in m/s at hub height.
 
@@ -597,10 +698,10 @@ class WindPowerPlant:
         --------
         rho_hub
         """
-        return (kwargs['weather'].data.v_wind * np.log(
-                kwargs['h_hub'] / kwargs['weather'].data.z0) /
-                np.log(kwargs['weather'].data_height['v_wind'] /
-                       kwargs['weather'].data.z0))
+        return (weather.data.v_wind * np.log(self.powerplant.h_hub /
+                weather.data.z0) /
+                np.log(weather.data_height['v_wind'] /
+                weather.data.z0))
 
     def fetch_cp_values_from_file(self, **kwargs):
         r"""
@@ -613,6 +714,13 @@ class WindPowerPlant:
         wind_conv_type : string
             Name of the wind converter type. Use self.get_wind_pp_types() to
             see a list of all possible wind converters.
+        cp_path : string, optional
+            Path where the cp file is stored
+        filename : string, optional
+            Filename of the cp file without suffix. The suffix should be csv or
+            hf5.
+        url : string, optional
+            URL from where the cp file is loaded if not present
 
         Returns
         -------
@@ -629,20 +737,26 @@ class WindPowerPlant:
         --------
         fetch_cp_values_from_db
         """
-        basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
-        filename = os.path.join(basic_path, 'cp_values')
-        url = 'http://vernetzen.uni-flensburg.de/~git/cp_values'
+        wpp_type = kwargs.get('wind_conv_type')
+        if wpp_type is None:
+            wpp_type = self.powerplant.wind_conv_type
+        cp_path = kwargs.get(
+            'basic_path', os.path.join(os.path.expanduser("~"), '.oemof'))
+        filename = kwargs.get('filename', 'cp_values')
+        filepath = os.path.join(cp_path, filename)
+        url = kwargs.get(
+            'url', 'http://vernetzen.uni-flensburg.de/~git/cp_values')
         suffix = '.hf5'
-        if not os.path.exists(basic_path):
-            os.makedirs(basic_path)
-        if not os.path.isfile(filename + suffix):
-            urlretrieve(url + suffix, filename + suffix)
+        if not os.path.exists(cp_path):
+            os.makedirs(cp_path)
+        if not os.path.isfile(filepath + suffix):
+            urlretrieve(url + suffix, filepath + suffix)
             logging.info('Copying cp_values from {0} to {1}'.format(
-                url, filename + suffix))
+                url, filepath + suffix))
         logging.debug('Retrieving cp values from {0}'.format(
             filename + suffix))
         try:
-            df = pd.read_hdf(filename + suffix, 'cp')
+            df = pd.read_hdf(filepath + suffix, 'cp')
         except:
             suffix = '.csv'
             logging.info('Failed loading cp values from hdf file, trying csv.')
@@ -653,8 +767,7 @@ class WindPowerPlant:
                 logging.info('Copying cp_values from {0} to {1}'.format(
                     url, filename + suffix))
             df = pd.read_csv(filename + suffix, index_col=0)
-        res_df = df[df.rli_anlagen_id == kwargs[
-            'wind_conv_type']].reset_index(drop=True)
+        res_df = df[df.rli_anlagen_id == wpp_type].reset_index(drop=True)
         return res_df, df
 
     def fetch_cp_values_from_db(self, **kwargs):
@@ -716,12 +829,14 @@ class WindPowerPlant:
         pandas.DataFrame
             cp values, wind converter type, installed capacity
 
-
+        Examples
+        --------
         >>> from feedinlib import models
-        >>> w_model = models.WindPowerPlant(required=['wind_conv_type'])
+        >>> w_model = models.SimpleWindTurbine()
         >>> cp = w_model.fetch_cp_values(wind_conv_type='ENERCON E 126 7500')
-        >>> print(cp.loc[0, :][2:55].sum())
-        6.495
+        >>> index=cp.loc[0, :][2:55].index=='8'
+        >>> print(cp.loc[0, :][2:55].values[index][0])
+        0.478
 
         See Also
         --------
@@ -764,7 +879,7 @@ class WindPowerPlant:
         >>> from feedinlib import models
         >>> import numpy
         >>> v_wi = numpy.array([1,2,3,4,5,6,7,8])
-        >>> w = models.WindPowerPlant(required=['wind_conv_type', 'v_wind'])
+        >>> w = models.SimpleWindTurbine(required=['wind_conv_type', 'v_wind'])
         >>> cp = w.cp_values(wind_conv_type='ENERCON E 126 7500', v_wind=v_wi)
         >>> print(cp)
         [ 0.     0.     0.191  0.352  0.423  0.453  0.47   0.478]
@@ -783,7 +898,7 @@ class WindPowerPlant:
                     cp_data = np.vstack((cp_data, np.array(
                         [float(col), float(res_df[col])])))
         cp_data = np.delete(cp_data, 0, 0)
-        self.nominal_power_wind_turbine = res_df['p_nenn'][0]
+        self.nominal_power_wind_turbine = res_df['p_nenn'][0] * 1000
         v_wind[v_wind > np.max(cp_data[:, 0])] = np.max(cp_data[:, 0])
         return np.interp(v_wind, cp_data[:, 0], cp_data[:, 1])
 
@@ -797,13 +912,10 @@ class WindPowerPlant:
             Instance of the feedinlib weather object (see class
             :py:class:`FeedinWeather<feedinlib.weather.FeedinWeather>` for more
             details)
-        h_hub : float
-            Height of the hub of the wind turbine
-        d_rotor: float
-            'Diameter of the rotor [m]',
-        wind_conv_type : string
-            Name of the wind converter type. Use self.get_wind_pp_types() to
-            see a list of all possible wind converters.
+        \**kwargs :
+            Keyword arguments for underlaying methods like filename to name the
+            file of the cp_values.
+        # TODO Move the following parameters to a better place :-)
 
         Returns
         -------
@@ -832,27 +944,19 @@ class WindPowerPlant:
         --------
         get_normalized_wind_pp_time_series
         """
+        weather = kwargs['weather']
         p_wpp = (
-            (self.rho_hub(**kwargs) / 2) *
-            (((kwargs['d_rotor'] / 2) ** 2) * np.pi) *
-            np.power(self.v_wind_hub(**kwargs), 3) *
-            self.cp_values(self.v_wind_hub(**kwargs), **kwargs))
+            (self.rho_hub(weather) / 2) *
+            (((self.powerplant.d_rotor / 2) ** 2) * np.pi) *
+            np.power(self.v_wind_hub(weather), 3) *
+            self.cp_values(self.v_wind_hub(weather), **kwargs))
 
         p_wpp_series = pd.Series(data=p_wpp,
                                  index=kwargs['weather'].data.index,
                                  name='feedin_wind_pp')
 
         return p_wpp_series.clip(
-            upper=(float(self.nominal_power_wind_turbine * 10 ** 3)))
-
-
-class ConstantModell:
-    ''
-    def __init__(self, required=["nominal_power", "steps"]):
-        self.required = required
-
-    def feedin(self, **ks):
-        return [ks["nominal_power"]*0.9] * ks["steps"]
+            upper=(float(self.nominal_power_wind_turbine)))
 
 
 if __name__ == "__main__":

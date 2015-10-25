@@ -1,0 +1,29 @@
+v0.0.7 (October 20, 2015)
++++++++++++++++++++++++++
+
+New features
+############
+
+ * add a geometry attribute for shapely.geometry objects to the weather class 
+
+
+Documentation
+#############
+
+
+Testing
+####### 
+
+
+Bug fixes
+#########
+
+
+Other changes
+#############
+
+
+Contributors
+############
+
+ * Uwe Krien

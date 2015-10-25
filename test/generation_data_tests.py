@@ -91,8 +91,6 @@ def wind_generation_reference_data():
             'location': {
                 'lat': 48.339559,
                 'lon': 8.154681
-#                'lat': 52.5,
-#                'lon': 13.5
                 },
             'tz': 'Europe/Berlin',
             'source': { #currently not used

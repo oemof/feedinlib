@@ -44,11 +44,11 @@ Using the Feedinlib
 So far, the feedinlib is mainly tested on python 3.4 but seems to work down
 to 2.7.
 
-Install the feedinlib using pip (or pip3).
+Install the feedinlib using pip3 (or pip2).
 
 ::
 
-    sudo pip install feedinlib
+    sudo pip3 install feedinlib
 
 Developing the Feedinlib
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -61,13 +61,11 @@ If you have push rights clone this repository to your local system.
     
 If you do not have push rights, fork the project at github, clone your personal fork to your system and send a pull request.
 
-If the project is cloned you can install it using pip (or pip3) with the -e flag. Using this installation, every change is applied directly.
+If the project is cloned you can install it using pip3 (or pip2) with the -e flag. Using this installation, every change is applied directly.
 
 ::
 
-    sudo pip install -e <path/to/the/feedinlib/root/dir>
-    
-you
+    sudo pip3 install -e <path/to/the/feedinlib/root/dir>
     
   
 Optional Packages

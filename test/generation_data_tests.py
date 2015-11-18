@@ -11,6 +11,7 @@ from feedinlib import powerplants as plants
 from feedinlib import models
 from feedinlib import weather
 from shapely.geometry import Point, Polygon
+import matplotlib.pyplot as plt
 import logging
 import os
 import pandas as pd
@@ -275,21 +276,27 @@ def wind_apply_feedinlib(reference_data):
     return wind_feedin_annual
 
 
-def simple_evaluation_print(feedin, reference_data, coastDat_years):
-
-    for year in coastDat_years:
-        print('======= ' + str(year) + ' =======')
-        print('Unit\t\t\tReference\tfeedinlib\tRatio')
-        for unit in list(feedin.keys()):
-            reference_data_years = [int(x) for x in list(
+def simple_plot(feedin, reference_data, coastDat_years):
+    '''Make simple plots comparing model data with measured data'''
+    for unit in list(feedin.keys()):
+        print(unit)
+        reference_data_years = [int(x) for x in list(
                 reference_data[unit]['generation'].keys())],
-            feedin_years = list(feedin[unit].keys())
-            if ((year in reference_data_years[0]) and (year in feedin_years)):
-                print('{3}\t\t{0:.0f}\t\t{1:.0f}\t\t{2:.2f}'.format(
-                    reference_data[unit]['generation']
-                    [str(year)], feedin[unit][year],
-                    feedin[unit][year] / reference_data[unit]['generation']
-                    [str(year)], unit))
+        for year in coastDat_years:
+            if ((year in reference_data_years[0]) and (year in list(feedin
+                [unit].keys()))):
+                print(year)
+                fig = plt.figure()
+                ax = plt.subplot(111)
+                ax.bar([0, 1], [feedin[unit][year], reference_data[unit]
+                    ['generation'][str(year)]])
+                if 'h_hub' in reference_data[unit]:
+                    plt.ylabel('MWh per a')
+                else:
+                    plt.ylabel('kWh per a')
+                plt.title(unit + ' ' + str(year))
+                ax.set_xticks([0.5, 1.5])
+                ax.set_xticklabels(['feedinlib', 'measurement data'])
 
 
 def pv_generation_test():
@@ -304,11 +311,10 @@ def pv_generation_test():
     # retrieve feedinlib data accorinding to power plants in referece data set
     pv_feedin = pv_apply_feedinlib(pv_reference_data)
     wind_feedin = wind_apply_feedinlib(wind_reference_data)
-    
+
     #simple print for first evaluation
-    print('######## PV ########')
-    simple_evaluation_print(pv_feedin, pv_reference_data, coastDat_years)
-    print('######## WIND ########')
-    simple_evaluation_print(wind_feedin, wind_reference_data, coastDat_years)
+    simple_plot(pv_feedin, pv_reference_data, coastDat_years)
+    simple_plot(wind_feedin, wind_reference_data, coastDat_years)
+
     
 pv_generation_test()

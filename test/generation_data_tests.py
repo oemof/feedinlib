@@ -29,7 +29,7 @@ def pv_generation_reference_data():
         'pv_biesdorf': { # runs with CEC
 #            'module_name': 'Sovello_SV_X_205_yyy', #original module
             'module_name': 'SunPower_SPR_205_BLK__2007__E__',
-            'capacity': 7.640,
+            'capacity': 7640,
             'azimuth': None,
             'tilt': None,
             'inverter': 'Sunny Boy 3300', #currently not used
@@ -84,7 +84,8 @@ def wind_generation_reference_data():
         'brandenkopf': {
             'wind_conv_type': 'ENERCON E 58 1000',
             'number': 1,
-            'h_hub': 70.5, #135, # estimated by http://en.wind-turbine-models.com/turbines/114-enercon-e-58-10.58
+            'h_hub': 70.5, #135, # estimated by 
+            #http://en.wind-turbine-models.com/turbines/114-enercon-e-58-10.58
             'd_rotor': 58, #127, #58,
             'generation': {
                 '2003': 2069520 / 1e3,

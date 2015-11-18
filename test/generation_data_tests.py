@@ -279,13 +279,11 @@ def wind_apply_feedinlib(reference_data):
 def simple_plot(feedin, reference_data, coastDat_years):
     '''Make simple plots comparing model data with measured data'''
     for unit in list(feedin.keys()):
-        print(unit)
         reference_data_years = [int(x) for x in list(
                 reference_data[unit]['generation'].keys())],
         for year in coastDat_years:
             if ((year in reference_data_years[0]) and (year in list(feedin
                 [unit].keys()))):
-                print(year)
                 fig = plt.figure()
                 ax = plt.subplot(111)
                 ax.bar([0, 1], [feedin[unit][year], reference_data[unit]

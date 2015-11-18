@@ -5,12 +5,8 @@ Created on Sat Oct 17 17:10:54 2015
 
 @author: guido
 
-Works only if oemof is installed and database with coastDat2 dataset is 
-available
 """
 
-from oopmof.src import db
-from oopmof.src import energy_weather as w
 from feedinlib import powerplants as plants
 from feedinlib import models
 from feedinlib import weather
@@ -166,9 +162,6 @@ def pv_apply_feedinlib(reference_data=None):
     if reference_data is None:
         reference_data = pv_generation_reference_data()
 
-    # get database connection
-    conn = db.connection()
-
     coastDat2 = {
         'dhi': 0,
         'dirhi': 0,
@@ -177,6 +170,7 @@ def pv_apply_feedinlib(reference_data=None):
         'v_wind': 10,
         'Z0': 0}
     pv_feedin_annual = {}
+    basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
     
     # iterate over passed reference data dict
     for unit in list(reference_data.keys()):
@@ -206,15 +200,18 @@ def pv_apply_feedinlib(reference_data=None):
             # get weather data
             file =  'weather_' + unit + '_' + str(year) + '.csv'
             filename = os.path.join(basic_path, file)
+
             if not os.path.isfile(filename):
                 fetch_test_data_file(file, basic_path)
             my_weather_df = read_test_data(filename)
+
             my_weather = weather.FeedinWeather(
                 data=my_weather_df,
                 timezone=reference_data[unit]['tz'],
                 latitude=reference_data[unit]['location']['lon'],
                 longitude=reference_data[unit]['location']['lat'],
                 data_height=coastDat2)
+                
             if reference_data[unit].get('module_number') is not None:
                 pv_feedin_annual[unit][year] = pv_module.feedin(
                     weather=my_weather, 
@@ -237,9 +234,6 @@ def wind_apply_feedinlib(reference_data):
         'v_wind': 10,
         'Z0': 0}
     basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
-        
-    # get database connection
-    conn = db.connection()
         
     # iterate over passed reference data dict
     wind_feedin_annual = {}
@@ -267,6 +261,7 @@ def wind_apply_feedinlib(reference_data):
                 latitude=reference_data[unit]['location']['lon'],
                 longitude=reference_data[unit]['location']['lat'],
                 data_height=coastDat2)
+            
             if reference_data[unit].get('number') is not None:
                 wind_feedin_annual[unit][year] = wind_model.feedin(
                     weather=my_weather, 
@@ -295,7 +290,6 @@ def simple_evaluation_print(feedin, reference_data, coastDat_years):
                     [str(year)], feedin[unit][year],
                     feedin[unit][year] / reference_data[unit]['generation']
                     [str(year)], unit))
-        
 
 
 def pv_generation_test():

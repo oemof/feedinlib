@@ -189,10 +189,9 @@ def pv_apply_feedinlib(reference_data=None):
             reference_data[unit]['tilt'] = 30            
     
         years = [int(y) for y in reference_data[unit]['generation']]
-        coastDat_years = [1998, 2003, 2007, 2010, 2011, 2012, 2013]
-
         # instantiate modelKyocera_Solar_KD205GX_LP
         pv_model = models.Photovoltaic(required=list(required_parameter_pv.keys())) 
+        coastDat_years = [1998, 2003, 2007, 2010, 2011, 2012] 
         
         # choose module type and add location
         module_type = {'module_name': reference_data[unit]['module_name'],
@@ -247,13 +246,12 @@ def wind_apply_feedinlib(reference_data):
         wind_feedin_annual[unit] = {} 
     
         years = [int(y) for y in reference_data[unit]['generation']]
-        coastDat_years = [1998, 2003, 2007, 2010, 2011, 2012, 2013]
-
         # instantiate modelKyocera_Solar_KD205GX_LP
         generic_wind_model = models.WindPowerPlant(
             required=list(required_parameter_wind.keys()))
             
         wind_model = plants.WindPowerPlant(model=generic_wind_model, **{
+        coastDat_years = [1998, 2003, 2007, 2010, 2011, 2012]
             'h_hub': reference_data[unit]['h_hub'],
             'd_rotor': reference_data[unit]['d_rotor'],
             'wind_conv_type': reference_data[unit]['wind_conv_type'],
@@ -299,7 +297,7 @@ def simple_evaluation_print(feedin, reference_data, coastDat_years):
 def pv_generation_test():
     '''Evaluate test of PV generation data with given reference data'''
     
-    coastDat_years = [1998, 2003, 2007, 2010, 2011, 2012, 2013]
+    coastDat_years = [1998, 2003, 2007, 2010, 2011, 2012]
     
     # retrieve reference data
     pv_reference_data = pv_generation_reference_data()

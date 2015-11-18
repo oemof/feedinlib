@@ -13,6 +13,7 @@ from oopmof.src import db
 from oopmof.src import energy_weather as w
 from feedinlib import powerplants as plants
 from feedinlib import models
+from feedinlib import weather
 from shapely.geometry import Point, Polygon
 import logging
 import os
@@ -168,14 +169,13 @@ def pv_apply_feedinlib(reference_data=None):
     # get database connection
     conn = db.connection()
 
-    required_parameter_pv = {
-        'azimuth': 'Azimuth angle of the pv module',
-        'tilt': 'Tilt angle of the pv module',
-        'module_name': 'According to the sandia module library.',
-        'albedo': 'Albedo value',
-        'tz': 'Time zone',
-        'longitude': 'Position of the weather data (longitude)',
-        'latitude': 'Position of the weather data (latitude)'}
+    coastDat2 = {
+        'dhi': 0,
+        'dirhi': 0,
+        'pressure': 0,
+        'temp_air': 2,
+        'v_wind': 10,
+        'Z0': 0}
     pv_feedin_annual = {}
     
     # iterate over passed reference data dict
@@ -190,8 +190,6 @@ def pv_apply_feedinlib(reference_data=None):
             reference_data[unit]['tilt'] = 30            
     
         years = [int(y) for y in reference_data[unit]['generation']]
-        # instantiate modelKyocera_Solar_KD205GX_LP
-        pv_model = models.Photovoltaic(required=list(required_parameter_pv.keys())) 
         coastDat_years = [1998, 2003, 2007, 2010, 2011, 2012] 
         
         # choose module type and add location
@@ -202,7 +200,7 @@ def pv_apply_feedinlib(reference_data=None):
                         'latitude': reference_data[unit]['location']['lat'],
                         'longitude': reference_data[unit]['location']['lon'],
                         'tz': reference_data[unit]['tz']}
-        pv_module = plants.Photovoltaic(model=pv_model, **module_type)
+        pv_module = plants.Photovoltaic(model=models.PvlibBased, **module_type)
 
         for year in set(years).intersection(coastDat_years):
             # get weather data
@@ -211,24 +209,26 @@ def pv_apply_feedinlib(reference_data=None):
             if not os.path.isfile(filename):
                 fetch_test_data_file(file, basic_path)
             my_weather_df = read_test_data(filename)
+            my_weather = weather.FeedinWeather(
+                data=my_weather_df,
+                timezone=reference_data[unit]['tz'],
+                latitude=reference_data[unit]['location']['lon'],
+                longitude=reference_data[unit]['location']['lat'],
+                data_height=coastDat2)
             if reference_data[unit].get('module_number') is not None:
                 pv_feedin_annual[unit][year] = pv_module.feedin(
-                    data=my_weather_df, 
+                    weather=my_weather, 
                     number=reference_data[unit]['module_number']).sum() / 1e3
             elif reference_data[unit].get('capacity') is not None:
-                pv_feedin_annual[unit][year] = pv_module.feedin(data=my_weather_df, 
-                    peak_power=reference_data[unit]['capacity']).sum() / 1e3
+                pv_feedin_annual[unit][year] = pv_module.feedin(weather=
+                    my_weather, peak_power=reference_data[unit]
+                    ['capacity']).sum() / 1e3
             else:
                 print('at least supply `module_number` or `capacity`')
     return pv_feedin_annual
     
     
 def wind_apply_feedinlib(reference_data):
-    required_parameter_wind = {
-        'h_hub': 'height of the hub in meters',
-        'd_rotor': 'diameter of the rotor in meters',
-        'wind_conv_type': 'wind converter according to the list in the csv file.',
-        'data_height': 'dictionary containing the heights of the data model'}
     coastDat2 = {
         'dhi': 0,
         'dirhi': 0,
@@ -247,12 +247,8 @@ def wind_apply_feedinlib(reference_data):
         wind_feedin_annual[unit] = {} 
     
         years = [int(y) for y in reference_data[unit]['generation']]
-        # instantiate modelKyocera_Solar_KD205GX_LP
-        generic_wind_model = models.WindPowerPlant(
-            required=list(required_parameter_wind.keys()))
-            
-        wind_model = plants.WindPowerPlant(model=generic_wind_model, **{
         coastDat_years = [1998, 2003, 2007, 2010, 2011, 2012]
+        wind_model = plants.WindPowerPlant(model=models.SimpleWindTurbine, **{
             'h_hub': reference_data[unit]['h_hub'],
             'd_rotor': reference_data[unit]['d_rotor'],
             'wind_conv_type': reference_data[unit]['wind_conv_type'],
@@ -265,13 +261,20 @@ def wind_apply_feedinlib(reference_data):
             if not os.path.isfile(filename):
                 fetch_test_data_file(file, basic_path)
             my_weather_df = read_test_data(filename)
+            my_weather = weather.FeedinWeather(
+                data=my_weather_df,
+                timezone=reference_data[unit]['tz'],
+                latitude=reference_data[unit]['location']['lon'],
+                longitude=reference_data[unit]['location']['lat'],
+                data_height=coastDat2)
             if reference_data[unit].get('number') is not None:
                 wind_feedin_annual[unit][year] = wind_model.feedin(
-                    data=my_weather_df, 
+                    weather=my_weather, 
                     number=reference_data[unit]['number']).sum() / 1e6
             elif reference_data[unit].get('capacity') is not None:
-                wind_feedin_annual[unit][year] = wind_model.feedin(data=my_weather_df, 
-                    installed_capacity=reference_data[unit]['capacity']).sum()/1e6
+                wind_feedin_annual[unit][year] = wind_model.feedin(
+                    weather=my_weather, installed_capacity=
+                    reference_data[unit]['capacity']).sum()/1e6
             else:
                 print('at least provide `number` or `capacity`')
     return wind_feedin_annual

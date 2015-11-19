@@ -157,7 +157,7 @@ def read_test_data(filename, datetime_column='Unnamed: 0'):
         'UTC').tz_convert('Europe/Berlin').drop(datetime_column, 1)
 
 
-def pv_apply_feedinlib(reference_data=None):
+def pv_apply_feedinlib(coastDat_years, reference_data=None):
 
     # get reference data
     if reference_data is None:
@@ -185,7 +185,6 @@ def pv_apply_feedinlib(reference_data=None):
             reference_data[unit]['tilt'] = 30            
     
         years = [int(y) for y in reference_data[unit]['generation']]
-        coastDat_years = [1998, 2003, 2007, 2010, 2011, 2012] 
         
         # choose module type and add location
         module_type = {'module_name': reference_data[unit]['module_name'],
@@ -226,7 +225,7 @@ def pv_apply_feedinlib(reference_data=None):
     return pv_feedin_annual
     
     
-def wind_apply_feedinlib(reference_data):
+def wind_apply_feedinlib(coastDat_years, reference_data):
     coastDat2 = {
         'dhi': 0,
         'dirhi': 0,
@@ -242,7 +241,7 @@ def wind_apply_feedinlib(reference_data):
         wind_feedin_annual[unit] = {} 
     
         years = [int(y) for y in reference_data[unit]['generation']]
-        coastDat_years = [1998, 2003, 2007, 2010, 2011, 2012]
+
         wind_model = plants.WindPowerPlant(model=models.SimpleWindTurbine, **{
             'h_hub': reference_data[unit]['h_hub'],
             'd_rotor': reference_data[unit]['d_rotor'],
@@ -301,15 +300,15 @@ def simple_plot(feedin, reference_data, coastDat_years):
 def pv_generation_test():
     '''Evaluate test of PV generation data with given reference data'''
     
-    coastDat_years = [1998, 2003, 2007, 2010, 2011, 2012]
+    coastDat_years = [1998, 2003, 2007, 2010, 2011, 2012, 2013]
     
     # retrieve reference data
     pv_reference_data = pv_generation_reference_data()
     wind_reference_data = wind_generation_reference_data()
     
     # retrieve feedinlib data accorinding to power plants in referece data set
-    pv_feedin = pv_apply_feedinlib(pv_reference_data)
-    wind_feedin = wind_apply_feedinlib(wind_reference_data)
+    pv_feedin = pv_apply_feedinlib(coastDat_years, pv_reference_data)
+    wind_feedin = wind_apply_feedinlib(coastDat_years, wind_reference_data)
 
     #simple print for first evaluation
     simple_plot(pv_feedin, pv_reference_data, coastDat_years)

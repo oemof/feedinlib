@@ -295,6 +295,7 @@ def simple_plot(feedin, reference_data, coastDat_years):
                 plt.title(unit + ' ' + str(year))
                 ax.set_xticks([0.5, 1.5])
                 ax.set_xticklabels(['feedinlib', 'measurement data'])
+                plt.show()
 
 
 def pv_generation_test():

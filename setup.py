@@ -23,4 +23,5 @@ setup(name='feedinlib',
       install_requires=['numpy >= 1.7.0',
                         'pandas >= 0.13.1',
                         'pvlib >= 0.2.1',
-                        'urllib5'])
+                        'urllib5',
+                        'shapely'])

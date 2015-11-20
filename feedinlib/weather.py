@@ -64,18 +64,21 @@ class FeedinWeather:
         v_wind: 10). Further more any number of parameters can be added.
 
         The file should have the following form:
-        # timezone=
-        # name: NAME
-        # longitude: xx.xxx
-        # latitude: yy.yyy
-        # timezone: Continent/City
-        # data_height temp_air: zz
-        # data_height v_wind: vv
 
-        ,temp_air,v_wind,.....
-        2010-01-01 00:00:00+01:00,267.599,5.32697,...
-        2010-01-01 01:00:00+01:00,267.596,5.46199,....
-        ....
+        .. code::
+
+            # timezone=
+            # name: NAME
+            # longitude: xx.xxx
+            # latitude: yy.yyy
+            # timezone: Continent/City
+            # data_height temp_air: zz
+            # data_height v_wind: vv
+
+            ,temp_air,v_wind,.....
+            2010-01-01 00:00:00+01:00,267.599,5.32697,...
+            2010-01-01 01:00:00+01:00,267.596,5.46199,....
+            ....
 
         Parameters
         ----------

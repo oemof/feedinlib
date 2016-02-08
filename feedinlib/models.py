@@ -801,9 +801,8 @@ class SimpleWindTurbine(Base):
             'postgresql database'))
         db_res = kwargs['connection'].execute(sql)
         res_df = pd.DataFrame(db_res.fetchall(), columns=db_res.keys())
-        if res_df.shape[0] == 0:
+        if res_df.shape[0] == 1:
             sql = 'SELECT * FROM app_renpassgis.parameter_wind_cpcurves;'
-            db_res = kwargs['connection'].execute(sql)
             db_res = kwargs['connection'].execute(sql)
             df = pd.DataFrame(db_res.fetchall(), columns=db_res.keys())
         return res_df, df

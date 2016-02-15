@@ -159,6 +159,10 @@ else:
 w_model = models.SimpleWindTurbine()
 w_model.get_wind_pp_types()
 
+# Write out all possible pv-converters
+print(models.PvlibBased().fetch_module_data(
+    module_name='all', lib='sandia-modules').keys())
+
 # Plot the cp curve of a wind turbine.
 cp_values = models.SimpleWindTurbine().fetch_cp_values(
     wind_conv_type='ENERCON E 126 7500')

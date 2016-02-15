@@ -391,10 +391,6 @@ class PvlibBased(Base):
             os.makedirs(basic_path)
         if not os.path.isfile(file1):
             url_file = 'sam-library-sandia-modules-2015-6-30.csv'
-        module_data = (pvlib.pvsystem.retrieve_sam(samfile=filename)
-                       [kwargs['module_name']])
-        self.area = module_data.Area
-        self.peak = module_data.Impo * module_data.Vmpo
             urlretrieve(url + url_file, file1)
         if not os.path.isfile(file2):
             url_file = 'sam-library-cec-modules-2015-6-30.csv'
@@ -404,6 +400,13 @@ class PvlibBased(Base):
             filename = file2
         else:
             filename = file1
+        if kwargs.get('module_name') == 'all':
+            module_data = pvlib.pvsystem.retrieve_sam(samfile=filename)
+        else:
+            module_data = (pvlib.pvsystem.retrieve_sam(samfile=filename)
+                           [kwargs['module_name']])
+            self.area = module_data.Area
+            self.peak = module_data.Impo * module_data.Vmpo
         return module_data
 
     def pv_module_output(self, data, **kwargs):

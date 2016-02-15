@@ -350,7 +350,7 @@ class PvlibBased(Base):
 
         return data
 
-    def fetch_module_data(self, **kwargs):
+    def fetch_module_data(self, lib='sandia-modules', **kwargs):
         r"""
         Fetch the module data from the Sandia Module library
 
@@ -384,17 +384,26 @@ class PvlibBased(Base):
             kwargs['module_name'] = self.powerplant.module_name
 
         basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
-        filename = os.path.join(basic_path, 'sam-library-sandia-modules.csv')
+        url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/'
+        file1 = os.path.join(basic_path, 'sam-library-sandia-modules.csv')
+        file2 = os.path.join(basic_path, 'sam-library-cec-modules.csv')
         if not os.path.exists(basic_path):
             os.makedirs(basic_path)
-        if not os.path.isfile(filename):
+        if not os.path.isfile(file1):
             url_file = 'sam-library-sandia-modules-2015-6-30.csv'
-            url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/' + url_file
-            urlretrieve(url, filename)
         module_data = (pvlib.pvsystem.retrieve_sam(samfile=filename)
                        [kwargs['module_name']])
         self.area = module_data.Area
         self.peak = module_data.Impo * module_data.Vmpo
+            urlretrieve(url + url_file, file1)
+        if not os.path.isfile(file2):
+            url_file = 'sam-library-cec-modules-2015-6-30.csv'
+            urlretrieve(url + url_file, file2)
+
+        if lib == 'cec-modules':
+            filename = file2
+        else:
+            filename = file1
         return module_data
 
     def pv_module_output(self, data, **kwargs):

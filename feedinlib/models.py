@@ -570,14 +570,14 @@ class SimpleWindTurbine(Base):
         """
         return self.turbine_power_output(**kwargs)
 
-    def get_wind_pp_types(self, conn=None, print_out=True):
+    def get_wind_pp_types(self, print_out=True):
         r"""
         Get the names of all possible wind converter types.
 
         Parameters
         ----------
-        data : sqlalchemy connection object, optional
-            A valid connection object to a database.
+        print_out : boolean (default: True)
+            Directly prints the list of types if set to True.
 
         Examples
         --------
@@ -587,11 +587,8 @@ class SimpleWindTurbine(Base):
         >>> valid_types_df.shape
         (91, 2)
         """
-        if conn is None:
-            res_df, df = self.fetch_cp_values_from_file(wind_conv_type='')
-        else:
-            res_df, df = self.fetch_cp_values_from_db(wind_conv_type='',
-                                                      connection=conn)
+        res_df, df = self.fetch_cp_values_from_file(wind_conv_type='')
+
         if print_out:
             pd.set_option('display.max_rows', len(df))
             print(df[['rli_anlagen_id', 'p_nenn']])
@@ -770,44 +767,6 @@ class SimpleWindTurbine(Base):
         res_df = df[df.rli_anlagen_id == wpp_type].reset_index(drop=True)
         return res_df, df
 
-    def fetch_cp_values_from_db(self, **kwargs):
-        r"""
-        Fetch cp values from a the oemof postgresql database.
-
-        The table is named "wea_cpcurves" and is located in the oemof_test
-        schema of the oemof database.
-
-        Parameters
-        ----------
-        wind_conv_type : string
-            Name of the wind converter type. Use self.get_wind_pp_types() to
-            see a list of all possible wind converters.
-
-        Returns
-        -------
-        pandas.DataFrame
-            cp values, wind converter type, installed capacity or the full
-            table if the given wind converter cannot be found in the table.
-
-        See Also
-        --------
-        fetch_cp_values_from_file
-        """
-        # TODO@Günni
-        sql = '''SELECT * FROM oemof_test.wea_cpcurves
-            WHERE rli_anlagen_id = '{0}';
-            '''.format(kwargs['wind_conv_type'])
-        logging.info('Retrieving cp values from {0}'.format(
-            'postgresql database'))
-        db_res = kwargs['connection'].execute(sql)
-        res_df = pd.DataFrame(db_res.fetchall(), columns=db_res.keys())
-        if res_df.shape[0] == 0:
-            sql = 'SELECT * FROM oemof_test.wea_cpcurves;'
-            db_res = kwargs['connection'].execute(sql)
-            db_res = kwargs['connection'].execute(sql)
-            df = pd.DataFrame(db_res.fetchall(), columns=db_res.keys())
-        return res_df, df
-
     def fetch_cp_values(self, **kwargs):
         r"""
         Fetch cp values from database, file or http source.
@@ -844,10 +803,9 @@ class SimpleWindTurbine(Base):
         """
         if kwargs.get('cp_values', None) is not None:
             res_df = kwargs.get['cp_values']
-        elif kwargs.get('connection', None) is None:
-            res_df, df = self.fetch_cp_values_from_file(**kwargs)
         else:
-            res_df, df = self.fetch_cp_values_from_db(**kwargs)
+            res_df, df = self.fetch_cp_values_from_file(**kwargs)
+
         if res_df.shape[0] == 0:
             pd.set_option('display.max_rows', len(df))
             logging.info('Possible types: \n{0}'.format(df.rli_anlagen_id))

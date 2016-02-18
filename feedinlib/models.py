@@ -385,21 +385,13 @@ class PvlibBased(Base):
 
         basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
         url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/'
-        file1 = os.path.join(basic_path, 'sam-library-sandia-modules.csv')
-        file2 = os.path.join(basic_path, 'sam-library-cec-modules.csv')
+        filename = os.path.join(basic_path, 'sam-library-sandia-modules.csv')
         if not os.path.exists(basic_path):
             os.makedirs(basic_path)
-        if not os.path.isfile(file1):
+        if not os.path.isfile(filename):
             url_file = 'sam-library-sandia-modules-2015-6-30.csv'
-            urlretrieve(url + url_file, file1)
-        if not os.path.isfile(file2):
-            url_file = 'sam-library-cec-modules-2015-6-30.csv'
-            urlretrieve(url + url_file, file2)
+            urlretrieve(url + url_file, filename)
 
-        if lib == 'cec-modules':
-            filename = file2
-        else:
-            filename = file1
         if kwargs.get('module_name') == 'all':
             module_data = pvlib.pvsystem.retrieve_sam(samfile=filename)
         else:

@@ -66,7 +66,7 @@ class PvlibBased(Base):
 
     Notes
     -----
-    For more information about the photovoltaik model check the documentation
+    For more information about the photovoltaic model check the documentation
     of the pvlib library.
 
     https://readthedocs.org/projects/pvlib-python/
@@ -384,7 +384,7 @@ class PvlibBased(Base):
             kwargs['module_name'] = self.powerplant.module_name
 
         basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
-        url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/'
+        url = 'https://sam.nrel.gov/sites/default/files/'
         filename = os.path.join(basic_path, 'sam-library-sandia-modules.csv')
         if not os.path.exists(basic_path):
             os.makedirs(basic_path)
@@ -430,7 +430,7 @@ class PvlibBased(Base):
         ----------
         .. [8] `pvlib pv-system <http://pvlib-python.readthedocs.org/en/
                 latest/pvlib.html#pvlib.pvsystem.sapm>`_.
-        .. [9] `module library <https://sam.nrel.gov/sites/sam.nrel.gov/files/
+        .. [9] `module library <https://sam.nrel.gov/sites/default/files/
                 sam-library-sandia-modules-2015-6-30.csv>`_.
         .. [10] `pvlib get_solarposition <http://pvlib-python.readthedocs.org
                 /en/latest/pvlib.html#pvlib.solarposition.get_solarposition>`_.
@@ -492,7 +492,7 @@ class PvlibBased(Base):
         ----------
         .. [11] `pvlib documentation <https://readthedocs.org/projects/
                 pvlib-python/>`_.
-        .. [12] `module library <https://sam.nrel.gov/sites/sam.nrel.gov/files/
+        .. [12] `module library <https://sam.nrel.gov/sites/default/files/
                 sam-library-sandia-modules-2015-6-30.csv>`_.
 
         See Also

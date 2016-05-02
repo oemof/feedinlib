@@ -26,7 +26,7 @@ class url_tests:
     @classmethod
     def setUpClass(self):
         self.basic_url = 'http://vernetzen.uni-flensburg.de/~git/'
-        self.sandia_url = 'https://sam.nrel.gov/sites/sam.nrel.gov/files/'
+        self.sandia_url = 'https://sam.nrel.gov/sites/default/files/'
 
     def urlfile_test_weather_csv(self):
         url = self.basic_url + 'weather.csv'

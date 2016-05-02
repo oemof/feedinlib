@@ -20,6 +20,8 @@ The parameter sets for pv modules are provided by Sandia Laboratories and can be
 The cp-values for the wind turbines are provided by the Reiner Lemoine Institut and can be found here:
 
  * http://vernetzen.uni-flensburg.de/~git/cp_values.csv
+ 
+If just want to use the feedinlib to calculate pv systems, you should think of using the `pvlib <https://github.com/pvlib/pvlib-python>`_ directly. At the moment the pv part of the feedinlib is just a high level (easy to use) interface for same pvlib functionalities.
 
 Actual Release
 ~~~~~~~~~~~~~~

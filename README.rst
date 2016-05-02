@@ -1,4 +1,4 @@
-The feedinlib is designed to calculate feedin timeseries of photovoltaic and wind power plants.
+The feedinlib is designed to calculate feedin timeseries of photovoltaic and wind power plants. It is part of the oemof group but works as a standalone application.
 
 The feedinlib is ready to use but may have some teething troubles. It definitely has a lot of space for further development, new and improved models and nice features.
 
@@ -34,6 +34,9 @@ Developing Version
 Clone/Fork: https://github.com/oemof/feedinlib
 
 Documentation: http://feedinlib.readthedocs.org/en/latest/
+
+As the feedinlib is part of the oemof developer group we use the same developer rules:
+http://oemof.readthedocs.io/en/stable/developer_notes.html
 
 Installation
 ============

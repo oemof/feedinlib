@@ -1,14 +1,17 @@
-v0.0.7 (October 20, 2015)
+v0.0.8 (Mai 2, 2016)
 +++++++++++++++++++++++++
 
 New features
 ############
 
- * add a geometry attribute for shapely.geometry objects to the weather class 
+ * add a geometry attribute for shapely.geometry objects to the weather class
+ * add lookup table for the sandia pv modules
 
 
 Documentation
 #############
+
+ * add link to the developer rules of oemof
 
 
 Testing
@@ -18,6 +21,7 @@ Testing
 Bug fixes
 #########
 
+ * Adapt url to sandia's module library
 
 Other changes
 #############

@@ -14,8 +14,8 @@ Having weather data sets you can use the feedinlib to calculate the electrical o
 
 The parameter sets for pv modules are provided by Sandia Laboratories and can be found here:
 
- * https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-sandia-modules-2015-6-30.csv
- * https://sam.nrel.gov/sites/sam.nrel.gov/files/sam-library-cec-modules-2015-6-30.csv
+ * https://sam.nrel.gov/sites/default/files/sam-library-sandia-modules-2015-6-30.csv
+ * https://sam.nrel.gov/sites/default/files/sam-library-cec-modules-2015-6-30.csv
 
 The cp-values for the wind turbines are provided by the Reiner Lemoine Institut and can be found here:
 

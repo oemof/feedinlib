@@ -1,25 +1,11 @@
-v0.0.9 ()
+v0.0.9 (August 23, 2016)
 +++++++++++++++++++++++++
-
-New features
-############
-
-
-Documentation
-#############
-
-
-Testing
-####### 
-
 
 Bug fixes
 #########
 
-
-Other changes
-#############
-
+ * Adapt API due to changes in the pvlib
+ * Avoid pandas future warning running the pv model
 
 Contributors
 ############

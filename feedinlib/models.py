@@ -175,7 +175,8 @@ class PvlibBased(Base):
                                 tz=kwargs['weather'].timezone))
 
         data_5min = pvlib.solarposition.get_solarposition(
-            time=data_5min.index, location=location, method='ephemeris')
+            time=data_5min.index, latitude=location.latitude,
+            longitude=location.longitude, method='ephemeris')
 
         return pd.concat(
             [data, data_5min.clip_lower(0).resample('H').mean()],
@@ -228,7 +229,8 @@ class PvlibBased(Base):
         """
         return pd.concat(
             [data, pvlib.solarposition.get_solarposition(
-                time=data.index, location=location,
+                time=data.index, latitude=location.latitude,
+                longitude=location.longitude,
                 method=kwargs.get('method', 'ephemeris'))],
             axis=1, join='inner')
 
@@ -393,9 +395,9 @@ class PvlibBased(Base):
             urlretrieve(url + url_file, filename)
 
         if kwargs.get('module_name') == 'all':
-            module_data = pvlib.pvsystem.retrieve_sam(samfile=filename)
+            module_data = pvlib.pvsystem.retrieve_sam(path=filename)
         else:
-            module_data = (pvlib.pvsystem.retrieve_sam(samfile=filename)
+            module_data = (pvlib.pvsystem.retrieve_sam(path=filename)
                            [kwargs['module_name']])
             self.area = module_data.Area
             self.peak = module_data.Impo * module_data.Vmpo
@@ -442,21 +444,23 @@ class PvlibBased(Base):
         # Determine module and cell temperature
         data['temp_air_celsius'] = data['temp_air'] - 273.15
         data = pd.concat([data, pvlib.pvsystem.sapm_celltemp(
-            irrad=data['poa_global'],
-            wind=data['v_wind'],
-            temp=data['temp_air_celsius'],
+            poa_global=data['poa_global'],
+            wind_speed=data['v_wind'],
+            temp_air=data['temp_air_celsius'],
             model='Open_rack_cell_polymerback')], axis=1, join='inner')
 
         # Retrieve the module data object
         module_data = self.fetch_module_data(**kwargs)
 
+        data['effective_irradiance'] = pvlib.pvsystem.sapm_effective_irradiance(
+            poa_direct=data['poa_direct'], poa_diffuse=data['poa_diffuse'],
+            airmass_absolute=data['airmass'], aoi=data['aoi'],
+            module=module_data)
+
         # Apply the Sandia PV Array Performance Model (SAPM) to get a
         data = pd.concat([data, pvlib.pvsystem.sapm(
-            poa_direct=data['poa_direct'],
-            poa_diffuse=data['poa_diffuse'],
+            effective_irradiance=data['effective_irradiance'],
             temp_cell=data['temp_cell'],
-            airmass_absolute=data['airmass'],
-            aoi=data['aoi'],
             module=module_data)], axis=1, join='inner')
 
         # Set NaN values to zero

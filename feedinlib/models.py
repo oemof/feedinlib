@@ -178,7 +178,7 @@ class PvlibBased(Base):
             time=data_5min.index, location=location, method='ephemeris')
 
         return pd.concat(
-            [data, data_5min.clip_lower(0).resample('H', how='mean')],
+            [data, data_5min.clip_lower(0).resample('H').mean()],
             axis=1, join='inner')
 
     def solarposition(self, location, data, **kwargs):

@@ -4,20 +4,16 @@
 import pandas as pd
 import logging
 import os
-try:
-    from urllib.request import urlretrieve
-except:
-    from urllib import urlretrieve
+from urllib.request import urlretrieve
 
 try:
-    from matplotlib import pyplot as plt
-    plot_fkt = True
-except:
-    plot_fkt = False
+    from matplotlib import pyploth as plt
+except ImportError:
+    plt = None
 
-from feedinlib import powerplants as plants
-from feedinlib import models
-from feedinlib import weather
+import feedinlib.powerplants as plants
+import feedinlib.models as models
+import feedinlib.weather as weather
 
 # Feel free to remove or change these lines
 import warnings
@@ -69,15 +65,15 @@ def download_file(filename, url):
 
 def fetch_example_files():
     basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
-    filename1 = os.path.join(basic_path, 'weather.csv')
+    filename_csv1 = os.path.join(basic_path, 'weather.csv')
     url1 = 'http://vernetzen.uni-flensburg.de/~git/weather.csv'
-    filename2 = os.path.join(basic_path, 'weather_wittenberg.csv')
+    filename_csv2 = os.path.join(basic_path, 'weather_wittenberg.csv')
     url2 = 'http://vernetzen.uni-flensburg.de/~git/weather_wittenberg.csv'
     if not os.path.exists(basic_path):
         os.makedirs(basic_path)
-    download_file(filename1, url1)
-    download_file(filename2, url2)
-    return filename1, filename2
+    download_file(filename_csv1, url1)
+    download_file(filename_csv2, url2)
+    return filename_csv1, filename_csv2
 
 
 def ready_example_data(filename, datetime_column='Unnamed: 0'):
@@ -124,7 +120,7 @@ V90_feedin = V90_power_plant.feedin(weather=my_weather,
 E126_feedin.name = 'E126'
 V90_feedin.name = 'V90'
 
-if plot_fkt:
+if plt:
     E126_feedin.plot(legend=True)
     V90_feedin.plot(legend=True)
     plt.show()
@@ -147,7 +143,7 @@ pv_feedin4.name = 'Yingli'
 pv_feedin5.name = 'Advent'
 
 # Output
-if plot_fkt:
+if plt:
     pv_feedin4.plot(legend=True)
     pv_feedin5.plot(legend=True)
     plt.show()
@@ -166,7 +162,7 @@ print(models.PvlibBased().fetch_module_data(
 # Plot the cp curve of a wind turbine.
 cp_values = models.SimpleWindTurbine().fetch_cp_values(
     wind_conv_type='ENERCON E 126 7500')
-if plot_fkt:
+if plt:
     plt.plot(cp_values.loc[0, :][2:55].index,
              cp_values.loc[0, :][2:55].values, '*')
     plt.show()

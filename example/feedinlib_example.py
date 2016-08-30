@@ -7,7 +7,7 @@ import os
 from urllib.request import urlretrieve
 
 try:
-    from matplotlib import pyploth as plt
+    from matplotlib import pyplot as plt
 except ImportError:
     plt = None
 

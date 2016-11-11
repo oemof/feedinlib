@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: oemof developing group
+@author: oemof development group
 """
 
 from abc import ABC, abstractmethod
@@ -10,11 +10,7 @@ import numpy as np
 import pandas as pd
 import pvlib
 import logging
-try:
-    from urllib.request import urlretrieve
-except:
-    from urllib import urlretrieve
-
+import requests
 
 class Base(ABC):
     r""" The base class of feedinlib models.
@@ -392,8 +388,9 @@ class PvlibBased(Base):
             os.makedirs(basic_path)
         if not os.path.isfile(filename):
             url_file = 'sam-library-sandia-modules-2015-6-30.csv'
-            urlretrieve(url + url_file, filename)
-
+            req = requests.get(url + url_file)
+            with open(filename, 'wb') as fout:
+                fout.write(req.content)
         if kwargs.get('module_name') == 'all':
             module_data = pvlib.pvsystem.retrieve_sam(path=filename)
         else:
@@ -755,7 +752,9 @@ class SimpleWindTurbine(Base):
         if not os.path.exists(cp_path):
             os.makedirs(cp_path)
         if not os.path.isfile(filepath + suffix):
-            urlretrieve(url + suffix, filepath + suffix)
+            req = requests.get(url + suffix)
+            with open(filepath + suffix, 'wb') as fout:
+                fout.write(req.content)
             logging.info('Copying cp_values from {0} to {1}'.format(
                 url, filepath + suffix))
         logging.debug('Retrieving cp values from {0}'.format(
@@ -768,7 +767,9 @@ class SimpleWindTurbine(Base):
             logging.debug('Retrieving cp values from {0}'.format(
                 filename + suffix))
             if not os.path.isfile(filename + suffix):
-                urlretrieve(url + suffix, filename + suffix)
+                req = requests.get(url + suffix)
+                with open(filepath + suffix, 'wb') as fout:
+                    fout.write(req.content)
                 logging.info('Copying cp_values from {0} to {1}'.format(
                     url, filename + suffix))
             df = pd.read_csv(filename + suffix, index_col=0)

@@ -1,27 +1,16 @@
 v0.0.10 ()
 +++++++++++++++++++++++++
 
-New features
-############
-
-
-Documentation
-#############
-
-
-Testing
-####### 
-
-
-Bug fixes
-#########
-
 
 Other changes
 #############
-
+Move wind power calculations to windpowerlib
+Allow installation of windpowerlib for python versions >3.4
+Import requests package instead of urllib5
 
 Contributors
 ############
 
  * Uwe Krien
+ * Stephen Bosch
+ * Birgit Schachler

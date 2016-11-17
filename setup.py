@@ -24,4 +24,4 @@ setup(name='feedinlib',
                         'pandas >= 0.13.1',
                         'pvlib >= 0.4.0',
                         'windpowerlib',
-                        'urllib5'])
+                        'requests'])

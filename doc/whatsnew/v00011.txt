@@ -4,6 +4,7 @@ v0.0.11 ()
 New features
 ############
 
+ * Using model of windpowerlib instead of internal model. This will be the future of the feedinlib.
 
 Documentation
 #############
@@ -16,6 +17,7 @@ Testing
 Bug fixes
 #########
 
+ * removed 'vernetzen'-server because it is down
 
 Other changes
 #############

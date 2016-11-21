@@ -7,42 +7,12 @@ Created on Tue Sep 22 12:41:37 2015
 
 import nose.tools as nt
 import os.path
-import pickle
 import pandas
 import numpy
-
-try:
-    from urllib.request import urlopen
-except:
-    from urllib import urlopen
 
 from feedinlib import models as model
 from feedinlib import powerplants as plant
 from feedinlib import weather
-
-
-class url_tests:
-
-    @classmethod
-    def setUpClass(self):
-        self.basic_url = 'http://vernetzen.uni-flensburg.de/~git/'
-        self.sandia_url = 'https://sam.nrel.gov/sites/default/files/'
-
-    def urlfile_test_weather_csv(self):
-        url = self.basic_url + 'weather.csv'
-        nt.ok_(urlopen(url).getcode() == 200)
-
-    def urlfile_test_weather_wittenberg_csv(self):
-        url = self.basic_url + 'weather_wittenberg.csv'
-        nt.ok_(urlopen(url).getcode() == 200)
-
-    def urlfile_test_cp_values_csv(self):
-        url = self.basic_url + 'cp_values.csv'
-        nt.ok_(urlopen(url).getcode() == 200)
-
-    def urlfile_test_sandia_modules_csv(self):
-        url = self.sandia_url + 'sam-library-sandia-modules-2015-6-30.csv'
-        nt.ok_(urlopen(url).getcode() == 200)
 
 
 class ModelsPowerplantsInteraction_Tests:

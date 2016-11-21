@@ -22,7 +22,7 @@ class Base(ABC):
         r""" The base class of feedinlib powerplants.
 
         The most prominent shared functionality between powerplants is the fact
-        that they instantiate their model class uppon construction, in order to
+        that they instantiate their model class upon construction, in order to
         get a unique model instance for each powerplant instance.
 
         Parameters

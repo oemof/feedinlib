@@ -3,8 +3,6 @@
 
 import pandas as pd
 import logging
-import os
-from urllib.request import urlretrieve
 
 try:
     from matplotlib import pyplot as plt
@@ -56,33 +54,14 @@ vestasV90 = {
     'wind_conv_type': 'VESTAS V 90 3000'}
 
 
-def download_file(filename, url):
-    if not os.path.isfile(filename):
-        logging.info('Copying weather data from {0} to {1}'.format(
-            url, filename))
-        urlretrieve(url, filename)
-
-
-def fetch_example_files():
-    basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
-    filename_csv1 = os.path.join(basic_path, 'weather.csv')
-    url1 = 'http://vernetzen.uni-flensburg.de/~git/weather.csv'
-    filename_csv2 = os.path.join(basic_path, 'weather_wittenberg.csv')
-    url2 = 'http://vernetzen.uni-flensburg.de/~git/weather_wittenberg.csv'
-    if not os.path.exists(basic_path):
-        os.makedirs(basic_path)
-    download_file(filename_csv1, url1)
-    download_file(filename_csv2, url2)
-    return filename_csv1, filename_csv2
-
-
 def ready_example_data(filename, datetime_column='Unnamed: 0'):
     df = pd.read_csv(filename)
     return df.set_index(pd.to_datetime(df[datetime_column])).tz_localize(
         'UTC').tz_convert('Europe/Berlin').drop(datetime_column, 1)
 
 
-filename1, filename2 = fetch_example_files()
+filename1 = 'weather.csv'
+filename2 = 'weather_wittenberg.csv'
 
 # Two Variants to create your weather object
 # 1. Variant: Passing all data to the weather class

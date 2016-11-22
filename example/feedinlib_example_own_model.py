@@ -4,10 +4,6 @@
 import pandas as pd
 import logging
 import os
-try:
-    from urllib.request import urlretrieve
-except:
-    from urllib import urlretrieve
 
 try:
     from matplotlib import pyplot as plt
@@ -19,23 +15,6 @@ from feedinlib import powerplants as plants
 from feedinlib import weather
 
 logging.getLogger().setLevel(logging.INFO)
-
-
-def download_file(filename, url):
-    if not os.path.isfile(filename):
-        logging.info('Copying weather data from {0} to {1}'.format(
-            url, filename))
-        urlretrieve(url, filename)
-
-
-def fetch_example_file():
-    basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
-    filename = os.path.join(basic_path, 'weather_wittenberg.csv')
-    url = 'http://vernetzen.uni-flensburg.de/~git/weather_wittenberg.csv'
-    if not os.path.exists(basic_path):
-        os.makedirs(basic_path)
-    download_file(filename, url)
-    return filename
 
 
 class MyModel:
@@ -56,7 +35,7 @@ class MyModel:
 
 # Loading weather data from csv-file.
 my_weather = weather.FeedinWeather()
-my_weather.read_feedinlib_csv(filename=fetch_example_file())
+my_weather.read_feedinlib_csv(filename='weather_wittenberg.csv')
 
 
 # Initialise your own model and apply it.

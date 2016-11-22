@@ -12,6 +12,7 @@ except ImportError:
 import feedinlib.powerplants as plants
 import feedinlib.models as models
 import feedinlib.weather as weather
+from windpowerlib import basicmodel as windmodel
 
 # Feel free to remove or change these lines
 import warnings
@@ -131,23 +132,20 @@ else:
 
 # Use directly methods of the model
 # Write out all possible wind turbines.
-w_model = models.SimpleWindTurbine()
-w_model.get_wind_pp_types()
+windmodel.get_wind_pp_types()
 
 # Write out all possible pv-converters
 print(models.PvlibBased().fetch_module_data(
     module_name='all', lib='sandia-modules').keys())
 
 # Plot the cp curve of a wind turbine.
-cp_values = models.SimpleWindTurbine().fetch_cp_values(
-    wind_conv_type='ENERCON E 126 7500')
+e126 = windmodel.SimpleWindTurbine(**enerconE126)
+
 if plt:
-    plt.plot(cp_values.loc[0, :][2:55].index,
-             cp_values.loc[0, :][2:55].values, '*')
+    e126.cp_values.plot(style='*')
     plt.show()
 else:
     # The value for 8 m/s
-    index = cp_values.loc[0, :][2:55].index == '8'
-    print(cp_values.loc[0, :][2:55].values[index][0])
+    print(e126.cp_values.loc[8])
 
 logging.info('Done!')

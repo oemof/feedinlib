@@ -5,11 +5,9 @@
 
 from abc import ABC, abstractmethod
 import os
-import sys
 import numpy as np
 import pandas as pd
 import pvlib
-import logging
 from windpowerlib import basicmodel as windmodel
 import requests
 

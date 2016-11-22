@@ -299,6 +299,9 @@ def simple_plot(feedin, reference_data, coastDat_years):
 
 def pv_generation_test():
     '''Evaluate test of PV generation data with given reference data'''
+
+    logging.warning(
+        "This example might not work due to problems with the download server.")
     
     coastDat_years = [1998, 2003, 2007, 2010, 2011, 2012, 2013]
     

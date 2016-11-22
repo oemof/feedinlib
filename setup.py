@@ -8,7 +8,7 @@ import os
 from setuptools import setup
 
 setup(name='feedinlib',
-      version='0.0.10',
+      version='0.0.11',
       description='Creating time series from pv or wind power plants.',
       url='http://github.com/oemof/feedinlib',
       author='oemof developing group',

@@ -4,48 +4,25 @@ Using the pvlib with feedinlib's weather object.
 Using the windpowerlib with feedinlib's weather object.
 """
 
-from matplotlib import pyplot as plt
+try:
+    from matplotlib import pyplot as plt
+except ImportError:
+    plt = None
 import pvlib
 import logging
-import os
 from pvlib.pvsystem import PVSystem
 from pvlib.location import Location
 from pvlib.modelchain import ModelChain
 from pvlib.tools import cosd
 import feedinlib.weather as weather
 from windpowerlib import basicmodel
-from urllib.request import urlretrieve
-
-
-def download_file(filename, url):
-    if not os.path.isfile(filename):
-        logging.info('Copying weather data from {0} to {1}'.format(
-            url, filename))
-        urlretrieve(url, filename)
-        txt = "The example files are store to the '.oemof' folder of your home "
-        txt += "directory."
-        logging.info(txt)
-
-
-def fetch_example_files():
-    basic_path = os.path.join(os.path.expanduser("~"), '.oemof')
-    filename_csv1 = os.path.join(basic_path, 'weather.csv')
-    url1 = 'http://vernetzen.uni-flensburg.de/~git/weather.csv'
-    filename_csv2 = os.path.join(basic_path, 'weather_wittenberg.csv')
-    url2 = 'http://vernetzen.uni-flensburg.de/~git/weather_wittenberg.csv'
-    if not os.path.exists(basic_path):
-        os.makedirs(basic_path)
-    download_file(filename_csv1, url1)
-    download_file(filename_csv2, url2)
-    return filename_csv1, filename_csv2
 
 
 logging.getLogger().setLevel(logging.INFO)
 
 # loading feedinlib's weather data
-filename1, filename2 = fetch_example_files()
 my_weather = weather.FeedinWeather()
-my_weather.read_feedinlib_csv(filename2)
+my_weather.read_feedinlib_csv('weather_wittenberg.csv')
 
 # #####################################
 # ********** windpowerlib *************
@@ -70,7 +47,11 @@ enerconE126 = {
 e126 = basicmodel.SimpleWindTurbine(**enerconE126)
 
 e126.turbine_power_output(weather=my_weather.data, data_height=coastDat2).plot()
-plt.show()
+
+if plt:
+    plt.show()
+else:
+    logging.warning("No plots shown. Install matplotlib to see the plots.")
 
 # #####################################
 # ********** pvlib ********************
@@ -130,5 +111,10 @@ mc.run_model(times, irradiance=i, weather=w)
 
 # plot the results
 mc.dc.p_mp.fillna(0).plot()
+
+if plt:
+    plt.show()
+else:
+    logging.warning("No plots shown. Install matplotlib to see the plots.")
 
 logging.info('Done!')

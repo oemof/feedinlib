@@ -46,9 +46,9 @@ enerconE126 = {
 # windpowerlib's basic model
 e126 = basicmodel.SimpleWindTurbine(**enerconE126)
 
-e126.turbine_power_output(weather=my_weather.data, data_height=coastDat2).plot()
-
 if plt:
+    e126.turbine_power_output(weather=my_weather.data,
+        data_height=coastDat2).plot()
     plt.show()
 else:
     logging.warning("No plots shown. Install matplotlib to see the plots.")
@@ -64,9 +64,7 @@ my_weather.data.rename(columns={'v_wind': 'wind_speed'}, inplace=True)
 my_weather.data['temp_air'] = my_weather.data.temp_air - 273.15
 # calculate ghi
 my_weather.data['ghi'] = my_weather.data.dirhi + my_weather.data.dhi
-# divide into irradiance (i) and weather (w)
-i = my_weather.data.loc[:, ['ghi', 'dhi']]
-w = my_weather.data.loc[:, ['temp_air', 'wind_speed']]
+w = my_weather.data
 
 # time index from weather data set
 times = my_weather.data.index
@@ -93,13 +91,10 @@ wittenberg = {
     'longitude': my_weather.longitude,
     }
 
-# in my opinion this part should be part of pvlib's ModelChain (run_model)
-# from pvlib.tools import cosd
-# if irradiance.get('dni') is None:
-#     irradiance['dni'] = (irradiance.ghi - irradiance.dhi) /
-#                          cosd(self.solar_position.zenith)
-if i.get('dni') is None:
-    i['dni'] = (i.ghi - i.dhi) / cosd(
+# the following has been implemented in the pvlib ModelChain in the
+# complete_irradiance method (pvlib version > v0.4.5)
+if w.get('dni') is None:
+    w['dni'] = (w.ghi - w.dhi) / cosd(
         Location(**wittenberg).get_solarposition(times).zenith)
 
 # pvlib's ModelChain
@@ -107,12 +102,10 @@ mc = ModelChain(PVSystem(**yingli210),
                 Location(**wittenberg),
                 orientation_strategy='south_at_latitude_tilt')
 
-mc.run_model(times, irradiance=i, weather=w)
-
-# plot the results
-mc.dc.p_mp.fillna(0).plot()
+mc.run_model(times, weather=w)
 
 if plt:
+    mc.dc.p_mp.fillna(0).plot()
     plt.show()
 else:
     logging.warning("No plots shown. Install matplotlib to see the plots.")

@@ -27,12 +27,3 @@ feedinlib.weather
     :members:
     :undoc-members:
     :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: feedinlib
-    :members:
-    :undoc-members:
-    :show-inheritance:

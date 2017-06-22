@@ -19,5 +19,5 @@ setup(name='feedinlib',
       install_requires=['numpy >= 1.7.0',
                         'pandas >= 0.13.1',
                         'pvlib >= 0.4.0',
-                        'windpowerlib >= 0.0.4',
+                        'windpowerlib == 0.0.4',
                         'requests'])

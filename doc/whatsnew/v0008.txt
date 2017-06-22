@@ -14,17 +14,10 @@ Documentation
  * add link to the developer rules of oemof
 
 
-Testing
-####### 
-
-
 Bug fixes
 #########
 
  * Adapt url to sandia's module library
-
-Other changes
-#############
 
 
 Contributors

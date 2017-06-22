@@ -1,25 +1,12 @@
-v0.0.12 ()
+v0.0.12 (June 22, 2017)
 +++++++++++++++++++++++++
-
-New features
-############
-
-
-Documentation
-#############
-
-
-Testing
-####### 
-
 
 Bug fixes
 #########
 
-
-Other changes
-#############
-
+* fixed setup.py since feedinlib only works with windpowerlib version 0.0.4
 
 Contributors
 ############
+
+* Birgit Schachler

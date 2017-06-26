@@ -1,3 +1,7 @@
+.. image:: /doc/line.png
+    :align: center    
+    :width: 100%
+
 **Notice**
 
 The feedinlib as of version 0.0.12 will receive an API breaking overhaul. After that we'll move to 0.1.x and initially focus on developing the following features:
@@ -6,7 +10,11 @@ The feedinlib as of version 0.0.12 will receive an API breaking overhaul. After 
 * easy access to at least one freely available weather dataset and
 * if possible a unified interface to access functionality of technically more specialized libraries like `pvlib <https://github.com/pvlib/pvlib-python>`_ and `windpowerlib <https://github.com/wind-python/windpowerlib>`_.
 
---------------------------------------------
+If you want to stay informed follow issue `#29 <https://github.com/oemof/feedinlib/issues/29>`_.
+
+.. image:: /doc/line.png
+    :align: center    
+    :width: 100%
 
 
 The feedinlib is designed to calculate feedin timeseries of photovoltaic and wind power plants. It is part of the oemof group but works as a standalone application.

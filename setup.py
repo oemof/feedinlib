@@ -18,6 +18,6 @@ setup(name='feedinlib',
       zip_safe=False,
       install_requires=['numpy >= 1.7.0',
                         'pandas >= 0.13.1',
-                        'pvlib >= 0.4.0',
-                        'windpowerlib == 0.0.4',
-                        'requests'])
+                        'pvlib >= 0.5.0',
+                        'windpowerlib >= 0.0.6',
+                        'scipy'])

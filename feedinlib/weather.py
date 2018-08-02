@@ -2,7 +2,7 @@
 """
 Created on Fri Oct  9 16:01:02 2015
 
-@author: uwe
+@author: uwe, gnn
 """
 
 import pandas as pd

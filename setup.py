@@ -20,4 +20,5 @@ setup(name='feedinlib',
                         'pandas >= 0.13.1',
                         'pvlib >= 0.5.0',
                         'windpowerlib >= 0.0.6',
-                        'scipy'])
+                        'scipy',
+                        'xarray'])

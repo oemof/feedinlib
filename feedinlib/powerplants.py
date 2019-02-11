@@ -12,12 +12,11 @@ attribute.`
 
 from abc import ABC, abstractmethod
 
-from . import models
+from feedinlib.models import Pvlib, WindpowerlibTurbine
 
 
 class Base(ABC):
-    # TODO: properly link/highlight the terms model and powerplant as they are
-    #       referring to feedinlib internals.
+
     def __init__(self, **attributes):
         r""" The base class of feedinlib powerplants.
 
@@ -66,14 +65,16 @@ class Base(ABC):
                                   actually calculate the feedin.
 
         """
+        self._required = attributes.get("required")
+        # Günni? ermöglicht das, eine oemof Klasse zu übergeben? Nein, erst Feedin Klasse
         model = attributes.pop("model")
         if isinstance(model, type):
             model = model()
-        model.powerplant = self
+        model.powerplant = self  # Günni, wieso wird das gemacht? - Evtl. raus nehmen um keine zyklischen Abhängigkeiten zu haben
         self.model = model
         for k in attributes:
             setattr(self, k, attributes[k])
-        for k in model.required:
+        for k in self.required:
             if not hasattr(self, k):
                 raise AttributeError(
                     "Your model requires {k}".format(k=k) +
@@ -88,6 +89,8 @@ class Base(ABC):
         This method delegates the actual computation to the :meth:`feedin`
         method of this objects :attr:`model` while giving you the opportunity
         to override some of the inputs used to calculate the feedin.
+
+        benötigt wetterdaten
 
         Parameters
         ----------
@@ -105,8 +108,15 @@ class Base(ABC):
           by a :py:class:`pandas.DataFrame`.
 
         """
+        # Günni: in Photovoltaic und WindPowerPlant, damit z.B. feedin der WindPowerPlant nicht über Area
+        # hochgerechnet werden kann; bei hydro ergibt Skalierung kaum noch sinn - Ja, kann ausgelagert werden
+        # Günni: weather und location als Inputs? - weather ist okay, location könnte auch an Powerplant dran hängen
         # TODO: Document semantics of special keyword arguments.
-        combined = {k: getattr(self, k) for k in self.model.required}
+        # Günni: das folgende ist nicht notwendig, oder? model hat ja schon powerplant - doch, falls model nochmal geändert wurde, müssen required nochmal gecheckt werden
+        # überschreibt Attribute, wenn z.B. Parametervariation gemacht werden soll
+        # ToDo Fehlermeldung falls Attribut nicht existiert
+        # ToDo scaling_method statt verschiedene kwargs
+        combined = {k: getattr(self, k) for k in self.model.powerplant_requires}
         combined.update(kwargs)
         if kwargs.get('number', None) is not None:
             feedin = self.model.feedin(**combined) * kwargs['number']
@@ -115,7 +125,7 @@ class Base(ABC):
                       float(self.model.peak) *
                       float(kwargs['peak_power']))
         elif kwargs.get('area', None) is not None:
-            feedin = (self.model.feedin(**combined) / self.model.area *
+            feedin = (self.model.feedin(**combined) / self.model.module_area *
                       kwargs['area'])
         elif kwargs.get('installed_capacity', None) is not None:
             feedin = (self.model.feedin(**combined) /
@@ -126,9 +136,31 @@ class Base(ABC):
 
         return feedin
 
+    @property
+    @abstractmethod
+    def required(self):
+        """ The (names of the) parameters this model requires in order to
+        calculate the feedin.
+
+        As this is an abstract property, you have to override it in a subclass
+        so that the model can be instantiated. This forces implementors to make
+        the required parameters for a model explicit, even if they are empty,
+        and gives them a good place to document them.
+
+        By default, this property is settable and its value can be specified
+        via and argument on construction. If you want to keep this
+        functionality, simply delegate all calls to the superclass.
+        """
+        return self._required
+
+    @required.setter
+    def required(self, names):
+        self._required = names
+        return self
+
 
 class Photovoltaic(Base):
-    def __init__(self, model=models.PvlibBased, **attributes):
+    def __init__(self, model=Pvlib, **attributes):
         r"""
         Photovoltaic objects correspond to powerplants using solar power to
         generate electricity.
@@ -145,9 +177,27 @@ class Photovoltaic(Base):
     def feedin(self, **kwargs):
         return super().feedin(**kwargs)
 
+    @property
+    def required(self):
+        r""" The module parameters the specified model requires.
+
+        Check powerplant_requires
+        """
+        if super().required is not None:
+            return super().required
+        return self.model.powerplant_requires
+
+    @property
+    def area(self):
+        return self.model.module_area
+
+    @property
+    def peak_power(self):
+        return self.model.module_peak_power
+
 
 class WindPowerPlant(Base):
-    def __init__(self, model=models.SimpleWindTurbine, **attributes):
+    def __init__(self, model=WindpowerlibTurbine, **attributes):
         r"""
         WindPowerPlant objects correspond to powerplants using wind power to
         generate electricity.
@@ -164,6 +214,14 @@ class WindPowerPlant(Base):
                                   actually calculate the feedin.
         """
         super().__init__(model=model, **attributes)
+
+    @property
+    def required(self):
+        r""" The wind turbine parameters the specified model requires.
+        """
+        if super().required is not None:
+            return super().required
+        return self.model.powerplant_requires
 
     def feedin(self, **kwargs):
         return super().feedin(**kwargs)

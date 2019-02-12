@@ -108,12 +108,23 @@ class Base(ABC):
           by a :py:class:`pandas.DataFrame`.
 
         """
+        # @Günni: sollte model hier überschrieben werden?
         # Günni: weather und location als Inputs? - weather ist okay, location könnte auch an Powerplant dran hängen
         # TODO: Document semantics of special keyword arguments.
-        # Günni: das folgende ist nicht notwendig, oder? model hat ja schon powerplant - doch, falls model nochmal geändert wurde, müssen required nochmal gecheckt werden
-        # überschreibt Attribute, wenn z.B. Parametervariation gemacht werden soll
-        # ToDo Fehlermeldung falls Attribut nicht existiert
-        combined = {k: getattr(self, k) for k in self.model.powerplant_requires}
+
+        # required power plant arguments are checked again in case a different
+        # model to calculate feedin is used than initially specified
+        combined = {}
+        for k in self.model.powerplant_requires:
+            if not hasattr(self, k):
+                raise AttributeError(
+                    "The specified model '{model}' requires power plant "
+                    "parameter '{k}' but it's not provided as an "
+                    "argument.".format(k=k, model=self.model))
+            else:
+                combined[k] = getattr(self, k)
+        # initially specified power plant parameters are over-written by kwargs
+        # which is e.g. useful for parameter variations
         combined.update(kwargs)
         return self.model.feedin(**combined)
 

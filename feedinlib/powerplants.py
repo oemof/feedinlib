@@ -81,7 +81,7 @@ class Base(ABC):
                     " but it's not provided as an argument.")
 
     @abstractmethod
-    def feedin(self, **kwargs):
+    def feedin(self, weather, **kwargs):
         r"""
         Calculates the amount of energy fed in by this powerplant into the
         energy system.
@@ -109,7 +109,6 @@ class Base(ABC):
 
         """
         # @Günni: sollte model hier überschrieben werden?
-        # Günni: weather und location als Inputs? - weather ist okay, location könnte auch an Powerplant dran hängen
         # TODO: Document semantics of special keyword arguments.
 
         # required power plant arguments are checked again in case a different
@@ -126,7 +125,7 @@ class Base(ABC):
         # initially specified power plant parameters are over-written by kwargs
         # which is e.g. useful for parameter variations
         combined.update(kwargs)
-        return self.model.feedin(**combined)
+        return self.model.feedin(weather=weather, **combined)
 
     @property
     @abstractmethod
@@ -167,8 +166,8 @@ class Photovoltaic(Base):
         """
         super().__init__(model=model, **attributes)
 
-    def feedin(self, scaling=None, scaling_value=1, **kwargs):
-        feedin = super().feedin(**kwargs)
+    def feedin(self, weather, scaling=None, scaling_value=1, **kwargs):
+        feedin = super().feedin(weather=weather, **kwargs)
         if scaling:
             feedin_scaling = {
                 'peak_power': lambda feedin, scaling_value: feedin / float(
@@ -224,8 +223,8 @@ class WindPowerPlant(Base):
             return super().required
         return self.model.powerplant_requires
 
-    def feedin(self, scaling=None, scaling_value=1, **kwargs):
-        feedin = super().feedin(**kwargs)
+    def feedin(self, weather, scaling=None, scaling_value=1, **kwargs):
+        feedin = super().feedin(weather, **kwargs)
         if scaling:
             feedin_scaling = {
                 'capacity': lambda feedin, scaling_value: feedin / float(

@@ -230,6 +230,13 @@ class WindpowerlibTurbine(Base):
             return super().powerplant_requires
         return ["hub_height", "name"]
 
+    @property
+    def turbine_nominal_power(self):
+        if self.turbine:
+            return self.turbine.nominal_power
+        else:
+            return None
+
     def instantiate_turbine(self):
         # ToDo: weitere kwargs zulassen
         turbine = {

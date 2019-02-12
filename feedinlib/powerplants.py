@@ -108,33 +108,14 @@ class Base(ABC):
           by a :py:class:`pandas.DataFrame`.
 
         """
-        # Günni: in Photovoltaic und WindPowerPlant, damit z.B. feedin der WindPowerPlant nicht über Area
-        # hochgerechnet werden kann; bei hydro ergibt Skalierung kaum noch sinn - Ja, kann ausgelagert werden
         # Günni: weather und location als Inputs? - weather ist okay, location könnte auch an Powerplant dran hängen
         # TODO: Document semantics of special keyword arguments.
         # Günni: das folgende ist nicht notwendig, oder? model hat ja schon powerplant - doch, falls model nochmal geändert wurde, müssen required nochmal gecheckt werden
         # überschreibt Attribute, wenn z.B. Parametervariation gemacht werden soll
         # ToDo Fehlermeldung falls Attribut nicht existiert
-        # ToDo scaling_method statt verschiedene kwargs
         combined = {k: getattr(self, k) for k in self.model.powerplant_requires}
         combined.update(kwargs)
-        if kwargs.get('number', None) is not None:
-            feedin = self.model.feedin(**combined) * kwargs['number']
-        elif kwargs.get('peak_power', None) is not None:
-            feedin = (self.model.feedin(**combined) /
-                      float(self.model.peak) *
-                      float(kwargs['peak_power']))
-        elif kwargs.get('area', None) is not None:
-            feedin = (self.model.feedin(**combined) / self.model.module_area *
-                      kwargs['area'])
-        elif kwargs.get('installed_capacity', None) is not None:
-            feedin = (self.model.feedin(**combined) /
-                      float(self.model.nominal_power_wind_turbine) *
-                      float(kwargs['installed_capacity']))
-        else:
-            feedin = self.model.feedin(**combined)
-
-        return feedin
+        return self.model.feedin(**combined)
 
     @property
     @abstractmethod
@@ -160,6 +141,7 @@ class Base(ABC):
 
 
 class Photovoltaic(Base):
+
     def __init__(self, model=Pvlib, **attributes):
         r"""
         Photovoltaic objects correspond to powerplants using solar power to
@@ -174,8 +156,16 @@ class Photovoltaic(Base):
         """
         super().__init__(model=model, **attributes)
 
-    def feedin(self, **kwargs):
-        return super().feedin(**kwargs)
+    def feedin(self, scaling=None, scaling_value=1, **kwargs):
+        feedin = super().feedin(**kwargs)
+        if scaling:
+            feedin_scaling = {
+                'peak_power': lambda feedin, scaling_value: feedin / float(
+                    self.peak_power) * scaling_value,
+                'area': lambda feedin, scaling_value: feedin / float(
+                    self.area) * scaling_value}
+            return feedin_scaling[scaling](feedin, scaling_value)
+        return feedin
 
     @property
     def required(self):
@@ -223,5 +213,16 @@ class WindPowerPlant(Base):
             return super().required
         return self.model.powerplant_requires
 
-    def feedin(self, **kwargs):
-        return super().feedin(**kwargs)
+    def feedin(self, scaling=None, scaling_value=1, **kwargs):
+        feedin = super().feedin(**kwargs)
+        if scaling:
+            feedin_scaling = {
+                'capacity': lambda feedin, scaling_value: feedin / float(
+                    self.nominal_power) * scaling_value,
+                'number': lambda feedin, scaling_value: feedin * scaling_value}
+            return feedin_scaling[scaling](feedin, scaling_value)
+        return feedin
+
+    @property
+    def nominal_power(self):
+        return self.model.turbine_nominal_power

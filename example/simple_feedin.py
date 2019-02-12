@@ -1,5 +1,6 @@
 from feedinlib import Photovoltaic, WindPowerPlant
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # PV
 yingli210 = {
@@ -26,10 +27,17 @@ weather_df.rename(columns={'v_wind': 'wind_speed'}, inplace=True)
 
 weather_pvlib = weather_df.copy()
 
-feedin = yingli_module.feedin(weather=weather_df[['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
-                     location=(52, 13))
+feedin = yingli_module.feedin(
+    weather=weather_df[['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
+    location=(52, 13))
+feedin_scaled = yingli_module.feedin(
+    weather=weather_df[['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
+    location=(52, 13),
+    scaling='area', scaling_value=10)
 
+feedin_scaled.fillna(0).plot()
 feedin.fillna(0).plot()
+plt.show()
 
 # Wind
 enerconE126 = {
@@ -60,6 +68,10 @@ weather_df.columns = [['wind_speed', 'temperature',
 
 feedin = e126.feedin(weather=weather_df,
                      location=(52, 13))
+feedin_scaled = e126.feedin(weather=weather_df,
+                            location=(52, 13),
+                            scaling='capacity', scaling_value=5e6)
 
+feedin_scaled.fillna(0).plot()
 feedin.fillna(0).plot()
-
+plt.show()

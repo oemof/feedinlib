@@ -92,6 +92,9 @@ class Pvlib(Base):
         # Todo kann hier Instanziierung des PV Systems erfolgen?
         # ToDo Nach Instanziierung area und peak setzen (wie kann ich von hier auf Photovoltaic zugreifen?
 
+    def __repr__(self):
+        return "pvlib"
+
     @property
     def powerplant_requires(self):
         r""" The parameters this model requires to calculate a feedin.
@@ -212,6 +215,9 @@ class WindpowerlibTurbine(Base):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.nominal_power_wind_turbine = None
+
+    def __repr__(self):
+        return "windpowerlib"
 
     @property
     def powerplant_requires(self):

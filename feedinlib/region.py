@@ -49,34 +49,58 @@ class Region:
         # return feedin
         pass
 
-    def wind_feedin_distribution_register(self, scaling_dict, technical_parameters):
-        """
-        Innerhalb eines Wetterpunktes werden die Anlagen entsprechend des
-        distribution_dict gewichtet. Jeder Wetterpunkt wird entsprechend der
-        installierten Leistung nach Anlagenregister skaliert und anschließend
-        eine absolute Zeitreihe für die Region zurück gegeben.
+def pv_feedin_distribution_register(self, distribution_dict, technical_parameters, register):
+    """
+    Innerhalb eines Wetterpunktes werden die Anlagen entsprechend des
+    distribution_dict gewichtet. Jeder Wetterpunkt wird entsprechend der
+    installierten Leistung nach Anlagenregister skaliert und anschließend
+    eine absolute Zeitreihe für die Region zurück gegeben.
 
-        Parameters
-        ----------
-        scaling_dict : dict
-            Dict mit Anlagentyp und Anteil
-            {'E-82/2350': 0.6, 'E-101/3050': 0.4}
-        technical_parameters : dict oder Liste mit WindTurbines
-            Dict mit Nabenhöhe der Anlagen, evtl. Leistungskurve wenn nicht in
-            windpowerlib vorhanden (File Angabe wäre auch praktisch)
-        :return:
-            normierten feedin für jeden Wetterpunkt in der Region als DataFrame
-        """
-        # (WindTurbines initialisieren)
-        # erstelle WindFarm mit Anlagenanteil entsprechend scaling_dict
-        # erstelle aggregierte Leistungskurve
-        # berechne mittlere Nabenhöhe
-        # for weather_cell in self.weather_cells
-        #   rufe die windpowerlib Cluster ModelChain auf (evtl. bei nur einer
-        #       Anlage einfache ModelChain?)
-        # summiere feedin über alle Zellen
-        # return feedin
-        pass
+    Parameters
+    ----------
+    distribution_dict : dict
+        Dict mit Anlagentyp und Anteil
+        {'1': 0.6, 2: 0.4}
+    technical_parameters : dict oder Liste mit PVSystems
+        Dict mit Inverter, Ausrichtung, etc. der Module (alles was PVSystem
+        benötigt)
+    register : dataframe mit Standort und installierter Leistung für jede
+        Anlage
+    :return:
+        absolute Einspeisung für Region
+    """
+    # define the output series
+    feedin = pd.series()
+    
+    # -> weise jeder Anlage eine Wetterzelle zu (pd.cut) bzw. ersetze lat,lon mit Wetter-Koordinaten 
+        
+    #calculate installed capacity per weathercell
+    installed_capacity= register.groupby(['lat', 'lon'])['capacity'].agg('sum')
+    
+    # -> for weather_cell in register
+
+    #   for each pvsystem initialize the PVSystem
+        for key in technical_parameters:
+            module_dict = technical_parameters[key]
+            pv_system = Photovoltaic(**module_dict)
+            
+            #calculate the feedin and set the scaling to 'area' or 'peak_power'
+            feedin_scaled = pv_system.feedin(
+                    weather=weather_df[['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
+                    location=(lat, lon),
+                    scaling='peak_power', scaling_value=1)
+            
+            # get the distribution for the pv_module
+            dist = distribution_dict[key]
+            # get the local total installed capacity
+            local_installed_capacity = installed_capacity['lat', 'lon']
+            # scale the output with the module_distribution and the local installed capacity
+            module_feedin = feedin_scaled.multiply(dist * local_installed_capacity)
+            # add the module output to the output series
+            feedin = output.add(module_feedin)
+    # return the total feedin time series
+    return feedin
+
 
     def pv_feedin(self, register, assignment_func=None, **kwargs):
         """

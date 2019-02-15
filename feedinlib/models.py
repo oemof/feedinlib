@@ -19,11 +19,21 @@ import pvlib.pvsystem
 class ModelBase(ABC):
     r""" The base class of feedinlib models.
 
+    As this is an abstract property, you have to override it in a subclass
+    so that the model can be instantiated. This forces implementors to make
+    the required parameters for a model explicit, even if they are empty,
+    and gives them a good place to document them.
+
+    By default, this property is settable and its value can be specified
+    via and argument on construction. If you want to keep this
+    functionality, simply delegate all calls to the superclass.
+
     Parameters
     ----------
     required : list of strings, optional
         Containing the names of the required parameters to use the model.
 
+    # ToDo: Docstring
     """
     def __init__(self, **kwargs):
         self._powerplant_requires = kwargs.get("powerplant_requires")
@@ -31,24 +41,14 @@ class ModelBase(ABC):
     @property
     @abstractmethod
     def powerplant_requires(self):
-        """ The (names of the) parameters this model requires in order to
-        calculate the feedin.
+        """ The (names of the) power plant parameters this model requires in
+        order to calculate the feedin.
 
-        As this is an abstract property, you have to override it in a subclass
-        so that the model can be instantiated. This forces implementors to make
-        the required parameters for a model explicit, even if they are empty,
-        and gives them a good place to document them.
-
-        By default, this property is settable and its value can be specified
-        via and argument on construction. If you want to keep this
-        functionality, simply delegate all calls to the superclass.
         """
         return self._powerplant_requires
 
     @powerplant_requires.setter
     def powerplant_requires(self, names):
-        # Returning None rarely makes sense, IMHO.
-        # Returning self at least allows for method chaining.
         self._powerplant_requires = names
         return self
 
@@ -139,8 +139,6 @@ class Pvlib(PhotovoltaicModelBase):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.module = None
-        # Todo kann hier Instanziierung des PV Systems erfolgen?
-        # ToDo Nach Instanziierung area und peak setzen (wie kann ich von hier auf Photovoltaic zugreifen?
 
     def __repr__(self):
         return "pvlib"
@@ -151,7 +149,7 @@ class Pvlib(PhotovoltaicModelBase):
 
         In this feedin model the required parameters are:
 
-        :modul_name: (string) -
+        :module_name: (string) -
             name of a pv module from the sam.nrel database [12]_
         :tilt: (float) -
             tilt angle of the pv module (horizontal=0°)
@@ -165,8 +163,6 @@ class Pvlib(PhotovoltaicModelBase):
             return super().powerplant_requires
         return ["azimuth", "tilt", "module_name", "albedo", "inverter_name"]
 
-    # @Günni: wie festhalten, dass es eine notwendige property für PV ist? Neue abstrakte Klasse einführen?
-    # ToDo: bei parallelen Strängen area anders berechnen?
     @property
     def model_requires(self):
         r""" The parameters this model requires to calculate a feedin.

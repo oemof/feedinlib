@@ -66,7 +66,6 @@ class Base(ABC):
 
         """
         self._required = attributes.get("required")
-        # Günni? ermöglicht das, eine oemof Klasse zu übergeben? Nein, erst Feedin Klasse
         model = attributes.pop("model")
         if isinstance(model, type):
             model = model()

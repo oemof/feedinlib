@@ -52,8 +52,20 @@ class Base(ABC):
         # Returning self at least allows for method chaining.
         return self
 
+    @property
+    @abstractmethod
+    def model_requires(self):
+        """ The (names of the) parameters this model requires in order to
+        calculate the feedin.
 
 class Pvlib(Base):
+        """
+        return self._model_requires
+
+    @model_requires.setter
+    def model_requires(self, names):
+        self._model_requires = names
+        return self
     r"""Model to determine the output of a photovoltaik module
 
     The calculation is based on the library pvlib. [1]_
@@ -119,6 +131,14 @@ class Pvlib(Base):
     # ToDo: bei parallelen Strängen area anders berechnen?
     @property
     def module_area(self):
+    def model_requires(self):
+        r""" The parameters this model requires to calculate a feedin.
+
+        """
+        # @Günni wozu wird das gemacht?
+        if super().powerplant_requires is not None:
+            return super().powerplant_requires
+        return []
         if self.module:
             return self.module.module_parameters.Area
         else:
@@ -238,6 +258,14 @@ class WindpowerlibTurbine(Base):
 
     @property
     def turbine_nominal_power(self):
+    def model_requires(self):
+        r""" The parameters this model requires to calculate a feedin.
+
+        """
+        if super().powerplant_requires is not None:
+            return super().powerplant_requires
+        return []
+
         if self.turbine:
             return self.turbine.nominal_power
         else:

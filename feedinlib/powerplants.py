@@ -122,6 +122,14 @@ class Base(ABC):
                     "argument.".format(k=k, model=self.model))
             else:
                 combined[k] = getattr(self, k)
+        # check if all arguments required by the feedin model are given
+        keys = kwargs.keys()
+        for k in self.model.model_requires:
+            if not k in keys:
+                raise AttributeError(
+                    "The specified model '{model}' requires model "
+                    "parameter '{k}' but it's not provided as an "
+                    "argument.".format(k=k, model=self.model))
         # initially specified power plant parameters are over-written by kwargs
         # which is e.g. useful for parameter variations
         combined.update(kwargs)

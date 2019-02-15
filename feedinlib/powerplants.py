@@ -196,11 +196,11 @@ class Photovoltaic(Base):
 
     @property
     def area(self):
-        return self.model.module_area
+        return self.model.pv_system_area
 
     @property
     def peak_power(self):
-        return self.model.module_peak_power
+        return self.model.pv_system_area
 
 
 class WindPowerPlant(Base):
@@ -242,4 +242,4 @@ class WindPowerPlant(Base):
 
     @property
     def nominal_power(self):
-        return self.model.turbine_nominal_power
+        return self.model.nominal_power_wind_power_plant

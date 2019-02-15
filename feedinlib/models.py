@@ -47,9 +47,9 @@ class Base(ABC):
 
     @powerplant_requires.setter
     def powerplant_requires(self, names):
-        self._required = names
         # Returning None rarely makes sense, IMHO.
         # Returning self at least allows for method chaining.
+        self._powerplant_requires = names
         return self
 
     @property

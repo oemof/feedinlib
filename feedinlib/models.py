@@ -16,7 +16,7 @@ from pvlib.location import Location as PvlibLocation
 import pvlib.pvsystem
 
 
-class Base(ABC):
+class ModelBase(ABC):
     r""" The base class of feedinlib models.
 
     Parameters
@@ -58,7 +58,6 @@ class Base(ABC):
         """ The (names of the) parameters this model requires in order to
         calculate the feedin.
 
-class Pvlib(Base):
         """
         return self._model_requires
 
@@ -66,6 +65,45 @@ class Pvlib(Base):
     def model_requires(self, names):
         self._model_requires = names
         return self
+
+
+class PhotovoltaicModelBase(ModelBase):
+    """
+    Expands model base class ModelBase by PV specific attributes
+
+    """
+    @property
+    @abstractmethod
+    def pv_system_area(self):
+        """ Area of PV system in m²
+
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def pv_system_peak_power(self):
+        """ Peak power of PV system in W
+
+        """
+        pass
+
+
+class WindpowerModelBase(ModelBase):
+    """
+    Expands model base class ModelBase by windpower specific attributes
+
+    """
+    @property
+    @abstractmethod
+    def nominal_power_wind_power_plant(self):
+        """ Nominal power of turbine or wind park
+
+        """
+        pass
+
+
+class Pvlib(PhotovoltaicModelBase):
     r"""Model to determine the output of a photovoltaik module
 
     The calculation is based on the library pvlib. [1]_
@@ -130,7 +168,6 @@ class Pvlib(Base):
     # @Günni: wie festhalten, dass es eine notwendige property für PV ist? Neue abstrakte Klasse einführen?
     # ToDo: bei parallelen Strängen area anders berechnen?
     @property
-    def module_area(self):
     def model_requires(self):
         r""" The parameters this model requires to calculate a feedin.
 
@@ -138,14 +175,17 @@ class Pvlib(Base):
         # @Günni wozu wird das gemacht?
         if super().powerplant_requires is not None:
             return super().powerplant_requires
-        return []
+        return ['location']
+
+    @property
+    def pv_system_area(self):
         if self.module:
             return self.module.module_parameters.Area
         else:
             return None
 
     @property
-    def module_peak_power(self):
+    def pv_system_peak_power(self):
         if self.module:
             return self.module.module_parameters.Impo * \
                    self.module.module_parameters.Vmpo
@@ -212,7 +252,7 @@ class Pvlib(Base):
         return pvlib.pvsystem.retrieve_sam(lib)
 
 
-class WindpowerlibTurbine(Base):
+class WindpowerlibTurbine(WindpowerModelBase):
     r"""Model to determine the output of a wind turbine
 
     Parameters
@@ -257,7 +297,6 @@ class WindpowerlibTurbine(Base):
         return ["hub_height", "name"]
 
     @property
-    def turbine_nominal_power(self):
     def model_requires(self):
         r""" The parameters this model requires to calculate a feedin.
 
@@ -266,6 +305,8 @@ class WindpowerlibTurbine(Base):
             return super().powerplant_requires
         return []
 
+    @property
+    def nominal_power_wind_power_plant(self):
         if self.turbine:
             return self.turbine.nominal_power
         else:

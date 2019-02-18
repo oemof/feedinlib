@@ -114,10 +114,11 @@ class Base(ABC):
         combined = {}
         for k in self.model.powerplant_requires:
             if not hasattr(self, k):
-                raise AttributeError(
-                    "The specified model '{model}' requires power plant "
-                    "parameter '{k}' but it's not provided as an "
-                    "argument.".format(k=k, model=self.model))
+                if not k in kwargs.keys():
+                    raise AttributeError(
+                        "The specified model '{model}' requires power plant "
+                        "parameter '{k}' but it's not provided as an "
+                        "argument.".format(k=k, model=model))
             else:
                 combined[k] = getattr(self, k)
         # check if all arguments required by the feedin model are given

@@ -166,7 +166,9 @@ class Pvlib(PhotovoltaicModelBase):
     @property
     def pv_system_area(self):
         if self.module:
-            return self.module.module_parameters.Area
+            return self.module.module_parameters.Area * \
+                   self.module.strings_per_inverter * \
+                   self.module.modules_per_string
         else:
             return None
 
@@ -174,7 +176,9 @@ class Pvlib(PhotovoltaicModelBase):
     def pv_system_peak_power(self):
         if self.module:
             return self.module.module_parameters.Impo * \
-                   self.module.module_parameters.Vmpo
+                   self.module.module_parameters.Vmpo * \
+                   self.module.strings_per_inverter * \
+                   self.module.modules_per_string
         else:
             return None
 

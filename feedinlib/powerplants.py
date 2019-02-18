@@ -108,11 +108,12 @@ class Base(ABC):
         """
         # @Günni: sollte model hier überschrieben werden?
         # TODO: Document semantics of special keyword arguments.
+        model = self.model
 
         # required power plant arguments are checked again in case a different
         # model to calculate feedin is used than initially specified
         combined = {}
-        for k in self.model.powerplant_requires:
+        for k in model.powerplant_requires:
             if not hasattr(self, k):
                 if not k in kwargs.keys():
                     raise AttributeError(
@@ -121,18 +122,19 @@ class Base(ABC):
                         "argument.".format(k=k, model=model))
             else:
                 combined[k] = getattr(self, k)
+
         # check if all arguments required by the feedin model are given
         keys = kwargs.keys()
-        for k in self.model.model_requires:
+        for k in model.requires:
             if not k in keys:
                 raise AttributeError(
                     "The specified model '{model}' requires model "
                     "parameter '{k}' but it's not provided as an "
-                    "argument.".format(k=k, model=self.model))
+                    "argument.".format(k=k, model=model))
         # initially specified power plant parameters are over-written by kwargs
         # which is e.g. useful for parameter variations
         combined.update(kwargs)
-        return self.model.feedin(weather=weather, **combined)
+        return model.feedin(weather=weather, **combined)
 
     @property
     @abstractmethod

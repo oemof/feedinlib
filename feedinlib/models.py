@@ -16,7 +16,7 @@ from pvlib.location import Location as PvlibLocation
 import pvlib.pvsystem
 
 
-class ModelBase(ABC):
+class Base(ABC):
     r""" The base class of feedinlib models.
 
     As this is an abstract property, you have to override it in a subclass
@@ -67,7 +67,7 @@ class ModelBase(ABC):
         return self
 
 
-class PhotovoltaicModelBase(ModelBase):
+class PhotovoltaicModelBase(Base):
     """
     Expands model base class ModelBase by PV specific attributes
 
@@ -89,7 +89,7 @@ class PhotovoltaicModelBase(ModelBase):
         pass
 
 
-class WindpowerModelBase(ModelBase):
+class WindpowerModelBase(Base):
     """
     Expands model base class ModelBase by windpower specific attributes
 

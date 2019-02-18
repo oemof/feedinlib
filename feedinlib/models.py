@@ -150,7 +150,7 @@ class Pvlib(PhotovoltaicModelBase):
         required = ["azimuth", "tilt", "module_name", "albedo",
                    "inverter_name"]
         if super().powerplant_requires is not None:
-            return super().powerplant_requires.extend(required)
+            required.extend(super().powerplant_requires)
         return required
 
     @property
@@ -160,7 +160,7 @@ class Pvlib(PhotovoltaicModelBase):
         """
         required = ["location"]
         if super().requires is not None:
-            return super().requires.extend(required)
+            required.extend(super().requires)
         return required
 
     @property
@@ -288,7 +288,7 @@ class WindpowerlibTurbine(WindpowerModelBase):
         """
         required = ["hub_height", "name", "fetch_curve"]
         if super().powerplant_requires is not None:
-            return super().powerplant_requires.extend(required)
+            required.extend(super().powerplant_requires)
         return required
 
     @property
@@ -298,7 +298,7 @@ class WindpowerlibTurbine(WindpowerModelBase):
         """
         required = []
         if super().requires is not None:
-            return super().requires.extend(required)
+            required.extend(super().requires)
         return required
 
     @property

@@ -48,12 +48,12 @@ class Base(ABC):
 
     @property
     @abstractmethod
-    def model_requires(self):
+    def requires(self):
         """ The (names of the) parameters this model requires in order to
         calculate the feedin.
 
         """
-        return self._model_requires
+        return self._requires
 
 
 class PhotovoltaicModelBase(Base):
@@ -153,7 +153,7 @@ class Pvlib(PhotovoltaicModelBase):
         return ["azimuth", "tilt", "module_name", "albedo", "inverter_name"]
 
     @property
-    def model_requires(self):
+    def requires(self):
         r""" The parameters this model requires to calculate a feedin.
 
         """
@@ -282,7 +282,7 @@ class WindpowerlibTurbine(WindpowerModelBase):
         return ["hub_height", "name"]
 
     @property
-    def model_requires(self):
+    def requires(self):
         r""" The parameters this model requires to calculate a feedin.
 
         """

@@ -69,7 +69,6 @@ class Base(ABC):
         model = attributes.pop("model")
         if isinstance(model, type):
             model = model()
-        model.powerplant = self  # Günni, wieso wird das gemacht? - Evtl. raus nehmen um keine zyklischen Abhängigkeiten zu haben
         self.model = model
         for k in attributes:
             setattr(self, k, attributes[k])

@@ -182,16 +182,22 @@ class Pvlib(PhotovoltaicModelBase):
         else:
             return None
 
-    def instantiate_module(self):
-        #ToDo könnten weitere Parameter übergeben werden?
-        module = {
-            'module_parameters': self.get_module_data()[self.powerplant.module_name],
-            'inverter_parameters': self.get_converter_data()[self.powerplant.inverter_name],
-            'surface_azimuth': self.powerplant.azimuth,
-            'surface_tilt': self.powerplant.tilt,
-            'albedo': self.powerplant.albedo,
+    def instantiate_module(self, **kwargs):
+        # match all power plant parameters from powerplant_requires property
+        # to pvlib's PVSystem parameters
+        rename = {
+            'module_parameters': self.get_module_data()[
+                kwargs.pop('module_name')],
+            'inverter_parameters': self.get_converter_data()[
+                kwargs.pop('inverter_name')],
+            'surface_azimuth': kwargs.pop('azimuth'),
+            'surface_tilt': kwargs.pop('tilt'),
+            'albedo': kwargs.pop('albedo', None),
+            'surface_type': kwargs.pop('surface_type', None)
         }
-        self.module = PvlibPVSystem(**module)
+        # update kwargs with renamed power plant parameters
+        kwargs.update(rename)
+        self.module = PvlibPVSystem(**kwargs)
         return self.module
 
     def feedin(self, weather, location, **kwargs):
@@ -216,8 +222,7 @@ class Pvlib(PhotovoltaicModelBase):
         # The pvlib's ModelChain class with its default settings is used here to
         # calculate the power output. See the documentation of the pvlib if you
         # want to learn more about the ModelChain.
-
-        mc = PvlibModelChain(self.instantiate_module(),
+        mc = PvlibModelChain(self.instantiate_module(**kwargs),
                              PvlibLocation(latitude=location[0], longitude=location[1],
                                            tz=weather.index.tz))
         # Todo Wetterdatenaufbereitung auslagern
@@ -303,14 +308,17 @@ class WindpowerlibTurbine(WindpowerModelBase):
         else:
             return None
 
-    def instantiate_turbine(self):
-        # ToDo: weitere kwargs zulassen
-        turbine = {
-            'name': self.powerplant.name,
-            'hub_height': self.powerplant.hub_height,
-            'fetch_curve': self.powerplant.fetch_curve
+    def instantiate_turbine(self, **kwargs):
+        # match all power plant parameters from powerplant_requires property
+        # to windpowerlib's WindTurbine parameters
+        rename = {
+            'name': kwargs.pop('name'),
+            'hub_height': kwargs.pop('hub_height'),
+            'fetch_curve': kwargs.pop('fetch_curve')
         }
-        self.turbine = WindpowerlibWindTurbine(**turbine)
+        # update kwargs with renamed power plant parameters
+        kwargs.update(rename)
+        self.turbine = WindpowerlibWindTurbine(**kwargs)
         return self.turbine
 
     def feedin(self, weather, **kwargs):
@@ -321,8 +329,9 @@ class WindpowerlibTurbine(WindpowerModelBase):
         weather : feedinlib Weather Object # @Günni, auch windpowerlibformat erlaubt?
         """
         # ToDo Zeitraum einführen (time_span)
-        return WindpowerlibModelChain(self.instantiate_turbine()).run_model(
-            weather).power_output
+        mc = WindpowerlibModelChain(self.instantiate_turbine(**kwargs),
+                                    **kwargs)
+        return mc.run_model(weather).power_output
 
 
 if __name__ == "__main__":

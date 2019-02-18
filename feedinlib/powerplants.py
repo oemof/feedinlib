@@ -202,7 +202,7 @@ class Photovoltaic(Base):
 
     @property
     def peak_power(self):
-        return self.model.pv_system_area
+        return self.model.pv_system_peak_power
 
 
 class WindPowerPlant(Base):

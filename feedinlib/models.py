@@ -36,7 +36,6 @@ class Base(ABC):
     # ToDo: Docstring
     """
     def __init__(self, **kwargs):
-        self._powerplant_requires = kwargs.get("powerplant_requires")
 
     @property
     @abstractmethod
@@ -47,11 +46,6 @@ class Base(ABC):
         """
         return self._powerplant_requires
 
-    @powerplant_requires.setter
-    def powerplant_requires(self, names):
-        self._powerplant_requires = names
-        return self
-
     @property
     @abstractmethod
     def model_requires(self):
@@ -60,11 +54,6 @@ class Base(ABC):
 
         """
         return self._model_requires
-
-    @model_requires.setter
-    def model_requires(self, names):
-        self._model_requires = names
-        return self
 
 
 class PhotovoltaicModelBase(Base):

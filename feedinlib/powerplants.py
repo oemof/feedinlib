@@ -151,12 +151,12 @@ class Base(ABC):
         via and argument on construction. If you want to keep this
         functionality, simply delegate all calls to the superclass.
         """
-        return self._required
 
     @required.setter
     def required(self, names):
         self._required = names
         return self
+        return []
 
 
 class Photovoltaic(Base):
@@ -192,9 +192,10 @@ class Photovoltaic(Base):
 
         Check powerplant_requires
         """
+        required = self.model.powerplant_requires
         if super().required is not None:
-            return super().required
-        return self.model.powerplant_requires
+            required.extend(super().required)
+        return required
 
     @property
     def area(self):
@@ -228,9 +229,10 @@ class WindPowerPlant(Base):
     def required(self):
         r""" The wind turbine parameters the specified model requires.
         """
+        required = self.model.powerplant_requires
         if super().required is not None:
-            return super().required
-        return self.model.powerplant_requires
+            required.extend(super().required)
+        return required
 
     def feedin(self, weather, scaling=None, scaling_value=1, **kwargs):
         feedin = super().feedin(weather, **kwargs)

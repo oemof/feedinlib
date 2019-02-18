@@ -269,7 +269,7 @@ class WindpowerlibTurbine(WindpowerModelBase):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.nominal_power_wind_turbine = None
+        self.turbine = None
 
     def __repr__(self):
         return "windpowerlib"

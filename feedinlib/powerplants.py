@@ -69,13 +69,15 @@ class Base(ABC):
         if isinstance(model, type):
             model = model()
         self.model = model
-        for k in attributes:
-            setattr(self, k, attributes[k])
+
+        self.parameters = attributes
+
+        parameters_keys = attributes.keys()
         for k in self.required:
-            if not hasattr(self, k):
-                raise AttributeError(
-                    "Your model requires {k}".format(k=k) +
-                    " but it's not provided as an argument.")
+            if k not in parameters_keys:
+                raise KeyError(
+                    "The specified model requires the power plant parameter "
+                    "{k} but it's not provided as an argument.".format(k=k))
 
     @abstractmethod
     def feedin(self, weather, **kwargs):
@@ -112,15 +114,14 @@ class Base(ABC):
         # required power plant arguments are checked again in case a different
         # model to calculate feedin is used than initially specified
         combined = {}
-        for k in model.powerplant_requires:
-            if not hasattr(self, k):
-                if not k in kwargs.keys():
-                    raise AttributeError(
-                        "The specified model '{model}' requires power plant "
-                        "parameter '{k}' but it's not provided as an "
-                        "argument.".format(k=k, model=model))
+        for k in self.required:
+            if k not in self.parameters:
+                raise AttributeError(
+                    "The specified model '{model}' requires power plant "
+                    "parameter '{k}' but it's not provided as an "
+                    "argument.".format(k=k, model=model))
             else:
-                combined[k] = getattr(self, k)
+                combined[k] = self.parameters[k]
 
         # check if all arguments required by the feedin model are given
         keys = kwargs.keys()

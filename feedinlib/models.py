@@ -36,6 +36,8 @@ class Base(ABC):
     # ToDo: Docstring
     """
     def __init__(self, **kwargs):
+        self._powerplant_requires = None
+        self._requires = None
 
     @property
     @abstractmethod
@@ -145,19 +147,21 @@ class Pvlib(PhotovoltaicModelBase):
             albedo factor arround the module
         """
         # ToDo maybe add method to assign suitable inverter if none is specified
+        required = ["azimuth", "tilt", "module_name", "albedo",
+                   "inverter_name"]
         if super().powerplant_requires is not None:
-            return super().powerplant_requires
-        return ["azimuth", "tilt", "module_name", "albedo", "inverter_name"]
+            return super().powerplant_requires.extend(required)
+        return required
 
     @property
     def requires(self):
         r""" The parameters this model requires to calculate a feedin.
 
         """
-        # @Günni wozu wird das gemacht?
-        if super().powerplant_requires is not None:
-            return super().powerplant_requires
-        return ['location']
+        required = ["location"]
+        if super().requires is not None:
+            return super().requires.extend(required)
+        return required
 
     @property
     def pv_system_area(self):
@@ -273,19 +277,20 @@ class WindpowerlibTurbine(WindpowerModelBase):
             Name of the wind converter type. Use self.get_wind_pp_types() to
             see a list of all possible wind converters.
         """
-
+        required = ["hub_height", "name", "fetch_curve"]
         if super().powerplant_requires is not None:
-            return super().powerplant_requires
-        return ["hub_height", "name"]
+            return super().powerplant_requires.extend(required)
+        return required
 
     @property
     def requires(self):
         r""" The parameters this model requires to calculate a feedin.
 
         """
-        if super().powerplant_requires is not None:
-            return super().powerplant_requires
-        return []
+        required = []
+        if super().requires is not None:
+            return super().requires.extend(required)
+        return required
 
     @property
     def nominal_power_wind_power_plant(self):

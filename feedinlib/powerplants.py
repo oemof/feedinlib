@@ -65,7 +65,6 @@ class Base(ABC):
                                   actually calculate the feedin.
 
         """
-        self._required = attributes.get("required")
         model = attributes.pop("model")
         if isinstance(model, type):
             model = model()
@@ -151,11 +150,6 @@ class Base(ABC):
         via and argument on construction. If you want to keep this
         functionality, simply delegate all calls to the superclass.
         """
-
-    @required.setter
-    def required(self, names):
-        self._required = names
-        return self
         return []
 
 

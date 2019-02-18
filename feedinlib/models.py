@@ -67,7 +67,6 @@ class PhotovoltaicModelBase(Base):
         """ Area of PV system in m²
 
         """
-        pass
 
     @property
     @abstractmethod
@@ -75,7 +74,6 @@ class PhotovoltaicModelBase(Base):
         """ Peak power of PV system in W
 
         """
-        pass
 
 
 class WindpowerModelBase(Base):
@@ -89,7 +87,6 @@ class WindpowerModelBase(Base):
         """ Nominal power of turbine or wind park
 
         """
-        pass
 
 
 class Pvlib(PhotovoltaicModelBase):

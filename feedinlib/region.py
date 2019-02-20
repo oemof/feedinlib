@@ -98,24 +98,24 @@ def pv_feedin_distribution_register(self, distribution_dict, technical_parameter
     # -> for weather_cell in register
 
     #   for each pvsystem initialize the PVSystem
-        for key in technical_parameters:
-            module_dict = technical_parameters[key]
-            pv_system = Photovoltaic(**module_dict)
-            
-            #calculate the feedin and set the scaling to 'area' or 'peak_power'
-            feedin_scaled = pv_system.feedin(
-                    weather=weather_df[['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
-                    location=(lat, lon),
-                    scaling='peak_power', scaling_value=1)
-            
-            # get the distribution for the pv_module
-            dist = distribution_dict[key]
-            # get the local total installed capacity
-            local_installed_capacity = installed_capacity['lat', 'lon']
-            # scale the output with the module_distribution and the local installed capacity
-            module_feedin = feedin_scaled.multiply(dist * local_installed_capacity)
-            # add the module output to the output series
-            feedin = output.add(module_feedin)
+    for key in technical_parameters:
+        module_dict = technical_parameters[key]
+        pv_system = Photovoltaic(**module_dict)
+
+        #calculate the feedin and set the scaling to 'area' or 'peak_power'
+        feedin_scaled = pv_system.feedin(
+                weather=weather_df[['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
+                location=(lat, lon),
+                scaling='peak_power', scaling_value=1)
+
+        # get the distribution for the pv_module
+        dist = distribution_dict[key]
+        # get the local total installed capacity
+        local_installed_capacity = installed_capacity['lat', 'lon']
+        # scale the output with the module_distribution and the local installed capacity
+        module_feedin = feedin_scaled.multiply(dist * local_installed_capacity)
+        # add the module output to the output series
+        feedin = output.add(module_feedin)
     # return the total feedin time series
     return feedin
 

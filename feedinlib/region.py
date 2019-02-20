@@ -1,7 +1,8 @@
-import xarray as xr
+import xarray as xr # todo add to setup
 import numpy as np
 import pandas as pd
 
+from feedinlib import tools
 
 class Region:
     """
@@ -13,7 +14,8 @@ class Region:
         :param geom: polygon
         :param weather: Weather Objekt
         """
-        pass
+        self.geom = geom
+        self.weather = weather
 
     def wind_feedin(self, register, assignment_func=None, snapshots=None,
                     **kwargs):
@@ -37,6 +39,22 @@ class Region:
         :return: feedin
             absolute Einspeisung für Region
         """
+        tools.add_weather_locations_to_register(
+            register=register,
+            weather_coordinates=self.weather)  # todo line below! - now just dummy weather
+        # register=register, weather_coordinates=self.weather.locations) # todo: use function for retrieving all possible weather locations as df[['lat', 'lon']]
+        weather_locations = register[['weather_lat', 'weather_lon']].groupby(
+            ['weather_lat', 'weather_lon']).size().reset_index().drop([0],
+                                                                      axis=1)
+        for weather_location in [list(weather_locations.iloc[index])
+                                 for index in weather_locations.index]:
+            # select power plants beloning to weather location
+            power_plants = register.loc[
+                (register['weather_lat'] == weather_location[0]) & (
+                        register['weather_lon'] == weather_location[
+                    1])]  # todo: nicer way?
+            # todo: assignment func
+
         # weise jeder Anlage eine Wetterzelle zu
         # for weather_cell in self.weather_cells
         #   filtere Anlagen in Wetterzelle

@@ -2,6 +2,8 @@ import feedinlib.tools as tools
 import pandas as pd
 import os
 
+from feedinlib import region
+
 # loading weather data
 filename = os.path.abspath('/home/sabine/rl-institut/04_Projekte/163_Open_FRED/03-Projektinhalte/AP2 Wetterdaten/open_FRED_TestWetterdaten_csv/fred_data_2016_sh.csv')
 weather_df = pd.read_csv(filename,
@@ -25,5 +27,10 @@ with pd.HDFStore('opsd_temp.h5') as hdf_store:
     register = hdf_store.get('pp_data')
 register = register.loc[register['energy_source_level_2'] == 'Wind'][0:10]
 
-adapted_register = tools.add_weather_locations_to_register(
-    register, weather_coordinates=weather_df)
+# adapted_register = tools.add_weather_locations_to_register(
+#     register, weather_coordinates=weather_df)
+
+
+# use region feedin
+example_region = region.Region(geom='no_geom', weather=weather_df)
+feedin = example_region.wind_feedin(register)

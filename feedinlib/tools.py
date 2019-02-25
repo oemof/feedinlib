@@ -68,8 +68,9 @@ def add_weather_locations_to_register(register, weather_coordinates):
     """
     if register[['lat', 'lon']].isnull().values.any():
         raise ValueError("Missing coordinates in power plant register.")
-    register[['weather_lat', 'weather_lon']] = register[['lat', 'lon']].apply(
-        lambda x: get_closest_coordinates(weather_coordinates, x), axis=1,
-        result_type='expand')
+    closest_coordinates =  get_closest_coordinates(
+        weather_coordinates, register[['lat', 'lon']]).set_index(
+        register.index)
+    register[['weather_lat', 'weather_lon']] = closest_coordinates
     return register
 

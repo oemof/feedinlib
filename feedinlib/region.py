@@ -1,7 +1,8 @@
-import xarray as xr
+import xarray as xr # todo add to setup
 import numpy as np
 import pandas as pd
 
+from feedinlib import tools
 
 class Region:
     """
@@ -13,7 +14,8 @@ class Region:
         :param geom: polygon
         :param weather: Weather Objekt
         """
-        pass
+        self.geom = geom
+        self.weather = weather
 
     def wind_feedin(self, register, assignment_func=None, snapshots=None,
                     **kwargs):
@@ -37,6 +39,22 @@ class Region:
         :return: feedin
             absolute Einspeisung für Region
         """
+        tools.add_weather_locations_to_register(
+            register=register,
+            weather_coordinates=self.weather)  # todo line below! - now just dummy weather
+        # register=register, weather_coordinates=self.weather.locations) # todo: use function for retrieving all possible weather locations as df[['lat', 'lon']]
+        weather_locations = register[['weather_lat', 'weather_lon']].groupby(
+            ['weather_lat', 'weather_lon']).size().reset_index().drop([0],
+                                                                      axis=1)
+        for weather_location in [list(weather_locations.iloc[index])
+                                 for index in weather_locations.index]:
+            # select power plants beloning to weather location
+            power_plants = register.loc[
+                (register['weather_lat'] == weather_location[0]) & (
+                        register['weather_lon'] == weather_location[
+                    1])]  # todo: nicer way?
+            # todo: assignment func
+
         # weise jeder Anlage eine Wetterzelle zu
         # for weather_cell in self.weather_cells
         #   filtere Anlagen in Wetterzelle
@@ -80,24 +98,24 @@ def pv_feedin_distribution_register(self, distribution_dict, technical_parameter
     # -> for weather_cell in register
 
     #   for each pvsystem initialize the PVSystem
-        for key in technical_parameters:
-            module_dict = technical_parameters[key]
-            pv_system = Photovoltaic(**module_dict)
-            
-            #calculate the feedin and set the scaling to 'area' or 'peak_power'
-            feedin_scaled = pv_system.feedin(
-                    weather=weather_df[['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
-                    location=(lat, lon),
-                    scaling='peak_power', scaling_value=1)
-            
-            # get the distribution for the pv_module
-            dist = distribution_dict[key]
-            # get the local total installed capacity
-            local_installed_capacity = installed_capacity['lat', 'lon']
-            # scale the output with the module_distribution and the local installed capacity
-            module_feedin = feedin_scaled.multiply(dist * local_installed_capacity)
-            # add the module output to the output series
-            feedin = output.add(module_feedin)
+    for key in technical_parameters:
+        module_dict = technical_parameters[key]
+        pv_system = Photovoltaic(**module_dict)
+
+        #calculate the feedin and set the scaling to 'area' or 'peak_power'
+        feedin_scaled = pv_system.feedin(
+                weather=weather_df[['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
+                location=(lat, lon),
+                scaling='peak_power', scaling_value=1)
+
+        # get the distribution for the pv_module
+        dist = distribution_dict[key]
+        # get the local total installed capacity
+        local_installed_capacity = installed_capacity['lat', 'lon']
+        # scale the output with the module_distribution and the local installed capacity
+        module_feedin = feedin_scaled.multiply(dist * local_installed_capacity)
+        # add the module output to the output series
+        feedin = output.add(module_feedin)
     # return the total feedin time series
     return feedin
 

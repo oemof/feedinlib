@@ -17,6 +17,15 @@ weather_df.columns = [weather_df.axes[1].levels[0][
                       weather_df.axes[1].levels[1][
                           weather_df.axes[1].labels[1]].astype(int)]
 
+# list
 closest_coordinates = tools.get_closest_coordinates(
     weather_coordinates=weather_df, pp_location=[11.2, 52.3])
 print(closest_coordinates)
+
+# dataframe
+df = pd.DataFrame([[51.2, 52.2, 51.0], [11.2, 12.2, 11.0]]).transpose().rename(columns={0: 'lat', 1: 'lon'})
+
+coordinates = tools.get_closest_coordinates(
+    weather_coordinates=weather_df, pp_location=df)
+
+print(coordinates)

@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 from feedinlib import tools
+from feedinlib import WindPowerPlant
 
 class Region:
     """
@@ -39,21 +40,56 @@ class Region:
         :return: feedin
             absolute Einspeisung für Region
         """
+        # todo @Birgit: parameters in **kwargs? f.e. 'fetch_turbine'
         tools.add_weather_locations_to_register(
             register=register,
-            weather_coordinates=self.weather)  # todo line below! - now just dummy weather
-        # register=register, weather_coordinates=self.weather.locations) # todo: use function for retrieving all possible weather locations as df[['lat', 'lon']]
+            weather_coordinates=self.weather)
+        # todo: use function for retrieving all possible weather locations as
+        #  df[['lat', 'lon']] instead of the above
+        # register=register, weather_coordinates=self.weather.locations)
         weather_locations = register[['weather_lat', 'weather_lon']].groupby(
             ['weather_lat', 'weather_lon']).size().reset_index().drop([0],
                                                                       axis=1)
+        # initialize wind turbine objects for each turbine type in register
+        turbine_data = register.groupby(
+            ['turbine_type', 'hub_height',
+             'rotor_diameter']).size().reset_index().drop(0, axis=1).rename(
+            columns={'turbine_type': 'name'})
+        # turbine = WindPowerPlant(fetch_curve='power_curve',
+        #                          **dict(turbine_data.loc[0])) # todo delete
+        turbine_data['turbine'] = turbine_data.apply(
+            lambda x: WindPowerPlant(fetch_curve='power_curve',
+                                     **dict(x)), axis=1) # todo fetch_curve und andere parameter wo?
+        turbine_data.index = turbine_data[['name', 'hub_height',
+             'rotor_diameter']].apply(lambda x: '_'.join(x), axis=1)
+        turbines_region = dict(turbine_data['turbine'])
+        feedin_df = pd.DataFrame()
         for weather_location in [list(weather_locations.iloc[index])
                                  for index in weather_locations.index]:
-            # select power plants beloning to weather location
+            # select power plants belonging to weather location
             power_plants = register.loc[
                 (register['weather_lat'] == weather_location[0]) & (
-                        register['weather_lon'] == weather_location[
-                    1])]  # todo: nicer way?
+                    register['weather_lon'] == weather_location[1])]  # todo: nicer way?
             # todo: assignment func
+            # prepare power plants for windpowerlib TurbineClusterModelChain
+            # todo HIER WEITER: klare turbine id in register!!!! dann einfach anlage aus dict auswählen.
+            turbines_weather = pd.merge(power_plants.groupby(
+                ['turbine_type', 'hub_height',
+                 'rotor_diameter']).size().reset_index().drop(0,
+                                                              axis=1).rename(
+                columns={'turbine_type': 'name'}), turbines_region, how='inner', left_on='')
+
+
+                # for  group in groupby
+                    # sum up capacity
+                    # amount of turbines of one turbine type
+                # initialize wind farm
+                # run TurbineClusterModelChain
+            # turbine.feedin(weather=self.weather)
+            # todo: if nur ein turbine_type --> ModelChain verwenden??
+            feedin_df = pd.concat(feedin_df, feedin)
+
+        feedin = feedin_df.sum(axis=1)
 
         # weise jeder Anlage eine Wetterzelle zu
         # for weather_cell in self.weather_cells
@@ -65,7 +101,7 @@ class Region:
         #       Anlage einfache ModelChain?)
         # summiere feedin über alle Zellen
         # return feedin
-        pass
+        return feedin
 
 def pv_feedin_distribution_register(self, distribution_dict, technical_parameters, register):
     """

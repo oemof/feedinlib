@@ -1,6 +1,10 @@
 import xarray as xr # todo add to setup
 import numpy as np
 import pandas as pd
+# delete this imports after windpowerlib integration
+from windpowerlib.wind_turbine import WindTurbine
+from windpowerlib.wind_farm import WindFarm
+from windpowerlib.turbine_cluster_modelchain import TurbineClusterModelChain
 
 from feedinlib import tools
 from feedinlib import WindPowerPlant
@@ -27,8 +31,12 @@ class Region:
 
         Parameters
         ------------
-        register : dataframe mit Standort und installierter Leistung für jede
-            Anlage
+        register : pd.DataFrame
+        Contains power plant data and location of each power plant in columns
+        'lat' (latitude) and 'lon' (longitude). Required power plant data:
+        turbine type in column 'name', hub height in m in column 'hub_height'.
+        Optional data: rotor diameter in m in 'rotor_diameter'.
+        todo what about nominal power - comes from oedb. Aber wenn eigene leistungskurve angegeben wird...
         assignment_func : Funktion, die Anlagen in einer Wetterzelle mit
             Information zu Leistung und Standort sowie die mittl.
             Windgeschwindigkeit der Wetterzelle bekommt und jeder Anlage einen
@@ -37,8 +45,11 @@ class Region:
 
         power_curves : optional, falls eigene power_curves vorgegeben werde
             sollen
-        :return: feedin
-            absolute Einspeisung für Region
+        Returns
+        -------
+        feedin : pd.Series
+            Absolute feed-in of wind power plants in region in todo: unit W.
+
         """
         # todo @Birgit: parameters in **kwargs? f.e. 'fetch_turbine'
         tools.add_weather_locations_to_register(
@@ -50,47 +61,61 @@ class Region:
         weather_locations = register[['weather_lat', 'weather_lon']].groupby(
             ['weather_lat', 'weather_lon']).size().reset_index().drop([0],
                                                                       axis=1)
-        # initialize wind turbine objects for each turbine type in register
+        # get turbine types (and data) from register
         turbine_data = register.groupby(
-            ['turbine_type', 'hub_height',
-             'rotor_diameter']).size().reset_index().drop(0, axis=1).rename(
-            columns={'turbine_type': 'name'})
-        # turbine = WindPowerPlant(fetch_curve='power_curve',
-        #                          **dict(turbine_data.loc[0])) # todo delete
+            ['name', 'hub_height',
+             'rotor_diameter']).size().reset_index().drop(0, axis=1)
+        # initialize wind turbine objects for each turbine type in register
         turbine_data['turbine'] = turbine_data.apply(
-            lambda x: WindPowerPlant(fetch_curve='power_curve',
-                                     **dict(x)), axis=1) # todo fetch_curve und andere parameter wo?
+            lambda x: WindTurbine(fetch_curve='power_curve', **x), axis=1)  # todo use feedinlib WindPowerPlant, see below
+        # turbine_data['turbine'] = turbine_data.apply(
+        #     lambda x: WindPowerPlant(fetch_curve='power_curve',
+        #                              **x), axis=1) # todo fetch_curve und andere parameter wo?
         turbine_data.index = turbine_data[['name', 'hub_height',
-             'rotor_diameter']].apply(lambda x: '_'.join(x), axis=1)
+             'rotor_diameter']].applymap(str).apply(lambda x: '_'.join(x),
+                                                    axis=1)
         turbines_region = dict(turbine_data['turbine'])
-        feedin_df = pd.DataFrame()
-        for weather_location in [list(weather_locations.iloc[index])
-                                 for index in weather_locations.index]:
+
+        region_feedin_df = pd.DataFrame()
+        for weather_location, weather_index in zip([list(weather_locations.iloc[index])
+                                 for index in weather_locations.index],
+                                    weather_locations.index): # todo: weather id....
             # select power plants belonging to weather location
             power_plants = register.loc[
                 (register['weather_lat'] == weather_location[0]) & (
                     register['weather_lon'] == weather_location[1])]  # todo: nicer way?
             # todo: assignment func
             # prepare power plants for windpowerlib TurbineClusterModelChain
-            # todo HIER WEITER: klare turbine id in register!!!! dann einfach anlage aus dict auswählen.
-            turbines_weather = pd.merge(power_plants.groupby(
-                ['turbine_type', 'hub_height',
-                 'rotor_diameter']).size().reset_index().drop(0,
-                                                              axis=1).rename(
-                columns={'turbine_type': 'name'}), turbines_region, how='inner', left_on='')
+            turbine_types_location = power_plants.groupby(
+                'id').size().reset_index().drop(0, axis=1)
+            wind_farm_data = {'name': 'todo',
+                              'wind_turbine_fleet': []}
+            for turbine_type in turbine_types_location['id']:
+                capacity = power_plants.loc[
+                    power_plants['id'] == turbine_type]['capacity'].sum() # todo IMPORTANT which unit?
+                wind_farm_data['wind_turbine_fleet'].append(
+                    {'wind_turbine': turbines_region[turbine_type],
+                'number_of_turbines': capacity/turbines_region[turbine_type].nominal_power}) # todo: adapt to feedinlib WindPowerPlant
 
-
-                # for  group in groupby
-                    # sum up capacity
-                    # amount of turbines of one turbine type
-                # initialize wind farm
-                # run TurbineClusterModelChain
-            # turbine.feedin(weather=self.weather)
+            # initialize wind farm and run TurbineClusterModelChain
+            # todo: WindFarm model in feedinlib
+            # todo: windpowerlib specific part from here in feedin()
+            # todo: how to include parameters
             # todo: if nur ein turbine_type --> ModelChain verwenden??
-            feedin_df = pd.concat(feedin_df, feedin)
-
-        feedin = feedin_df.sum(axis=1)
-
+            wind_farm = WindFarm(**wind_farm_data)
+            # select weather of weather location and drop location index
+            weather = self.weather.loc[
+                (self.weather.index.get_level_values('lat') ==
+                 weather_location[0]) & (
+                        self.weather.index.get_level_values('lon') ==
+                        weather_location[1])].droplevel(level=[1, 2])
+            feedin_ts = TurbineClusterModelChain(wind_farm).run_model(
+                    weather).power_output
+            feedin_df = pd.DataFrame(data=feedin_ts).rename(
+                columns={feedin_ts.name: 'feedin_{}'.format(weather_index)})
+            region_feedin_df = pd.concat([region_feedin_df, feedin_df], axis=1)
+        feedin = feedin_df.sum(axis=1).rename('feedin_wind')
+        # todo delete skeleton:
         # weise jeder Anlage eine Wetterzelle zu
         # for weather_cell in self.weather_cells
         #   filtere Anlagen in Wetterzelle

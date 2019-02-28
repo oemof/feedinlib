@@ -78,4 +78,4 @@ def pv_feedin_distribution_register(distribution_dict,
             #        # add the module output to the output series
             output = output.add(other=module_feedin, fill_value=0)
 
-    return module_feedin
+    return output

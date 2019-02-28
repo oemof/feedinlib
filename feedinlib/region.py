@@ -1,8 +1,9 @@
 import xarray as xr # todo add to setup
 import numpy as np
 import pandas as pd
-
+import os
 from feedinlib import tools
+from feedinlib import Photovoltaic, WindPowerPlant
 
 class Region:
     """
@@ -67,7 +68,8 @@ class Region:
         # return feedin
         pass
 
-def pv_feedin_distribution_register(self, distribution_dict, technical_parameters, register):
+def pv_feedin_distribution_register(self, distribution_dict,
+                                    technical_parameters, register):
     """
     Innerhalb eines Wetterpunktes werden die Anlagen entsprechend des
     distribution_dict gewichtet. Jeder Wetterpunkt wird entsprechend der
@@ -87,37 +89,60 @@ def pv_feedin_distribution_register(self, distribution_dict, technical_parameter
     :return:
         absolute Einspeisung für Region
     """
-    # define the output series
-    feedin = pd.series()
-    
-    # -> weise jeder Anlage eine Wetterzelle zu (pd.cut) bzw. ersetze lat,lon mit Wetter-Koordinaten 
-        
-    #calculate installed capacity per weathercell
-    installed_capacity= register.groupby(['lat', 'lon'])['capacity'].agg('sum')
-    
-    # -> for weather_cell in register
 
-    #   for each pvsystem initialize the PVSystem
-    for key in technical_parameters:
-        module_dict = technical_parameters[key]
-        pv_system = Photovoltaic(**module_dict)
+    #lese Wetterdaten ein und preprocessing todo: hier Openfred-daten einsetzen
 
-        #calculate the feedin and set the scaling to 'area' or 'peak_power'
-        feedin_scaled = pv_system.feedin(
-                weather=weather_df[['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
-                location=(lat, lon),
-                scaling='peak_power', scaling_value=1)
+    output=pd.Series()
+    filename = os.path.abspath(
+        "/home/local/RL-INSTITUT/inia.steinbach/mount_ordner/04_Projekte/163_Open_FRED/03-Projektinhalte/AP2 Wetterdaten/open_FRED_TestWetterdaten_csv/fred_data_test_2016.csv")
+    if not os.path.isfile(filename):
+        raise FileNotFoundError("Please adjust the path.")
+    weather_df = pd.read_csv(filename, skiprows=range(1, 50), nrows=(5000),
+                             index_col=0,
+                             date_parser=lambda idx: pd.to_datetime(idx,
+                                                                    utc=True))
+    weather_df.index = pd.to_datetime(weather_df.index).tz_convert(
+        'Europe/Berlin')
+    # temperature in degree Celsius instead of Kelvin
+    # weather_df['temp_air'] = weather_df.temp_air - 273.15
+    # calculate ghi
+    weather_df['ghi'] = weather_df.dirhi + weather_df.dhi
+    # weather_df.rename(columns={'v_wind': 'wind_speed'}, inplace=True)
+    df = weather_df.dropna()
 
-        # get the distribution for the pv_module
-        dist = distribution_dict[key]
-        # get the local total installed capacity
-        local_installed_capacity = installed_capacity['lat', 'lon']
-        # scale the output with the module_distribution and the local installed capacity
-        module_feedin = feedin_scaled.multiply(dist * local_installed_capacity)
-        # add the module output to the output series
-        feedin = output.add(module_feedin)
-    # return the total feedin time series
-    return feedin
+    register_pv_locations = tools.add_weather_locations_to_register(
+        register=register, weather_coordinates=weather_df)
+
+    # calculate installed capacity per weathercell
+    installed_capacity = register_pv_locations.groupby(
+        ['weather_lat', 'weather_lon'])['capacity'].agg('sum').reset_index()
+
+    for index, row in installed_capacity.iterrows():
+        for key in technical_parameters.keys():
+            module = technical_parameters[key]
+            pv_system = Photovoltaic(**module)
+            lat = row['weather_lat']
+            lon = row['weather_lon']
+            weather = df.loc[(df['lat'] == lat) & (df['lon'] == lon)]
+            # calculate the feedin and set the scaling to 'area' or 'peak_power'
+            feedin = pv_system.feedin(
+                weather=weather[
+                    ['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
+                location=(lat, lon))
+            feedin_scaled = pv_system.feedin(
+                weather=weather[
+                    ['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
+                location=(lat, lon), scaling='peak_power', scaling_value=10)
+            # get the distribution for the pv_module
+            dist = distribution_dict[key]
+            local_installed_capacity = row['capacity']
+            # scale the output with the module_distribution and the local installed capacity
+            module_feedin = feedin_scaled.multiply(
+                dist * local_installed_capacity)
+            #        # add the module output to the output series
+            output = output.add(other=module_feedin, fill_value=0)
+
+    return output
 
 
     def pv_feedin(self, register, assignment_func=None, **kwargs):

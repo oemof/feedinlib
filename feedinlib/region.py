@@ -274,7 +274,8 @@ def pv_feedin_distribution_register(self, distribution_dict, technical_parameter
 
 def assignment_func_mean_wind_speed(register, weather):
     """
-
+    todo move function from feedin_germany here (assign_turbine_data_by_wind_zone)
+        after windzones were loaded into oedb
     :param register:
     :param weather: Dataarray mit Wetter einer Wetterzelle
     :return: register mit zusätzlich Anlagentyp und Nabenhöhe

@@ -104,7 +104,6 @@ class Region:
             # initialize wind farm and run TurbineClusterModelChain
             # todo: WindFarm model in feedinlib
             # todo: windpowerlib specific part from here in feedin()
-            # todo: how to include parameters
             # todo: if nur ein turbine_type --> ModelChain verwenden??
             wind_farm = WindFarm(**wind_farm_data)
             # select weather of weather location and drop location index
@@ -113,8 +112,9 @@ class Region:
                  weather_location[0]) & (
                         self.weather.index.get_level_values('lon') ==
                         weather_location[1])].droplevel(level=[1, 2])
-            feedin_ts = TurbineClusterModelChain(wind_farm).run_model(
-                    weather).power_output
+            feedin_ts = TurbineClusterModelChain(wind_farm,
+                                                 **kwargs).run_model(
+                weather).power_output
             feedin_df = pd.DataFrame(data=feedin_ts).rename(
                 columns={feedin_ts.name: 'feedin_{}'.format(weather_index)})
             region_feedin_df = pd.concat([region_feedin_df, feedin_df], axis=1)

@@ -329,8 +329,9 @@ class WindpowerlibTurbine(WindpowerModelBase):
         weather : feedinlib Weather Object # @Günni, auch windpowerlibformat erlaubt?
         """
         # ToDo Zeitraum einführen (time_span)
-        mc = WindpowerlibModelChain(self.instantiate_turbine(**kwargs),
-                                    **kwargs)
+        # mc = WindpowerlibModelChain(self.instantiate_turbine(**kwargs),
+        #                             **kwargs)  # todo: @ Birgit: cannot be kwargs --> f.e. 'hub_height' no parameter of ModelChain
+        mc = WindpowerlibModelChain(self.instantiate_turbine(**kwargs)) # make it work for now, todo delete this line
         return mc.run_model(weather).power_output
 
 

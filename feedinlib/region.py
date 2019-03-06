@@ -1,7 +1,7 @@
 import xarray as xr # todo add to setup
 import numpy as np
 import pandas as pd
-# delete this imports after windpowerlib integration
+# delete these imports after windpowerlib integration
 from windpowerlib.wind_turbine import WindTurbine
 from windpowerlib.wind_farm import WindFarm
 from windpowerlib.turbine_cluster_modelchain import TurbineClusterModelChain
@@ -32,19 +32,23 @@ class Region:
         Parameters
         ------------
         register : pd.DataFrame
-        Contains power plant data and location of each power plant in columns
-        'lat' (latitude) and 'lon' (longitude). Required power plant data:
-        turbine type in column 'name', hub height in m in column 'hub_height'.
-        Optional data: rotor diameter in m in 'rotor_diameter'.
-        todo what about nominal power - comes from oedb. Aber wenn eigene leistungskurve angegeben wird...
+            Contains power plant data and location of each power plant in columns
+            'lat' (latitude) and 'lon' (longitude). Required power plant data:
+            turbine type in column 'name', hub height in m in column 'hub_height'.
+            Optional data: rotor diameter in m in 'rotor_diameter'.
+            todo what about nominal power - comes from oedb. Aber wenn eigene leistungskurve angegeben wird...?
         assignment_func : Funktion, die Anlagen in einer Wetterzelle mit
             Information zu Leistung und Standort sowie die mittl.
             Windgeschwindigkeit der Wetterzelle bekommt und jeder Anlage einen
             Typ und eine Nabenhöhe zuordnet
         snapshots : Zeitschritte, für die Einspeisung berechnet werden soll
 
+        Other parameters
+        ----------------
         power_curves : optional, falls eigene power_curves vorgegeben werde
             sollen
+            .... copy from windpowerlib --> ModelChain parameters
+
         Returns
         -------
         feedin : pd.Series
@@ -92,7 +96,7 @@ class Region:
                               'wind_turbine_fleet': []}
             for turbine_type in turbine_types_location['id']:
                 capacity = power_plants.loc[
-                    power_plants['id'] == turbine_type]['capacity'].sum() # todo IMPORTANT which unit?
+                    power_plants['id'] == turbine_type]['capacity'].sum()
                 wind_farm_data['wind_turbine_fleet'].append(
                     {'wind_turbine': turbines_region[turbine_type],
                 'number_of_turbines': capacity/turbines_region[turbine_type].nominal_power}) # todo: adapt to feedinlib WindPowerPlant

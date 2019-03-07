@@ -1,6 +1,7 @@
 import pandas as pd
 from scipy.spatial import cKDTree
 import numpy as np
+import logging
 
 
 def return_unique_pairs(df, column_names):
@@ -60,22 +61,24 @@ def add_weather_locations_to_register(register, weather_coordinates):
 
     Returns
     -------
-    register : pd.DataFrame
+    register : pd.DataFrame   # todo data frame .. copy on slice..
         Input `register` data frame containing additionally the locations of
         the closest weather data grid points in 'weather_lat' (latitude of
         weather location) and 'weather_lon' (longitude of weather location).
 
     """
     if register[['lat', 'lon']].isnull().values.any():
-        raise ValueError("Missing coordinates in power plant register.")
+        logging.warning("Missing coordinates in power plant register are "
+                        "dropped.")
+        register = register[np.isfinite(register['lon'])]
+        register = register[np.isfinite(register['lat'])]
     closest_coordinates =  get_closest_coordinates(
         weather_coordinates, register[['lat', 'lon']]).set_index(
         register.index)
     register[['weather_lat', 'weather_lon']] = closest_coordinates
-    return register
 
 
-def example_weather_wind(filename): # todo: to be deleted. Is used in region.py for adding weather locations
+def example_weather_wind(filename): # todo: to be deleted. Is used in region.py
     # loading weather data
     import os
     filename = os.path.abspath(filename)

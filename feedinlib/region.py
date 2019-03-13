@@ -95,7 +95,7 @@ class Region:
         output=pd.Series()
 
         register_pv_locations = tools.add_weather_locations_to_register(
-            register=register, weather_coordinates=weather)
+            register=register, weather_coordinates=self.weather)
 
         # calculate installed capacity per weathercell
         installed_capacity = register_pv_locations.groupby(
@@ -107,14 +107,14 @@ class Region:
                 pv_system = Photovoltaic(**module)
                 lat = row['weather_lat']
                 lon = row['weather_lon']
-                weather_df = weather.loc[(weather['lat'] == lat) & (weather['lon'] == lon)]
+                weather_df = weather_coordinates.loc[(weather_coordinates['lat'] == lat) & (weather_coordinates['lon'] == lon)]
                 # calculate the feedin and set the scaling to 'area' or 'peak_power'
                 feedin = pv_system.feedin(
-                    weather=weather_df[
+                    weather=weather_coordinates[
                         ['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
                     location=(lat, lon))
                 feedin_scaled = pv_system.feedin(
-                    weather=weather_df[
+                    weather=weather_coordinates[
                         ['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
                     location=(lat, lon), scaling='peak_power', scaling_value=10)
                 # get the distribution for the pv_module

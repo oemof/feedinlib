@@ -1,11 +1,11 @@
 import xarray as xr # todo add to setup
 import numpy as np
 import pandas as pd
-<<<<<<< HEAD
+#<<<<<<< HEAD
 import os
 from feedinlib import tools
 from feedinlib import Photovoltaic, WindPowerPlant
-=======
+#=======
 # delete these imports after windpowerlib integration
 from windpowerlib.wind_turbine import WindTurbine
 from windpowerlib.wind_farm import WindFarm
@@ -13,7 +13,7 @@ from windpowerlib.turbine_cluster_modelchain import TurbineClusterModelChain
 
 from feedinlib import tools
 from feedinlib import WindPowerPlant
->>>>>>> 65b8d0c45e6b13c4207106439901ce98073111fc
+#>>>>>>> 65b8d0c45e6b13c4207106439901ce98073111fc
 
 class Region:
     """
@@ -176,14 +176,15 @@ class Region:
                 pv_system = Photovoltaic(**module)
                 lat = row['weather_lat']
                 lon = row['weather_lon']
-                weather_df = weather_coordinates.loc[(weather_coordinates['lat'] == lat) & (weather_coordinates['lon'] == lon)]
+                weather_df = self.weather.loc[(self.weather['lat'] == lat)
+                                              & (self.weather['lon'] == lon)]
                 # calculate the feedin and set the scaling to 'area' or 'peak_power'
                 feedin = pv_system.feedin(
-                    weather=weather_coordinates[
+                    weather=weather_df[
                         ['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
                     location=(lat, lon))
                 feedin_scaled = pv_system.feedin(
-                    weather=weather_coordinates[
+                    weather=weather_df[
                         ['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
                     location=(lat, lon), scaling='peak_power', scaling_value=10)
                 # get the distribution for the pv_module

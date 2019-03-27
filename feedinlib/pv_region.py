@@ -52,6 +52,7 @@ def pv_feedin_distribution_register(distribution_dict,
     # calculate installed capacity per weathercell
     installed_capacity = register_pv_locations.groupby(
         ['weather_lat', 'weather_lon'])['capacity'].agg('sum').reset_index()
+    print('installierte Leitung:', installed_capacity['capacity'])
 
     for index, row in installed_capacity.iterrows():
         for key in technical_parameters.keys():
@@ -68,14 +69,15 @@ def pv_feedin_distribution_register(distribution_dict,
             feedin_scaled = pv_system.feedin(
                 weather=weather[
                     ['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
-                location=(lat, lon), scaling='peak_power', scaling_value=10)
+                location=(lat, lon), scaling='peak_power', scaling_value=1)
             # get the distribution for the pv_module
             dist = distribution_dict[key]
             local_installed_capacity = row['capacity']
             # scale the output with the module_distribution and the local installed capacity
             module_feedin = feedin_scaled.multiply(
                 dist * local_installed_capacity)
+
             #        # add the module output to the output series
-            output = output.add(other=module_feedin, fill_value=0)
+            output = output.add(other=module_feedin, fill_value=0).rename('feedin')
 
     return output

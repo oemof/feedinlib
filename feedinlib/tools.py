@@ -77,6 +77,8 @@ def add_weather_locations_to_register(register, weather_coordinates):
         register.index)
     register[['weather_lat', 'weather_lon']] = closest_coordinates
 
+    return register
+
 
 def example_weather_wind(filename): # todo: to be deleted. Is used in region.py
     # loading weather data

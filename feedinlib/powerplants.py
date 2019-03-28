@@ -131,10 +131,8 @@ class Base(ABC):
                     "The specified model '{model}' requires model "
                     "parameter '{k}' but it's not provided as an "
                     "argument.".format(k=k, model=model))
-        # initially specified power plant parameters are over-written by kwargs
-        # which is e.g. useful for parameter variations
-        combined.update(kwargs)
-        return model.feedin(weather=weather, **combined)
+        return model.feedin(weather=weather,
+                            power_plant_parameters=self.parameters, **kwargs)
 
     @property
     @abstractmethod

@@ -200,7 +200,7 @@ class Pvlib(PhotovoltaicModelBase):
         self.module = PvlibPVSystem(**kwargs)
         return self.module
 
-    def feedin(self, weather, location, **kwargs):
+    def feedin(self, weather, power_plant_parameters, location, **kwargs):
         r"""
         Feedin time series for the given pv module.
 
@@ -222,7 +222,7 @@ class Pvlib(PhotovoltaicModelBase):
         # The pvlib's ModelChain class with its default settings is used here to
         # calculate the power output. See the documentation of the pvlib if you
         # want to learn more about the ModelChain.
-        mc = PvlibModelChain(self.instantiate_module(**kwargs),
+        mc = PvlibModelChain(self.instantiate_module(**power_plant_parameters),
                              PvlibLocation(latitude=location[0], longitude=location[1],
                                            tz=weather.index.tz))
         # Todo Wetterdatenaufbereitung auslagern
@@ -321,7 +321,7 @@ class WindpowerlibTurbine(WindpowerModelBase):
         self.turbine = WindpowerlibWindTurbine(**kwargs)
         return self.turbine
 
-    def feedin(self, weather, **kwargs):
+    def feedin(self, weather, power_plant_parameters, **kwargs):
         r"""
         Alias for :py:func:`turbine_power_output
         <feedinlib.models.SimpleWindTurbine.turbine_power_output>`.
@@ -329,8 +329,8 @@ class WindpowerlibTurbine(WindpowerModelBase):
         weather : feedinlib Weather Object # @Günni, auch windpowerlibformat erlaubt?
         """
         # ToDo Zeitraum einführen (time_span)
-        mc = WindpowerlibModelChain(self.instantiate_turbine(**kwargs),
-                                    **kwargs)
+        mc = WindpowerlibModelChain(
+            self.instantiate_turbine(**power_plant_parameters), **kwargs)
         return mc.run_model(weather).power_output
 
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: oemof development group
+@author: oemof developer group
 """
 
 from abc import ABC, abstractmethod

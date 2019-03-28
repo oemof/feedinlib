@@ -72,12 +72,15 @@ class Base(ABC):
 
         self.parameters = attributes
 
+        # check if all power plant attributes required by the respective model
+        # are provided
         parameters_keys = attributes.keys()
         for k in self.required:
             if k not in parameters_keys:
                 raise KeyError(
-                    "The specified model requires the power plant parameter "
-                    "{k} but it's not provided as an argument.".format(k=k))
+                    "The specified model '{model}' requires power plant "
+                    "parameter '{k}' but it's not provided as an "
+                    "argument.".format(k=k, model=model))
 
     @abstractmethod
     def feedin(self, weather, **kwargs):
@@ -93,12 +96,11 @@ class Base(ABC):
 
         Parameters
         ----------
+        weather : feedinlib weather data object
+            weather data to calculate feedin with
         \**kwargs :
-          Keyword arguments. If not specified, all the paramters needed to
-          calculate the feedin are taken from this object. If any keyword
-          argument is present whose key matches one of the parameters needed
-          to calculate the feedin, it takes precedence over a matching
-          attribute of this object.
+            Keyword arguments for respective model's feedin calculation. Can
+            also be used to overwrite the model feedin is calculated with.
 
         Returns
         -------
@@ -181,7 +183,7 @@ class Photovoltaic(Base):
 
     @property
     def required(self):
-        r""" The module parameters the specified model requires.
+        r""" The PV system parameters the specified model requires.
 
         Check powerplant_requires
         """

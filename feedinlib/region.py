@@ -162,7 +162,6 @@ class Region:
         #lese Wetterdaten ein und preprocessing todo: hier Openfred-daten einsetzen
 
         output=pd.Series()
-
         register_pv_locations = tools.add_weather_locations_to_register(
             register=register, weather_coordinates=self.weather)
 
@@ -228,35 +227,6 @@ class Region:
         # return feedin
         pass
 
-    def pv_feedin_distribution_register(self, distribution_dict, technical_parameters, register):
-        """
-        Innerhalb eines Wetterpunktes werden die Anlagen entsprechend des
-        distribution_dict gewichtet. Jeder Wetterpunkt wird entsprechend der
-        installierten Leistung nach Anlagenregister skaliert und anschließend
-        eine absolute Zeitreihe für die Region zurück gegeben.
-
-        Parameters
-        ----------
-        distribution_dict : dict
-            Dict mit Anlagentyp und Anteil
-            {'1': 0.6, 2: 0.4}
-        technical_parameters : dict oder Liste mit PVSystems
-            Dict mit Inverter, Ausrichtung, etc. der Module (alles was PVSystem
-            benötigt)
-        register : dataframe mit Standort und installierter Leistung für jede
-            Anlage
-        :return:
-            absolute Einspeisung für Region
-        """
-        # (PVSystem initialisieren)
-        # for weather_cell in register
-        #   initialisiere Location
-        #       for each pvsystem
-        #           rufe die pvlib ModelChain auf
-        #       erstelle eine normierte Zeitreihe entsprechend der Gewichtung
-        #       skaliere die normierte Zeitreihe mit gesamt installierter Leistung
-        #  return feedin
-        pass
 
     def pv_feedin_distribution_rule(self, distribution_dict, technical_parameters, rule):
         """

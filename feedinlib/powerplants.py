@@ -67,7 +67,7 @@ class Base(ABC):
         """
         model = attributes.pop("model")
         if isinstance(model, type):
-            model = model()
+            model = model(**attributes)
         self.model = model
 
         self.parameters = attributes
@@ -113,7 +113,7 @@ class Base(ABC):
         # initialisieren von model irgendwelche Probleme ergeben?
         model = kwargs.pop('model', self.model)
         if not model == self.model:
-            model = model()
+            model = model(self.parameters)
             self.model = model
             # required power plant arguments are checked again as the model has
             # changed

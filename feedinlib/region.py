@@ -62,7 +62,7 @@ class Region:
 
         """
         # todo @Birgit: parameters in **kwargs? f.e. 'fetch_turbine'
-        tools.add_weather_locations_to_register(
+        register = tools.add_weather_locations_to_register(
             register=register, weather_coordinates=self.weather)
         # todo: use function for retrieving all possible weather locations as
         #  df[['lat', 'lon']] instead of the above

@@ -61,7 +61,7 @@ def add_weather_locations_to_register(register, weather_coordinates):
 
     Returns
     -------
-    register : pd.DataFrame   # todo data frame .. copy on slice..
+    register : gpd.GeoDataFrame
         Input `register` data frame containing additionally the locations of
         the closest weather data grid points in 'weather_lat' (latitude of
         weather location) and 'weather_lon' (longitude of weather location).
@@ -75,7 +75,8 @@ def add_weather_locations_to_register(register, weather_coordinates):
     closest_coordinates =  get_closest_coordinates(
         weather_coordinates, register[['lat', 'lon']]).set_index(
         register.index)
-    register[['weather_lat', 'weather_lon']] = closest_coordinates
+    register = register.assign(weather_lat=closest_coordinates['lat'].values,
+                    weather_lon=closest_coordinates['lon'].values)
 
     return register
 

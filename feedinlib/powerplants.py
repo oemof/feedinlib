@@ -74,13 +74,7 @@ class Base(ABC):
 
         # check if all power plant attributes required by the respective model
         # are provided
-        parameters_keys = attributes.keys()
-        for k in self.required:
-            if k not in parameters_keys:
-                raise KeyError(
-                    "The specified model '{model}' requires power plant "
-                    "parameter '{k}' but it's not provided as an "
-                    "argument.".format(k=k, model=model))
+        self.check_models_powerplant_requirements(attributes.keys())
 
     @abstractmethod
     def feedin(self, weather, **kwargs):
@@ -113,18 +107,13 @@ class Base(ABC):
         # initialisieren von model irgendwelche Probleme ergeben?
         model = kwargs.pop('model', self.model)
         if not model == self.model:
-            model = model(self.parameters)
+            model = model(**self.parameters)
             self.model = model
             # required power plant arguments are checked again as the model has
             # changed
-            for k in self.required:
-                if k not in self.parameters:
-                    raise AttributeError(
-                        "The specified model '{model}' requires power plant "
-                        "parameter '{k}' but it's not provided as an "
-                        "argument.".format(k=k, model=model))
+            self.check_models_powerplant_requirements(self.parameters.keys())
 
-        # check if all arguments required by the feedin model are given
+        # check if all arguments required by the feed-in model are given
         keys = kwargs.keys()
         for k in model.requires:
             if not k in keys:
@@ -134,6 +123,19 @@ class Base(ABC):
                     "argument.".format(k=k, model=model))
         return model.feedin(weather=weather,
                             power_plant_parameters=self.parameters, **kwargs)
+
+    def check_models_powerplant_requirements(self, parameters):
+        try:
+            self.model.powerplant_requires_check(parameters)
+        except KeyError:
+            raise
+        except:
+            for k in self.required:
+                if k not in parameters:
+                    raise KeyError(
+                        "The specified model '{model}' requires power plant "
+                        "parameter '{k}' but it's not provided as an "
+                        "argument.".format(k=k, model=self.model))
 
     @property
     @abstractmethod

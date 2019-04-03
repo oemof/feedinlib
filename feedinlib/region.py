@@ -194,6 +194,7 @@ class Region:
                     dist * local_installed_capacity)
                 #        # add the module output to the output series
                 output = output.add(other=module_feedin, fill_value=0).rename('feedin')
+                output[output < 0] = 0
 
         return output
 

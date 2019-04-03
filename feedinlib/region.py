@@ -196,7 +196,7 @@ class Region:
                 output = output.add(other=module_feedin, fill_value=0).rename('feedin')
                 output[output < 0] = 0
 
-        return output
+        return output.fillna(0)
 
     def pv_feedin(self, register, assignment_func=None, **kwargs):
         """

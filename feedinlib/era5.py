@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timedelta, date
 from tempfile import mkstemp
 import logging
 import xarray as xr
@@ -76,3 +77,43 @@ def _get_cds_data(
         os.unlink(target_file)
 
     return answer
+
+
+def _format_cds_request_datespan(start_date, end_date):
+    """Format the dates between two given dates in order to submit a CDS request
+
+    :param start_date: (str) start date of the range in YYYY-MM-DD format
+    :param end_date: (str) end date of the range in YYYY-MM-DD format
+    :return: a dict with the years, months and days of all the dates as lists of string
+    """
+
+    answer = {'year': [], 'month': [], 'day': []}
+    fmt = '%Y-%m-%d'
+    start_dt = datetime.strptime(start_date, fmt)
+    end_dt = datetime.strptime(end_date, fmt)
+
+    if end_dt < start_dt:
+        logger.warning(
+            "Swapping input dates as the end date '{}' is prior to the start date '{}'.".format(
+                end_date, start_date
+            )
+        )
+        start_dt = end_dt
+        end_dt = datetime.strptime(start_date, fmt)
+
+    for n in range(int((end_dt - start_dt).days) + 1):
+        cur_dt = start_dt + timedelta(n)
+
+        # Add the date year, month and day to the dict which will be returned
+        for key, val in zip(['year', 'month', 'day'], [cur_dt.year, cur_dt.month, cur_dt.day]):
+            # print('{}: {}'.format(key, val))
+            if val not in answer[key]:
+                answer[key].append(val)
+
+    # If the datespan is over more than a month, then all days are filled and the entire months
+    # are returned (for CDS request the days format for a full month is 31 days).
+    if len(answer['month']) > 1:
+        answer['day'] = [d for d in range(1, 32, 1)]
+
+    return answer
+

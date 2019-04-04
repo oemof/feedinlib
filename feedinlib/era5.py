@@ -58,3 +58,26 @@ def get_pvlib_timeseries_data(
 
     return get_era5_data_from_datespan_and_position(**locals())
 
+
+def get_windpowerlib_timeseries_data(
+        start_date,
+        end_date,
+        latitude,
+        longitude
+):
+    """Fetch windpowerlib data from era5 database in the Climate Data Store (CDS)
+    https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview
+
+    :param start_date: (str) start date of the range in YYYY-MM-DD format
+    :param end_date: (str) end date of the range in YYYY-MM-DD format
+    :param latitude: (number)
+    :param longitude: (number)
+    :return: CDS data in an xarray format
+    """
+    # Define the variable needed from the database
+    # wind speed, air temperature, air pressure, roughness length
+    variable = []
+    grid = []
+
+    return get_era5_data_from_datespan_and_position(**locals())
+

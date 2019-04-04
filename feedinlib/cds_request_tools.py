@@ -139,7 +139,7 @@ def _format_cds_request_position(latitude, longitude, grid=None):
     return answer
 
 
-def _get_cds_data_from_datespan_and_position(
+def get_cds_data_from_datespan_and_position(
         start_date,
         end_date,
         latitude,

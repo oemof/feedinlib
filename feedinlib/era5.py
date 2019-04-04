@@ -12,9 +12,7 @@ def get_era5_data_from_datespan_and_position(
         cds_client=None,
         **cds_params
 ):
-    """Format request for data from the Climate Data Store (CDS)
-
-        see _get_cds_data() for prior requirements and more information
+    """Send request for era5 data from the Climate Data Store (CDS)
 
     :param start_date: (str) start date of the range in YYYY-MM-DD format
     :param end_date: (str) end date of the range in YYYY-MM-DD format

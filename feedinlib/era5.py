@@ -117,3 +117,24 @@ def _format_cds_request_datespan(start_date, end_date):
 
     return answer
 
+
+def _format_cds_request_position(latitude, longitude, grid=None):
+    """Format the dates between two given dates in order to submit a CDS request
+
+    :param latitude: (number)
+    :param longitude: (number)
+    :return: a list with North latitude, West longitude, South latitude, and East longitude
+    """
+
+    area = []
+    answer = {}
+
+    if grid is None:
+        grid = [0.25, 0.25]
+
+    if area:
+        answer['area']: area
+
+    return answer
+
+

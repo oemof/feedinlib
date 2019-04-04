@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 from tempfile import mkstemp
 import logging
 import xarray as xr
@@ -13,7 +13,8 @@ def _get_cds_data(
         target_file=None,
         chunks=None,
         cds_client=None,
-        **cds_params):
+        **cds_params
+):
     """Download data from the Climate Data Store (CDS)
     Requirements:
         - user account at https://cds.climate.copernicus.eu to use this function
@@ -150,7 +151,8 @@ def get_cds_data_from_datespan_and_position(
         target_file=None,
         chunks=None,
         cds_client=None,
-        **cds_params):
+        **cds_params
+):
     """Format request for data from the Climate Data Store (CDS)
 
         see _get_cds_data() for prior requirements and more information

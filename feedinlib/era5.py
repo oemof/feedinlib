@@ -20,6 +20,7 @@ def get_era5_data_from_datespan_and_position(
     :param end_date: (str) end date of the range in YYYY-MM-DD format
     :param latitude: (number)
     :param longitude: (number)
+    :param grid: (list of float) provide the longitude and latitude grid resolution
     :param dataset_name: (str) short name of the dataset of the CDS. To find it, click on a dataset
     found in https://cds.climate.copernicus.eu/cdsapp#!/search?type=dataset and go under the
     ’Download data’ tab, then scroll down the page and click on ’Show API request’, the short

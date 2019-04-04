@@ -104,16 +104,17 @@ def _format_cds_request_datespan(start_date, end_date):
     for n in range(int((end_dt - start_dt).days) + 1):
         cur_dt = start_dt + timedelta(n)
 
-        # Add the date year, month and day to the dict which will be returned
+        # Add string value of the date's year, month and day to the corresponding lists in the
+        # dict which will be returned
         for key, val in zip(['year', 'month', 'day'], [cur_dt.year, cur_dt.month, cur_dt.day]):
-            # print('{}: {}'.format(key, val))
+            val = str(val)
             if val not in answer[key]:
                 answer[key].append(val)
 
     # If the datespan is over more than a month, then all days are filled and the entire months
     # are returned (for CDS request the days format for a full month is 31 days).
     if len(answer['month']) > 1:
-        answer['day'] = [d for d in range(1, 32, 1)]
+        answer['day'] = [str(d) for d in range(1, 32, 1)]
 
     return answer
 

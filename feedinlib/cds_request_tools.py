@@ -47,7 +47,7 @@ def _get_cds_data(
 
     # Add user provided cds parameters to the request dict
     request.update(cds_params)
-
+    print(request)
     assert {'year', 'month', 'variable'}.issubset(request), \
         "Need to specify at least 'variable', 'year' and 'month'"
 
@@ -184,4 +184,3 @@ def _get_cds_data_from_datespan_and_position(
     kwargs.pop('grid')
 
     return _get_cds_data(**kwargs)
-

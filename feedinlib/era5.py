@@ -14,7 +14,7 @@ def _get_cds_data(
         chunks=None,
         cds_client=None,
         **cds_params):
-    """Download ERA5 data from the Climate Data Store (CDS)
+    """Download data from the Climate Data Store (CDS)
     Requirements:
         - user account at https://cds.climate.copernicus.eu to use this function
         - cdsapi package installed (https://cds.climate.copernicus.eu/api-how-to)

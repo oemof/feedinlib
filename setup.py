@@ -20,4 +20,6 @@ setup(name='feedinlib',
                         'pandas >= 0.13.1',
                         'pvlib[optional] >= 0.5.0',
                         'windpowerlib >= 0.0.6',
+                        'xarray >= 0.12.0',
+                        'cdsapi >= 0.1.4',
                         'scipy'])

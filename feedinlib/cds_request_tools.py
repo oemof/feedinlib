@@ -2,6 +2,7 @@ import os
 from datetime import datetime, timedelta
 from tempfile import mkstemp
 import logging
+import numpy as np
 import xarray as xr
 import cdsapi
 
@@ -171,14 +172,17 @@ def _format_cds_request_area(latitude_span=None, longitude_span=None, grid=None)
 
     return answer
 
+
 def _format_cds_request_position(latitude, longitude, grid=None):
     """Reduce the area of a CDS request to a single GIS point on the earth grid
+
+    Find the closest grid point for the given longitude and latitude.
 
     The grid convention of the era5 HRES is used here with a native resolution of 0.28125 deg.
     For NetCDF format the data is interpolated to a regular lat/lon grid with 0.25 deg resolution.
     In this grid the earth is modelled by a sphere with radius R_E = 6367.47 km. latitude values
     in the range [-90, 90] referenced to the equator and longitude values in the range [-180, 180]
-    referenced to the Greenwich Prime Meridian [1]. Note: there is no points at longitude 360.
+    referenced to the Greenwich Prime Meridian [1].
 
     References:
     [1] https://confluence.ecmwf.int/display/CKB/ERA5%3A+What+is+the+spatial+reference
@@ -193,18 +197,22 @@ def _format_cds_request_position(latitude, longitude, grid=None):
     :return: a dict containing possibly 'area' and 'grid' keyword formatted for a CDS request
     """
 
-    area = []
-    answer = {}
-
+    # Default value of the grid
     if grid is None:
         grid = [0.25, 0.25]
 
-    answer['grid'] = '%.2f/%.2f' % (grid[0], grid[1])
+    # Find the nearest point on the grid corresponding to the given latitude and longitude
+    grid_point = xr.Dataset(
+        {
+            'lat': np.arange(90, -90, -grid[0]),
+            'lon': np.arange(-180, 180., grid[1])
+        }
+    ).sel(lat=latitude, lon=longitude, method='nearest')
 
-    if area:
-        answer['area']: area
+    # Prepare an area which consists of only one grid point
+    lat, lon = [float(grid_point.coords[s]) for s in ('lat', 'lon')]
+    return _format_cds_request_area(latitude_span=[lat, lat], longitude_span=[lon, lon], grid=grid)
 
-    return answer
 
 
 def get_cds_data_from_datespan_and_position(

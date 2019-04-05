@@ -22,7 +22,7 @@ def _get_cds_data(
 
     :param dataset_name: (str) short name of the dataset of the CDS. To find it, click on a dataset
     found in https://cds.climate.copernicus.eu/cdsapp#!/search?type=dataset and go under the
-    ’Download data’ tab, then scroll down the page and click on ’Show API request’, the short
+    'Download data' tab, then scroll down the page and click on 'Show API request', the short
     name is the string on the 6th line after 'c.retrieve('
     :param target_file: (str) name of the file in which downloading the data locally
     :param chunks: (dict)
@@ -183,7 +183,7 @@ def get_cds_data_from_datespan_and_position(
     :param grid: (list of float) provide the longitude and latitude grid resolution
     :param dataset_name: (str) short name of the dataset of the CDS. To find it, click on a dataset
     found in https://cds.climate.copernicus.eu/cdsapp#!/search?type=dataset and go under the
-    ’Download data’ tab, then scroll down the page and click on ’Show API request’, the short
+    'Download data' tab, then scroll down the page and click on 'Show API request', the short
     name is the string on the 6th line after 'c.retrieve('
     :param target_file: (str) name of the file in which downloading the data locally
     :param chunks: (dict)

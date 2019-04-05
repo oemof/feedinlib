@@ -136,15 +136,14 @@ def _format_cds_request_area(latitude_span=None, longitude_span=None, grid=None)
 
     References:
     [1] https://confluence.ecmwf.int/display/CKB/ERA5%3A+What+is+the+spatial+reference
-    [2] https://confluence.ecmwf.int/display/UDOC/Post-processing+keywords#Post-processingkeywords
-    -area
+    [2] https://confluence.ecmwf.int/display/UDOC/Post-processing+keywords
 
     :param longitude_span: (list of float) formatted as [N,S]. The span is between North and South
     latitudes (relative to the equator). North corresponds to positive latitude [2].
     :param latitude_span: (list of float) formatted as [W,E]. The span is between East and West
     longitudes (relative to the Greenwichmeridian). East corresponds to positive longitude [2].
-    :param grid: (list of float) provide the latitude and longitude grid resolutions,
-    in deg. It needs to be an integer fraction of 90 deg [2]
+    :param grid: (list of float) provide the latitude and longitude grid resolutions in deg. It
+    needs to be an integer fraction of 90 deg [2].
     :return: a dict containing possibly 'area' and 'grid' keyword formatted for a CDS request
     """
 
@@ -183,13 +182,15 @@ def _format_cds_request_position(latitude, longitude, grid=None):
 
     References:
     [1] https://confluence.ecmwf.int/display/CKB/ERA5%3A+What+is+the+spatial+reference
+    [2] https://confluence.ecmwf.int/display/UDOC/Post-processing+keywords
 
     :param latitude: (number) latitude in the range [-90, 90] referenced to the equator,
         north correspond to positive latitude.
     :param longitude: (number) longitude in the range [-180, 180] referenced to Greenwich
         Meridian, east relative to the meridian correspond to positive longitude.
-    :param grid: (list of float) provide the longitude and latitude grid resolution
-    :return: a list with North latitude, West longitude, South latitude, and East longitude
+    :param grid: (list of float) provide the latitude and longitude grid resolutions in deg. It
+    needs to be an integer fraction of 90 deg [2].
+    :return: a dict containing possibly 'area' and 'grid' keyword formatted for a CDS request
     """
 
     area = []
@@ -228,7 +229,8 @@ def get_cds_data_from_datespan_and_position(
         north correspond to positive latitude.
     :param longitude: (number) longitude in the range [-180, 180] referenced to Greenwich
         Meridian, east relative to the meridian correspond to positive longitude.
-    :param grid: (list of float) provide the longitude and latitude grid resolution
+    :param grid: (list of float) provide the latitude and longitude grid resolutions in deg. It
+    needs to be an integer fraction of 90 deg.
     :param dataset_name: (str) short name of the dataset of the CDS. To find it, click on a dataset
     found in https://cds.climate.copernicus.eu/cdsapp#!/search?type=dataset and go under the
     'Download data' tab, then scroll down the page and click on 'Show API request', the short

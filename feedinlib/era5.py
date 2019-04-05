@@ -20,7 +20,8 @@ def get_era5_data_from_datespan_and_position(
         north correspond to positive latitude.
     :param longitude: (number) longitude in the range [-180, 180] referenced to Greenwich
         Meridian, east relative to the meridian correspond to positive longitude.
-    :param grid: (list of float) provide the longitude and latitude grid resolution
+    :param grid: (list of float) provide the latitude and longitude grid resolutions in deg. It
+    needs to be an integer fraction of 90 deg.
     :param dataset_name: (str) short name of the dataset of the CDS. To find it, click on a dataset
     found in https://cds.climate.copernicus.eu/cdsapp#!/search?type=dataset and go under the
     ’Download data’ tab, then scroll down the page and click on ’Show API request’, the short

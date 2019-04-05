@@ -33,8 +33,8 @@ def get_era5_data_from_datespan_and_position(
     :return: CDS data in an xarray format
     """
 
-    dataset_name = 'reanalysis-era5-single-levels',
-
+    dataset_name = 'reanalysis-era5-single-levels'
+    variable = '2m_temperature'
     return get_cds_data_from_datespan_and_position(**locals())
 
 

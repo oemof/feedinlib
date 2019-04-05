@@ -49,6 +49,7 @@ def _get_cds_data(
 
     # Add user provided cds parameters to the request dict
     request.update(cds_params)
+
     assert {'year', 'month', 'variable'}.issubset(request), \
         "Need to specify at least 'variable', 'year' and 'month'"
 
@@ -252,15 +253,19 @@ def get_cds_data_from_datespan_and_position(
     kwargs = locals()
     # Get the formatted year, month and day parameter from the datespan
     request_dates = _format_cds_request_datespan(start_date, end_date)
-    cds_params.update(request_dates)
+    kwargs.update(request_dates)
     # Get the area corresponding to a position on the globe for a given grid size
     request_area = _format_cds_request_position(latitude, longitude, grid)
-    cds_params.update(request_area)
+    kwargs.update(request_area)
+
     # Remove the arguments which will not be passed to the _get_cds_data function
     kwargs.pop('start_date')
     kwargs.pop('end_date')
     kwargs.pop('longitude')
     kwargs.pop('latitude')
-    kwargs.pop('grid')
+
+    # Merge the two dictionaries
+    kwargs.pop('cds_params')
+    kwargs.update(cds_params)
 
     return _get_cds_data(**kwargs)

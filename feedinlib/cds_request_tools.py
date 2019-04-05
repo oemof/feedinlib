@@ -95,6 +95,7 @@ def _format_cds_request_datespan(start_date, end_date):
 
     answer = {'year': [], 'month': [], 'day': []}
     fmt = '%Y-%m-%d'
+    specific_fmt = {'year': '%4d', 'month': '%02d', 'day': '%02d'}
     start_dt = datetime.strptime(start_date, fmt)
     end_dt = datetime.strptime(end_date, fmt)
 
@@ -113,7 +114,7 @@ def _format_cds_request_datespan(start_date, end_date):
         # Add string value of the date's year, month and day to the corresponding lists in the
         # dict which will be returned
         for key, val in zip(['year', 'month', 'day'], [cur_dt.year, cur_dt.month, cur_dt.day]):
-            val = str(val)
+            val = specific_fmt[key] % val
             if val not in answer[key]:
                 answer[key].append(val)
 

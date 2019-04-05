@@ -14,11 +14,11 @@ def get_era5_data_from_datespan_and_position(
 ):
     """Send request for era5 data from the Climate Data Store (CDS)
 
-    :param start_date: (str) start date of the range in YYYY-MM-DD format
-    :param end_date: (str) end date of the range in YYYY-MM-DD format
-    :param latitude: (number) latitude in the range [-90, 90] referenced to the equator,
+    :param start_date: (str) start date of the datespan in YYYY-MM-DD format
+    :param end_date: (str) end date of the datespan in YYYY-MM-DD format
+    :param latitude: (number) latitude in the range [-90, 90] relative to the equator,
         north correspond to positive latitude.
-    :param longitude: (number) longitude in the range [-180, 180] referenced to Greenwich
+    :param longitude: (number) longitude in the range [-180, 180] relative to Greenwich
         Meridian, east relative to the meridian correspond to positive longitude.
     :param grid: (list of float) provide the latitude and longitude grid resolutions in deg. It
     needs to be an integer fraction of 90 deg.
@@ -47,11 +47,11 @@ def get_pvlib_timeseries_data(
     """Fetch pvlib data from era5 database in the Climate Data Store (CDS)
     https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview
 
-    :param start_date: (str) start date of the range in YYYY-MM-DD format
-    :param end_date: (str) end date of the range in YYYY-MM-DD format
-    :param latitude: (number) latitude in the range [-90, 90] referenced to the equator,
+    :param start_date: (str) start date of the datespan in YYYY-MM-DD format
+    :param end_date: (str) end date of the datespan in YYYY-MM-DD format
+    :param latitude: (number) latitude in the range [-90, 90] relative to the equator,
         north correspond to positive latitude.
-    :param longitude: (number) longitude in the range [-180, 180] referenced to Greenwich
+    :param longitude: (number) longitude in the range [-180, 180] relative to Greenwich
         Meridian, east relative to the meridian correspond to positive longitude.
     :return: CDS data in an xarray format
     """
@@ -73,11 +73,11 @@ def get_windpowerlib_timeseries_data(
     """Fetch windpowerlib data from era5 database in the Climate Data Store (CDS)
     https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview
 
-    :param start_date: (str) start date of the range in YYYY-MM-DD format
-    :param end_date: (str) end date of the range in YYYY-MM-DD format
-    :param latitude: (number) latitude in the range [-90, 90] referenced to the equator,
+    :param start_date: (str) start date of the datespan in YYYY-MM-DD format
+    :param end_date: (str) end date of the datespan in YYYY-MM-DD format
+    :param latitude: (number) latitude in the range [-90, 90] relative to the equator,
         north correspond to positive latitude.
-    :param longitude: (number) longitude in the range [-180, 180] referenced to Greenwich
+    :param longitude: (number) longitude in the range [-180, 180] relative to Greenwich
         Meridian, east relative to the meridian correspond to positive longitude.
     :return: CDS data in an xarray format
     """

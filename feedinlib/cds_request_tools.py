@@ -133,8 +133,8 @@ def _format_cds_request_area(latitude_span=None, longitude_span=None, grid=None)
     The grid convention of the era5 HRES is used with a native resolution of 0.28125 deg.
     For NetCDF format, the data is interpolated to a regular lat/lon grid with 0.25 deg resolution.
     In this grid the earth is modelled by a sphere with radius R_E = 6367.47 km. latitude values
-    in the range [-90, 90] referenced to the equator and longitude values in the range [-180, 180]
-    referenced to the Greenwich Prime Meridian [1].
+    in the range [-90, 90] relative to the equator and longitude values in the range [-180, 180]
+    relative to the Greenwich Prime Meridian [1].
 
     References:
     [1] https://confluence.ecmwf.int/display/CKB/ERA5%3A+What+is+the+spatial+reference
@@ -182,16 +182,16 @@ def _format_cds_request_position(latitude, longitude, grid=None):
     The grid convention of the era5 HRES is used here with a native resolution of 0.28125 deg.
     For NetCDF format the data is interpolated to a regular lat/lon grid with 0.25 deg resolution.
     In this grid the earth is modelled by a sphere with radius R_E = 6367.47 km. latitude values
-    in the range [-90, 90] referenced to the equator and longitude values in the range [-180, 180]
-    referenced to the Greenwich Prime Meridian [1].
+    in the range [-90, 90] relative to the equator and longitude values in the range [-180, 180]
+    relative to the Greenwich Prime Meridian [1].
 
     References:
     [1] https://confluence.ecmwf.int/display/CKB/ERA5%3A+What+is+the+spatial+reference
     [2] https://confluence.ecmwf.int/display/UDOC/Post-processing+keywords
 
-    :param latitude: (number) latitude in the range [-90, 90] referenced to the equator,
+    :param latitude: (number) latitude in the range [-90, 90] relative to the equator,
         north correspond to positive latitude.
-    :param longitude: (number) longitude in the range [-180, 180] referenced to Greenwich
+    :param longitude: (number) longitude in the range [-180, 180] relative to Greenwich
         Meridian, east relative to the meridian correspond to positive longitude.
     :param grid: (list of float) provide the latitude and longitude grid resolutions in deg. It
     needs to be an integer fraction of 90 deg [2].
@@ -215,7 +215,6 @@ def _format_cds_request_position(latitude, longitude, grid=None):
     return _format_cds_request_area(latitude_span=[lat, lat], longitude_span=[lon, lon], grid=grid)
 
 
-
 def get_cds_data_from_datespan_and_position(
         start_date,
         end_date,
@@ -230,13 +229,16 @@ def get_cds_data_from_datespan_and_position(
 ):
     """Format request for data from the Climate Data Store (CDS)
 
+        prepare a CDS request from user specified date span for a single grid point closest
+        to the specified latitude and longitude.
+
         see _get_cds_data() for prior requirements and more information
 
-    :param start_date: (str) start date of the range in YYYY-MM-DD format
-    :param end_date: (str) end date of the range in YYYY-MM-DD format
-    :param latitude: (number) latitude in the range [-90, 90] referenced to the equator,
+    :param start_date: (str) start date of the datespan in YYYY-MM-DD format
+    :param end_date: (str) end date of the datespan in YYYY-MM-DD format
+    :param latitude: (number) latitude in the range [-90, 90] relative to the equator,
         north correspond to positive latitude.
-    :param longitude: (number) longitude in the range [-180, 180] referenced to Greenwich
+    :param longitude: (number) longitude in the range [-180, 180] relative to Greenwich
         Meridian, east relative to the meridian correspond to positive longitude.
     :param grid: (list of float) provide the latitude and longitude grid resolutions in deg. It
     needs to be an integer fraction of 90 deg.
@@ -252,6 +254,7 @@ def get_cds_data_from_datespan_and_position(
     """
 
     kwargs = locals()
+
     # Get the formatted year, month and day parameter from the datespan
     request_dates = _format_cds_request_datespan(start_date, end_date)
     kwargs.update(request_dates)

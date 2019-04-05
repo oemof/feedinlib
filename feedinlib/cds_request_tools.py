@@ -121,10 +121,21 @@ def _format_cds_request_datespan(start_date, end_date):
 
 
 def _format_cds_request_position(latitude, longitude, grid=None):
-    """Format the dates between two given dates in order to submit a CDS request
+    """Reduce the area of a CDS request to a single GIS point on the earth grid
 
-    :param latitude: (number)
-    :param longitude: (number)
+    The grid convention of the era5 HRES is used here with a native resolution of 0.28125 deg.
+    For NetCDF format the data is interpolated to a regular lat/lon grid with 0.25 deg resolution.
+    In this grid the earth is modelled by a sphere with radius R_E = 6367.47 km. latitude values
+    in the range [-90, 90] referenced to the equator and longitude values in the range [-180, 180]
+    referenced to the Greenwich Prime Meridian [1]. Note: there is no points at longitude 360.
+
+    References:
+    [1] https://confluence.ecmwf.int/display/CKB/ERA5%3A+What+is+the+spatial+reference
+
+    :param latitude: (number) latitude in the range [-90, 90] referenced to the equator,
+        north correspond to positive latitude.
+    :param longitude: (number) longitude in the range [-180, 180] referenced to Greenwich
+        Meridian, east relative to the meridian correspond to positive longitude.
     :param grid: (list of float) provide the longitude and latitude grid resolution
     :return: a list with North latitude, West longitude, South latitude, and East longitude
     """
@@ -134,6 +145,8 @@ def _format_cds_request_position(latitude, longitude, grid=None):
 
     if grid is None:
         grid = [0.25, 0.25]
+
+    answer['grid'] = '%.2f/%.2f' % (grid[0], grid[1])
 
     if area:
         answer['area']: area
@@ -159,8 +172,10 @@ def get_cds_data_from_datespan_and_position(
 
     :param start_date: (str) start date of the range in YYYY-MM-DD format
     :param end_date: (str) end date of the range in YYYY-MM-DD format
-    :param latitude: (number)
-    :param longitude: (number)
+    :param latitude: (number) latitude in the range [-90, 90] referenced to the equator,
+        north correspond to positive latitude.
+    :param longitude: (number) longitude in the range [-180, 180] referenced to Greenwich
+        Meridian, east relative to the meridian correspond to positive longitude.
     :param grid: (list of float) provide the longitude and latitude grid resolution
     :param dataset_name: (str) short name of the dataset of the CDS. To find it, click on a dataset
     found in https://cds.climate.copernicus.eu/cdsapp#!/search?type=dataset and go under the

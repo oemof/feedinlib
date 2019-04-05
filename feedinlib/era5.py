@@ -16,8 +16,10 @@ def get_era5_data_from_datespan_and_position(
 
     :param start_date: (str) start date of the range in YYYY-MM-DD format
     :param end_date: (str) end date of the range in YYYY-MM-DD format
-    :param latitude: (number)
-    :param longitude: (number)
+    :param latitude: (number) latitude in the range [-90, 90] referenced to the equator,
+        north correspond to positive latitude.
+    :param longitude: (number) longitude in the range [-180, 180] referenced to Greenwich
+        Meridian, east relative to the meridian correspond to positive longitude.
     :param grid: (list of float) provide the longitude and latitude grid resolution
     :param dataset_name: (str) short name of the dataset of the CDS. To find it, click on a dataset
     found in https://cds.climate.copernicus.eu/cdsapp#!/search?type=dataset and go under the
@@ -46,8 +48,10 @@ def get_pvlib_timeseries_data(
 
     :param start_date: (str) start date of the range in YYYY-MM-DD format
     :param end_date: (str) end date of the range in YYYY-MM-DD format
-    :param latitude: (number)
-    :param longitude: (number)
+    :param latitude: (number) latitude in the range [-90, 90] referenced to the equator,
+        north correspond to positive latitude.
+    :param longitude: (number) longitude in the range [-180, 180] referenced to Greenwich
+        Meridian, east relative to the meridian correspond to positive longitude.
     :return: CDS data in an xarray format
     """
     # Define the variable needed from the database
@@ -70,8 +74,10 @@ def get_windpowerlib_timeseries_data(
 
     :param start_date: (str) start date of the range in YYYY-MM-DD format
     :param end_date: (str) end date of the range in YYYY-MM-DD format
-    :param latitude: (number)
-    :param longitude: (number)
+    :param latitude: (number) latitude in the range [-90, 90] referenced to the equator,
+        north correspond to positive latitude.
+    :param longitude: (number) longitude in the range [-180, 180] referenced to Greenwich
+        Meridian, east relative to the meridian correspond to positive longitude.
     :return: CDS data in an xarray format
     """
     # Define the variable needed from the database

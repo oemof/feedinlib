@@ -124,6 +124,54 @@ def _format_cds_request_datespan(start_date, end_date):
     return answer
 
 
+def _format_cds_request_area(latitude_span=None, longitude_span=None, grid=None):
+    """Format the area between two given latitude and longitude span in order to submit a CDS
+    request
+
+    The grid convention of the era5 HRES is used with a native resolution of 0.28125 deg.
+    For NetCDF format, the data is interpolated to a regular lat/lon grid with 0.25 deg resolution.
+    In this grid the earth is modelled by a sphere with radius R_E = 6367.47 km. latitude values
+    in the range [-90, 90] referenced to the equator and longitude values in the range [-180, 180]
+    referenced to the Greenwich Prime Meridian [1]. Note: there is no points at longitude 360.
+
+    References:
+    [1] https://confluence.ecmwf.int/display/CKB/ERA5%3A+What+is+the+spatial+reference
+    [2] https://confluence.ecmwf.int/display/UDOC/Post-processing+keywords#Post-processingkeywords
+    -area
+
+    :param longitude_span: (list of float) formatted as [N,S]. The span is between North and South
+    latitudes (relative to the equator). North corresponds to positive latitude [2].
+    :param latitude_span: (list of float) formatted as [W,E]. The span is between East and West
+    longitudes (relative to the Greenwichmeridian). East corresponds to positive longitude [2].
+    :param grid: (list of float) provide the latitude and longitude grid resolutions,
+    in deg. It needs to be an integer fraction of 90 deg [2]
+    :return: a dict containing possibly 'area' and 'grid' keyword formatted for a CDS request
+    """
+
+    answer = {}
+
+    # Default value of the grid
+    if grid is None:
+        grid = [0.25, 0.25]
+
+    if latitude_span is not None and longitude_span is not None:
+        area = [latitude_span[0], longitude_span[0], latitude_span[1], longitude_span[1]]
+    elif latitude_span is None and longitude_span is not None:
+        area = [90, longitude_span[0], -90, latitude_span[1]]
+    elif latitude_span is not None and longitude_span is None:
+        area = [latitude_span[0], -180, latitude_span[1], 180]
+    else:
+        area = []
+
+    # Format the 'grid' keyword of the CDS request as lat_resolution/lon_resolution
+    answer['grid'] = '%.2f/%.2f' % (grid[0], grid[1])
+
+    # Format the 'area' keyword of the CDS request as N/W/S/E
+    if area:
+        answer['area'] = '/'.join(str(e) for e in area)
+
+    return answer
+
 def _format_cds_request_position(latitude, longitude, grid=None):
     """Reduce the area of a CDS request to a single GIS point on the earth grid
 

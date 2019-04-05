@@ -58,8 +58,9 @@ def _get_cds_data(
         request,
     )
 
+    no_target_file_provided = target_file is None
     # Create a file in a secure way if a target filename was not provided
-    if target_file is None:
+    if no_target_file_provided is True:
         fd, target_file = mkstemp(suffix='.nc')
         os.close(fd)
 
@@ -74,9 +75,12 @@ def _get_cds_data(
     answer = xr.open_dataset(target_file, chunks=chunks)
 
     # Now that the data has been extracted the file path is removed if it was not provided
-    if target_file is None:
+    # This will currently not work on windows if the dataset is too large as the file will be
+    # locked be the reading process
+    if no_target_file_provided is True:
         os.unlink(target_file)
 
+    # Here yield might be preferable in case of large datasets
     return answer
 
 

@@ -49,7 +49,6 @@ def _get_cds_data(
 
     # Add user provided cds parameters to the request dict
     request.update(cds_params)
-    print(request)
     assert {'year', 'month', 'variable'}.issubset(request), \
         "Need to specify at least 'variable', 'year' and 'month'"
 
@@ -133,7 +132,7 @@ def _format_cds_request_area(latitude_span=None, longitude_span=None, grid=None)
     For NetCDF format, the data is interpolated to a regular lat/lon grid with 0.25 deg resolution.
     In this grid the earth is modelled by a sphere with radius R_E = 6367.47 km. latitude values
     in the range [-90, 90] referenced to the equator and longitude values in the range [-180, 180]
-    referenced to the Greenwich Prime Meridian [1]. Note: there is no points at longitude 360.
+    referenced to the Greenwich Prime Meridian [1].
 
     References:
     [1] https://confluence.ecmwf.int/display/CKB/ERA5%3A+What+is+the+spatial+reference
@@ -142,7 +141,7 @@ def _format_cds_request_area(latitude_span=None, longitude_span=None, grid=None)
     :param longitude_span: (list of float) formatted as [N,S]. The span is between North and South
     latitudes (relative to the equator). North corresponds to positive latitude [2].
     :param latitude_span: (list of float) formatted as [W,E]. The span is between East and West
-    longitudes (relative to the Greenwichmeridian). East corresponds to positive longitude [2].
+    longitudes (relative to the Greenwich meridian). East corresponds to positive longitude [2].
     :param grid: (list of float) provide the latitude and longitude grid resolutions in deg. It
     needs to be an integer fraction of 90 deg [2].
     :return: a dict containing possibly 'area' and 'grid' keyword formatted for a CDS request

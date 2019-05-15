@@ -132,7 +132,7 @@ class Pvlib(PhotovoltaicModelBase):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.module = None
+        self.powerplant = None
 
     def __repr__(self):
         return "pvlib"
@@ -171,20 +171,21 @@ class Pvlib(PhotovoltaicModelBase):
 
     @property
     def pv_system_area(self):
-        if self.module:
-            return self.module.module_parameters.Area * \
-                   self.module.strings_per_inverter * \
-                   self.module.modules_per_string
+        if self.powerplant:
+            return self.powerplant.module_parameters.Area * \
+                   self.powerplant.strings_per_inverter * \
+                   self.powerplant.modules_per_string
         else:
             return None
 
     @property
     def pv_system_peak_power(self):
-        if self.module:
-            return self.module.module_parameters.Impo * \
-                   self.module.module_parameters.Vmpo * \
-                   self.module.strings_per_inverter * \
-                   self.module.modules_per_string
+        if self.powerplant:
+            # ToDo Peak power could also be limited by the inverter power!
+            return self.powerplant.module_parameters.Impo * \
+                   self.powerplant.module_parameters.Vmpo * \
+                   self.powerplant.strings_per_inverter * \
+                   self.powerplant.modules_per_string
         else:
             return None
 
@@ -203,8 +204,8 @@ class Pvlib(PhotovoltaicModelBase):
         }
         # update kwargs with renamed power plant parameters
         kwargs.update(rename)
-        self.module = PvlibPVSystem(**kwargs)
-        return self.module
+        self.powerplant = PvlibPVSystem(**kwargs)
+        return self.powerplant
 
     def feedin(self, weather, power_plant_parameters, location, **kwargs):
         r"""
@@ -275,7 +276,7 @@ class WindpowerlibTurbine(WindpowerModelBase):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.turbine = None
+        self.powerplant = None
 
     def __repr__(self):
         return "windpowerlib_single_turbine"
@@ -309,8 +310,8 @@ class WindpowerlibTurbine(WindpowerModelBase):
 
     @property
     def nominal_power_wind_power_plant(self):
-        if self.turbine:
-            return self.turbine.nominal_power
+        if self.powerplant:
+            return self.powerplant.nominal_power
         else:
             return None
 
@@ -324,8 +325,8 @@ class WindpowerlibTurbine(WindpowerModelBase):
         }
         # update kwargs with renamed power plant parameters
         kwargs.update(rename)
-        self.turbine = WindpowerlibWindTurbine(**kwargs)
-        return self.turbine
+        self.powerplant = WindpowerlibWindTurbine(**kwargs)
+        return self.powerplant
 
     def feedin(self, weather, power_plant_parameters, **kwargs):
         r"""
@@ -363,7 +364,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
     def __init__(self, **kwargs):
 
         super().__init__(**kwargs)
-        self.turbine_cluster = None
+        self.powerplant = None
 
         # wind farm
         if 'wind_turbine_fleet' in kwargs.keys():
@@ -497,10 +498,10 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
 
     @property
     def nominal_power_wind_power_plant(self):
-        if self.turbine_cluster:
+        if self.powerplant:
             # ToDo Fix until fixed in windpowerlib
             #return self.windfarm.installed_power
-            return self.turbine_cluster.get_installed_power()
+            return self.powerplant.get_installed_power()
         else:
             return None
 
@@ -557,8 +558,8 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         # ToDo: fix until maybe solved in windpowerlib
         if 'name' not in kwargs.keys():
             kwargs['name'] = 'dummy_name'
-        self.turbine_cluster = WindpowerlibWindTurbineCluster(**kwargs)
-        return self.turbine_cluster
+        self.powerplant = WindpowerlibWindTurbineCluster(**kwargs)
+        return self.powerplant
 
     def feedin(self, weather, power_plant_parameters, **kwargs):
         r"""
@@ -580,8 +581,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         # wind cluster calculation
         else:
             self.instantiate_turbine_cluster(**power_plant_parameters)
-        mc = WindpowerlibClusterModelChain(self.turbine_cluster,
-                                           **kwargs)
+        mc = WindpowerlibClusterModelChain(self.powerplant, **kwargs)
         return mc.run_model(weather).power_output
 
 

@@ -505,9 +505,9 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         else:
             return None
 
-    def instantiate_windfarm(self, **kwargs):
+    def set_up_windfarm(self, **kwargs):
         r"""
-        Instantiates a windpowerlib WindFarm object
+        Sets up a windpowerlib WindFarm object
 
         Parameters
         ----------
@@ -536,6 +536,21 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
             kwargs['name'] = 'dummy_name'
         return WindpowerlibWindFarm(**kwargs)
 
+    def instantiate_windfarm(self, **kwargs):
+        r"""
+        Instantiates a windpowerlib WindFarm object
+
+        Parameters
+        ----------
+
+        Returns
+        --------
+        :class:`windpowerlib.wind_farm.WindFarm`
+
+        """
+        self.powerplant = self.set_up_windfarm(**kwargs)
+        return self.powerplant
+
     def instantiate_turbine_cluster(self, **kwargs):
         r"""
         Instantiates a windpowerlib WindTurbineCluster object
@@ -552,7 +567,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         wind_farm_list = []  # a new list is created in order to not change the
                              # the original wind farm list
         for wind_farm in wind_farms:
-            wind_farm_list.append(self.instantiate_windfarm(**wind_farm))
+            wind_farm_list.append(self.set_up_windfarm(**wind_farm))
         kwargs['wind_farms'] = wind_farm_list
 
         # ToDo: fix until maybe solved in windpowerlib
@@ -576,8 +591,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         # ToDo Zeitraum einführen (time_span)
         # wind farm calculation
         if 'wind_turbine_fleet' in power_plant_parameters.keys():
-            self.instantiate_turbine_cluster(
-                **{'wind_farms': [power_plant_parameters]})
+            self.instantiate_windfarm(**power_plant_parameters)
         # wind cluster calculation
         else:
             self.instantiate_turbine_cluster(**power_plant_parameters)

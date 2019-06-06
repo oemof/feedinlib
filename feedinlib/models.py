@@ -222,8 +222,6 @@ class Pvlib(PhotovoltaicModelBase):
                 kwargs.pop('inverter_name')],
             'surface_azimuth': kwargs.pop('azimuth'),
             'surface_tilt': kwargs.pop('tilt'),
-            'albedo': kwargs.pop('albedo', None),
-            'surface_type': kwargs.pop('surface_type', None)
         }
         # update kwargs with renamed power plant parameters
         kwargs.update(rename)
@@ -362,15 +360,6 @@ class WindpowerlibTurbine(WindpowerModelBase):
                         "is provided as an argument.".format(k=k, model=self))
 
     def instantiate_turbine(self, **kwargs):
-        # match all power plant parameters from powerplant_requires property
-        # to windpowerlib's WindTurbine parameters
-        rename = {
-            'name': kwargs.pop('name'),
-            'hub_height': kwargs.pop('hub_height'),
-            'fetch_curve': kwargs.pop('fetch_curve')
-        }
-        # update kwargs with renamed power plant parameters
-        kwargs.update(rename)
         self.powerplant = WindpowerlibWindTurbine(**kwargs)
         return self.powerplant
 

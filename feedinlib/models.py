@@ -153,8 +153,8 @@ class Pvlib(PhotovoltaicModelBase):
             albedo factor arround the module
         """
         # ToDo maybe add method to assign suitable inverter if none is specified
-        required = ["azimuth", "tilt", "module_name", "albedo",
-                   "inverter_name"]
+        required = ["azimuth", "tilt", "module_name",
+                    ["albedo", 'surface_type'], "inverter_name"]
         if super().powerplant_requires is not None:
             required.extend(super().powerplant_requires)
         return required
@@ -188,6 +188,29 @@ class Pvlib(PhotovoltaicModelBase):
                    self.powerplant.modules_per_string
         else:
             return None
+
+    def powerplant_requires_check(self, parameters):
+        """
+        Checks if all required powerplant parameters are provided
+
+        parameters : list(str)
+            list of provided powerplant parameters
+
+        """
+        for k in self.powerplant_requires:
+            if not isinstance(k, list):
+                if k not in parameters:
+                    raise KeyError(
+                        "The specified model '{model}' requires power plant "
+                        "parameter '{k}' but it's not provided as an "
+                        "argument.".format(k=k, model=self))
+            else:
+                # in case one of several parameters can be provided
+                if not list(filter(lambda x: x in parameters, k)):
+                    raise KeyError(
+                        "The specified model '{model}' requires one of the "
+                        "following power plant parameters '{k}' but neither "
+                        "is provided as an argument.".format(k=k, model=self))
 
     def instantiate_module(self, **kwargs):
         # match all power plant parameters from powerplant_requires property

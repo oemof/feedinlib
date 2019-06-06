@@ -316,7 +316,7 @@ class WindpowerlibTurbine(WindpowerModelBase):
             Name of the wind converter type. Use self.get_wind_pp_types() to
             see a list of all possible wind converters.
         """
-        required = ["hub_height", "name", "fetch_curve"]
+        required = ["hub_height", ["power_curve", "power_coefficient_curve"]]
         if super().powerplant_requires is not None:
             required.extend(super().powerplant_requires)
         return required
@@ -337,6 +337,29 @@ class WindpowerlibTurbine(WindpowerModelBase):
             return self.powerplant.nominal_power
         else:
             return None
+
+    def powerplant_requires_check(self, parameters):
+        """
+        Checks if all required powerplant parameters are provided
+
+        parameters : list(str)
+            list of provided powerplant parameters
+
+        """
+        for k in self.powerplant_requires:
+            if not isinstance(k, list):
+                if k not in parameters:
+                    raise KeyError(
+                        "The specified model '{model}' requires power plant "
+                        "parameter '{k}' but it's not provided as an "
+                        "argument.".format(k=k, model=self))
+            else:
+                # in case one of several parameters can be provided
+                if not list(filter(lambda x: x in parameters, k)):
+                    raise KeyError(
+                        "The specified model '{model}' requires one of the "
+                        "following power plant parameters '{k}' but neither "
+                        "is provided as an argument.".format(k=k, model=self))
 
     def instantiate_turbine(self, **kwargs):
         # match all power plant parameters from powerplant_requires property
@@ -522,9 +545,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
     @property
     def nominal_power_wind_power_plant(self):
         if self.powerplant:
-            # ToDo Fix until fixed in windpowerlib
-            #return self.windfarm.installed_power
-            return self.powerplant.get_installed_power()
+            return self.powerplant.nominal_power
         else:
             return None
 
@@ -554,9 +575,6 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
             )
         kwargs['wind_turbine_fleet'] = turbine_list
 
-        # ToDo: fix until maybe solved in windpowerlib
-        if 'name' not in kwargs.keys():
-            kwargs['name'] = 'dummy_name'
         return WindpowerlibWindFarm(**kwargs)
 
     def instantiate_windfarm(self, **kwargs):
@@ -593,9 +611,6 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
             wind_farm_list.append(self.set_up_windfarm(**wind_farm))
         kwargs['wind_farms'] = wind_farm_list
 
-        # ToDo: fix until maybe solved in windpowerlib
-        if 'name' not in kwargs.keys():
-            kwargs['name'] = 'dummy_name'
         self.powerplant = WindpowerlibWindTurbineCluster(**kwargs)
         return self.powerplant
 

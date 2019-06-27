@@ -83,13 +83,12 @@ def add_weather_locations_to_register(register, weather_coordinates):
 
 def example_weather_wind(filename): # todo: to be deleted. Is used in region.py
     # loading weather data
-    import os
-    filename = os.path.abspath(filename)
-    if not os.path.isfile(filename):
+    try:
+        weather_df = pd.read_csv(filename,
+                                 header=[0, 1], index_col=[0, 1, 2],
+                                 parse_dates=True)
+    except FileNotFoundError:
         raise FileNotFoundError("Please adjust the filename incl. path.")
-    weather_df = pd.read_csv(filename,
-                             header=[0, 1], index_col=[0, 1, 2],
-                             parse_dates=True)
     # change type of height from str to int by resetting columns
     weather_df.columns = [weather_df.axes[1].levels[0][
                               weather_df.axes[1].labels[0]],

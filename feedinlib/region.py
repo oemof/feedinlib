@@ -103,7 +103,7 @@ class Region:
                 capacity = power_plants.loc[
                     power_plants['id'] == turbine_type]['capacity'].sum()
                 wind_farm_data['wind_turbine_fleet'].append(
-                    {'wind_turbine': turbines_region[turbine_type],
+                    {'wind_turbine': turbines_region[turbine_type],  # todo note: if there is an error here: might be feedin_germany.ini change E/126 to E-126 (had to be adapted due to error in data)
                 'number_of_turbines': capacity/turbines_region[turbine_type].nominal_power}) # todo: adapt to feedinlib WindPowerPlant
 
             # initialize wind farm and run TurbineClusterModelChain

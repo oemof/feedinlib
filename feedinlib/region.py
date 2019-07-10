@@ -123,7 +123,7 @@ class Region:
             feedin_df = pd.DataFrame(data=feedin_ts).rename(
                 columns={feedin_ts.name: 'feedin_{}'.format(weather_index)})
             region_feedin_df = pd.concat([region_feedin_df, feedin_df], axis=1)
-        feedin = feedin_df.sum(axis=1).rename('feedin')
+        feedin = region_feedin_df.sum(axis=1).rename('feedin')
         # todo delete skeleton:
         # weise jeder Anlage eine Wetterzelle zu
         # for weather_cell in self.weather_cells

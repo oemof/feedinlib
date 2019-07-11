@@ -32,6 +32,7 @@ def _get_cds_data(
     :return: CDS data in an xarray format
     """
 
+    # https://cds.climate.copernicus.eu/api-how-to
     if cds_client is None:
         cds_client = cdsapi.Client()
 

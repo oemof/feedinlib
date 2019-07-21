@@ -115,7 +115,7 @@ class Weather:
                     "VABS_AV",
                 ],
                 "all": sorted(
-                    v.name for r in session.query(classes["Variable"]).all()
+                    v.name for v in session.query(db["Variable"]).all()
                 ),
             }[variables]
             if variables in ["all", "pvlib", "windpowerlib"]

@@ -124,11 +124,13 @@ class Weather:
 
         self.series = {
             (v, h, l): set(
-                    q.filter(
-                        (db["Timespan"].stop >= tdt(start))
-                        & (db["Timespan"].start <= tdt(stop))
-                    ).distinct().all(),
+                q.filter(
+                    (db["Timespan"].stop >= tdt(start))
+                    & (db["Timespan"].start <= tdt(stop))
                 )
+                .distinct()
+                .all()
+            )
             for v in variables
             for l in chain(self.locations.values(), *self.regions.values())
             for h in [

@@ -134,12 +134,12 @@ class Weather:
                 (
                     (segment_start, segment_stop, value)
                     for series in chain(
-                q.filter(
-                    (db["Timespan"].stop >= tdt(start))
-                    & (db["Timespan"].start <= tdt(stop))
-                )
-                .distinct()
-                .all()
+                        q.filter(
+                            (db["Timespan"].stop >= tdt(start))
+                            & (db["Timespan"].start <= tdt(stop))
+                        )
+                        .distinct()
+                        .all()
                     )
                     for (segment, value) in zip(
                         series.timespan.segments, series.values
@@ -153,14 +153,16 @@ class Weather:
             )
             for v in self.variables
             for l in chain(self.locations.values(), *self.regions.values())
-            for variable_heights in (set(
-                h[0]
-                for h in session.query(db["Series"].height)
-                .join(db["Variable"])
-                .filter(db["Variable"].name == v)
-                .distinct()
-                .all()
-            ),)
+            for variable_heights in (
+                set(
+                    h[0]
+                    for h in session.query(db["Series"].height)
+                    .join(db["Variable"])
+                    .filter(db["Variable"].name == v)
+                    .distinct()
+                    .all()
+                ),
+            )
             for h in (
                 {0}
                 if variable_heights == {0.0}

@@ -138,7 +138,7 @@ class Weather:
                 .distinct()
                 .all()
             )
-            for v in variables
+            for v in self.variables
             for l in chain(self.locations.values(), *self.regions.values())
             for variable_heights in (set(
                 h[0]

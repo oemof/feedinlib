@@ -124,33 +124,11 @@ class Weather:
 
         self.series = {
             (v, h, l): set(
-                chain(
-                    # There might be a `Timespan` completely containing
-                    # `start` and `stop`.
                     q.filter(
-                        (db["Timespan"].start <= tdt(start))
-                        & (db["Timespan"].stop >= tdt(stop))
-                    ).all(),
-                    # Otherwise there will be a `Timespan` only containing the
-                    # `start` timestamp.
-                    q.filter(
-                        (db["Timespan"].start <= tdt(start))
-                        & (db["Timespan"].stop >= tdt(start))
-                    ).all(),
-                    # And there'll also be a `Timespan` only containing the
-                    # `stop` timestamp.
-                    q.filter(
-                        (db["Timespan"].start <= tdt(stop))
-                        & (db["Timespan"].stop >= tdt(stop))
-                    ).all(),
-                    # But in these cases, there might also be `Timespans`
-                    # completely in between `start` and `stop`.
-                    q.filter(
-                        (db["Timespan"].start >= tdt(start))
-                        & (db["Timespan"].stop <= tdt(stop))
-                    ).all(),
+                        (db["Timespan"].stop >= tdt(start))
+                        & (db["Timespan"].start <= tdt(stop))
+                    ).distinct().all(),
                 )
-            )
             for v in variables
             for l in chain(self.locations.values(), *self.regions.values())
             for h in [

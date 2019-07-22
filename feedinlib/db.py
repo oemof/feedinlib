@@ -72,6 +72,7 @@ class Weather:
         Load the weather variables specified in the given list, or the
         variables necessary to calculate a feedin using `"pvlib"` or
         `"windpowerlib"` or load` `"all"` variables in the database.
+        Defaults to `"all"`.
     regions : list of `shapely.geometry.Polygon`s
          Weather measurements are collected from measurement locations
          contained within the given polygons.

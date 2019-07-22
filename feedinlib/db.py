@@ -130,13 +130,26 @@ class Weather:
         )
 
         self.series = {
-            (v, h, l): set(
+            (v, h, l): sorted(
+                (
+                    (segment_start, segment_stop, value)
+                    for series in chain(
                 q.filter(
                     (db["Timespan"].stop >= tdt(start))
                     & (db["Timespan"].start <= tdt(stop))
                 )
                 .distinct()
                 .all()
+                    )
+                    for (segment, value) in zip(
+                        series.timespan.segments, series.values
+                    )
+                    for segment_start in [tdt(segment[0])]
+                    for segment_stop in [tdt(segment[1])]
+                    if segment_start >= tdt(start)
+                    and segment_stop <= tdt(stop)
+                ),
+                key=lambda s: s[0],
             )
             for v in self.variables
             for l in chain(self.locations.values(), *self.regions.values())

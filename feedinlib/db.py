@@ -68,6 +68,11 @@ class Weather:
     locations : list of `shapely.geometry.Point`s
         Weather measurements are collected from measurement locations closest
         to the the given points.
+    heights : list of numbers
+        Limit selected timeseries to these heights. If a variable isn't height
+        dependent, i.e. it has only one height, namely `0`, this series is
+        selected. Don't select the correspoding variable, in order to avoid
+        this.
     variables : list of str or one of "all", "pvlib" or "windpowerlib"
         Load the weather variables specified in the given list, or the
         variables necessary to calculate a feedin using `"pvlib"` or
@@ -85,6 +90,7 @@ class Weather:
         start,
         stop,
         locations,
+        heights,
         variables="all",
         regions=None,
         session=None,
@@ -134,14 +140,19 @@ class Weather:
             )
             for v in variables
             for l in chain(self.locations.values(), *self.regions.values())
-            for h in [
+            for variable_heights in (set(
                 h[0]
                 for h in session.query(db["Series"].height)
                 .join(db["Variable"])
                 .filter(db["Variable"].name == v)
                 .distinct()
                 .all()
-            ]
+            ),)
+            for h in (
+                {0}
+                if variable_heights == {0.0}
+                else variable_heights.intersection(heights)
+            )
             for q in [
                 session.query(db["Series"])
                 .filter(

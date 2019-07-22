@@ -1,19 +1,18 @@
 import xarray as xr # todo add to setup
 import numpy as np
 import pandas as pd
-#<<<<<<< HEAD
+
 import os
 from feedinlib import tools
 from feedinlib import Photovoltaic, WindPowerPlant
-#=======
+from feedinlib.models import WindpowerlibTurbine
+from feedinlib.models import WindpowerlibTurbineCluster
+
 # delete these imports after windpowerlib integration
 from windpowerlib.wind_turbine import WindTurbine
 from windpowerlib.wind_farm import WindFarm
 from windpowerlib.turbine_cluster_modelchain import TurbineClusterModelChain
 
-from feedinlib import tools
-from feedinlib import WindPowerPlant
-#>>>>>>> 65b8d0c45e6b13c4207106439901ce98073111fc
 
 class Region:
     """
@@ -61,7 +60,6 @@ class Region:
             Absolute feed-in of wind power plants in region in todo: unit W.
 
         """
-        # todo @Birgit: parameters in **kwargs? f.e. 'fetch_turbine'
         register = tools.add_weather_locations_to_register(
             register=register, weather_coordinates=self.weather)
         # todo: use function for retrieving all possible weather locations as
@@ -76,7 +74,9 @@ class Region:
              'rotor_diameter']).size().reset_index().drop(0, axis=1)
         # initialize wind turbine objects for each turbine type in register
         turbine_data['turbine'] = turbine_data.apply(
-            lambda x: WindTurbine(fetch_curve='power_curve', **x), axis=1)  # todo use feedinlib WindPowerPlant, see below
+            lambda x: WindPowerPlant(model=WindpowerlibTurbine,
+                                     power_curve=True,
+                                     nominal_power=True, **x), axis=1)
         # turbine_data['turbine'] = turbine_data.apply(
         #     lambda x: WindPowerPlant(fetch_curve='power_curve',
         #                              **x), axis=1) # todo fetch_curve und andere parameter wo?
@@ -101,16 +101,16 @@ class Region:
                               'wind_turbine_fleet': []}
             for turbine_type in turbine_types_location['id']:
                 capacity = power_plants.loc[
-                    power_plants['id'] == turbine_type]['capacity'].sum()
+                    power_plants['id'] == turbine_type]['capacity'].sum()  # todo check capacpity of opsd register
                 wind_farm_data['wind_turbine_fleet'].append(
-                    {'wind_turbine': turbines_region[turbine_type],  # todo note: if there is an error here: might be feedin_germany.ini change E/126 to E-126 (had to be adapted due to error in data)
+                    {'wind_turbine': turbines_region[turbine_type],
                 'number_of_turbines': capacity/turbines_region[turbine_type].nominal_power}) # todo: adapt to feedinlib WindPowerPlant
 
             # initialize wind farm and run TurbineClusterModelChain
             # todo: WindFarm model in feedinlib
             # todo: windpowerlib specific part from here in feedin()
             # todo: if nur ein turbine_type --> ModelChain verwenden??
-            wind_farm = WindFarm(**wind_farm_data)
+            wind_farm = WindPowerPlant(model=WindpowerlibTurbineCluster, **wind_farm_data)
             # select weather of weather location and drop location index
             weather = self.weather.loc[
                 (self.weather.index.get_level_values('lat') ==

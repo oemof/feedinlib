@@ -68,13 +68,13 @@ class Weather:
     locations : list of `shapely.geometry.Point`s
         Weather measurements are collected from measurement locations closest
         to the the given points.
-    regions : list of `shapely.geometry.Polygon`s
-         Weather measurements are collected from measurement locations
-         contained within the given polygons.
     variables : list of str or one of "all", "pvlib" or "windpowerlib"
         Load the weather variables specified in the given list, or the
         variables necessary to calculate a feedin using `"pvlib"` or
         `"windpowerlib"` or load` `"all"` variables in the database.
+    regions : list of `shapely.geometry.Polygon`s
+         Weather measurements are collected from measurement locations
+         contained within the given polygons.
     session : `sqlalchemy.orm.Session`
     db : dict of mapped classes
     """

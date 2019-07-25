@@ -94,5 +94,7 @@ def example_weather_wind(filename): # todo: to be deleted. Is used in region.py
                               weather_df.axes[1].labels[0]],
                           weather_df.axes[1].levels[1][
                               weather_df.axes[1].labels[1]].astype(int)]
+    # set time zone to UTC
+    weather_df.index = weather_df.index.set_levels(
+        weather_df.index.levels[0].tz_localize('UTC'), level=0)
     return weather_df
-

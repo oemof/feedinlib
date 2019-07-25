@@ -1,11 +1,7 @@
 import xarray as xr # todo add to setup
 import numpy as np
 import pandas as pd
-#<<<<<<< HEAD
-import os
-from feedinlib import tools
-from feedinlib import Photovoltaic, WindPowerPlant
-#=======
+
 # delete these imports after windpowerlib integration
 from windpowerlib.wind_turbine import WindTurbine
 from windpowerlib.wind_farm import WindFarm
@@ -13,7 +9,7 @@ from windpowerlib.turbine_cluster_modelchain import TurbineClusterModelChain
 
 from feedinlib import tools
 from feedinlib import WindPowerPlant
-#>>>>>>> 65b8d0c45e6b13c4207106439901ce98073111fc
+
 
 class Region:
     """

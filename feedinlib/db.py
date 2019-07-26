@@ -129,24 +129,6 @@ class Weather:
             else variables
         )
 
-        self.variables = {
-            v: {
-                "heights": {0}
-                if variable_heights == {0.0}
-                else variable_heights.intersection(heights)
-            }
-            for v in self.variables
-            for variable_heights in (
-                set(
-                    h[0]
-                    for h in session.query(db["Series"].height)
-                    .join(db["Variable"])
-                    .filter(db["Variable"].name == v)
-                    .distinct()
-                    .all()
-                ),
-            )
-        }
         self.series = {
             (v, h, l): sorted(
                 (

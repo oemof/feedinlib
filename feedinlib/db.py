@@ -1,4 +1,5 @@
-from itertools import chain
+from itertools import chain, groupby
+
 from pandas import to_datetime as tdt
 from geoalchemy2.elements import WKTElement as WKTE
 from sqlalchemy.orm import sessionmaker
@@ -73,11 +74,12 @@ class Weather:
         dependent, i.e. it has only one height, namely `0`, this series is
         selected. Don't select the correspoding variable, in order to avoid
         this.
-    variables : list of str or one of "all", "pvlib" or "windpowerlib"
+        Defaults to `None` which means no restriction on height levels.
+    variables : list of str or one of "pvlib" or "windpowerlib"
         Load the weather variables specified in the given list, or the
         variables necessary to calculate a feedin using `"pvlib"` or
-        `"windpowerlib"` or load` `"all"` variables in the database.
-        Defaults to `"all"`.
+        `"windpowerlib"`.
+        Defaults to `None` which means no restriction on loaded variables.
     regions : list of `shapely.geometry.Polygon`s
          Weather measurements are collected from measurement locations
          contained within the given polygons.
@@ -90,8 +92,8 @@ class Weather:
         start,
         stop,
         locations,
-        heights,
-        variables="all",
+        heights=None,
+        variables=None,
         regions=None,
         session=None,
         db=None,
@@ -121,26 +123,54 @@ class Weather:
                     "T",
                     "VABS_AV",
                 ],
-                "all": sorted(
+                None: sorted(
                     v.name for v in session.query(db["Variable"]).all()
                 ),
             }[variables]
-            if variables in ["all", "pvlib", "windpowerlib"]
+            if variables in [None, "pvlib", "windpowerlib"]
             else variables
         )
 
+        location_ids = [
+            l.id
+            for l in chain(self.locations.values(), *self.regions.values())
+        ]
+        series = sorted(
+            session.query(
+                db["Series"], db["Variable"], db["Timespan"], db["Location"]
+            )
+            .join(db["Series"].variable)
+            .join(db["Series"].timespan)
+            .join(db["Series"].location)
+            .filter((db["Series"].location_id.in_(location_ids)))
+            .filter(
+                None
+                if variables is None
+                else db["Variable"].name.in_(variables)
+            )
+            .filter(
+                None
+                if heights is None
+                else (db["Series"].height.in_(chain([0], heights)))
+            )
+            .filter(
+                (T["Timespan"].stop >= tdt(start))
+                & (T["Timespan"].start <= tdt(stop))
+            )
+            .all(),
+            key=lambda p: (
+                p[3].id,
+                p[1].name,
+                p[0].height,
+                p[2].start,
+                p[2].stop,
+            ),
+        )
+
         self.series = {
-            (v, h, l): sorted(
-                (
+            k: [
                     (segment_start, segment_stop, value)
-                    for series in chain(
-                        q.filter(
-                            (db["Timespan"].stop >= tdt(start))
-                            & (db["Timespan"].start <= tdt(stop))
-                        )
-                        .distinct()
-                        .all()
-                    )
+                    for (series, variable, timespan, location) in g
                     for (segment, value) in zip(
                         series.timespan.segments, series.values
                     )
@@ -148,35 +178,10 @@ class Weather:
                     for segment_stop in [tdt(segment[1])]
                     if segment_start >= tdt(start)
                     and segment_stop <= tdt(stop)
-                ),
-                key=lambda s: s[0],
-            )
-            for v in self.variables
-            for l in chain(self.locations.values(), *self.regions.values())
-            for variable_heights in (
-                set(
-                    h[0]
-                    for h in session.query(db["Series"].height)
-                    .join(db["Variable"])
-                    .filter(db["Variable"].name == v)
-                    .distinct()
-                    .all()
-                ),
-            )
-            for h in (
-                {0}
-                if variable_heights == {0.0}
-                else variable_heights.intersection(heights)
-            )
-            for q in [
-                session.query(db["Series"])
-                .filter(
-                    (db["Series"].height == h) & (db["Series"].location == l)
-                )
-                .join(db["Variable"])
-                .filter(db["Variable"].name == v)
-                .join(db["Timespan"])
             ]
+            for k, g in groupby(
+                result, key=lambda p: (p[3], p[1].name, p[0].height,)
+            )
         }
 
     def location(self, point=None):

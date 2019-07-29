@@ -114,23 +114,6 @@ class Weather:
             if regions is not None
             else {}
         )
-        self.variables = (
-            {
-                "windpowerlib": ["P", "T", "VABS_AV", "Z0"],
-                "pvlib": [
-                    "ASWDIFD_S",
-                    "ASWDIRN_S",
-                    "ASWDIR_S",
-                    "T",
-                    "VABS_AV",
-                ],
-                None: sorted(
-                    v.name for v in session.query(db["Variable"]).all()
-                ),
-            }[variables]
-            if variables in [None, "pvlib", "windpowerlib"]
-            else variables
-        )
 
         location_ids = [
             l.id

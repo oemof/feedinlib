@@ -154,15 +154,12 @@ class Weather:
 
         self.series = {
             k: [
-                    (segment_start, segment_stop, value)
-                    for (series, variable, timespan, location) in g
-                    for (segment, value) in zip(
-                        series.timespan.segments, series.values
-                    )
-                    for segment_start in [tdt(segment[0])]
-                    for segment_stop in [tdt(segment[1])]
-                    if segment_start >= tdt(start)
-                    and segment_stop <= tdt(stop)
+                (segment_start, segment_stop, value)
+                for (series, variable, timespan, location) in g
+                for (segment, value) in zip(timespan.segments, series.values)
+                for segment_start in [tdt(segment[0])]
+                for segment_stop in [tdt(segment[1])]
+                if segment_start >= tdt(start) and segment_stop <= tdt(stop)
             ]
             for k, g in groupby(
                 result, key=lambda p: (p[3], p[1].name, p[0].height,)

@@ -101,6 +101,7 @@ class Weather:
     ):
         self.session = session
         self.db = db
+
         self.locations = (
             {WKTE(l, srid=4326): self.location(l) for l in locations}
             if locations is not None

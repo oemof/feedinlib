@@ -70,8 +70,9 @@ class Weather:
         Weather measurements are collected from measurement locations closest
         to the the given points.
     heights : list of numbers
-        Limit selected timeseries to these heights. If a variable isn't height
-        dependent, i.e. it has only one height, namely `0`, this series is
+        Limit selected timeseries to these heights. If `variables` contains a
+        variable which isn't height dependent, i.e. it has only one height,
+        namely `0`, the corresponding timeseries is always
         selected. Don't select the correspoding variable, in order to avoid
         this.
         Defaults to `None` which means no restriction on height levels.

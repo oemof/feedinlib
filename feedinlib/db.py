@@ -144,8 +144,8 @@ class Weather:
                 else (db["Series"].height.in_(chain([0], heights)))
             )
             .filter(
-                (T["Timespan"].stop >= tdt(start))
-                & (T["Timespan"].start <= tdt(stop))
+                (db["Timespan"].stop >= tdt(start))
+                & (db["Timespan"].start <= tdt(stop))
             )
             .all(),
             key=lambda p: (

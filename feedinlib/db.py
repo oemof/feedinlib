@@ -172,13 +172,13 @@ class Weather:
         }
 
         self.variables = {
-            k: sorted(set(g))
+            k: sorted(set(h for _, h in g))
             for k, g in groupby(
-                sorted((name, height) for name, height, _ in self.series),
+                sorted((name, height) for _, name, height in self.series),
                 key=lambda p: p[0],
             )
         }
-        self.variables = {k: {"height": v} for k, v in self.variables.items()}
+        self.variables = {k: {"heights": v} for k, v in self.variables.items()}
 
     def location(self, point=None):
         """ Get the measurement location closest to the given `point`.

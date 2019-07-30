@@ -108,7 +108,7 @@ class Weather:
         }.get(variables, variables)
 
         self.locations = (
-            {WKTE(l, srid=4326): self.location(l) for l in locations}
+            {(l.x, l.y): self.location(l) for l in locations}
             if locations is not None
             else {}
         )

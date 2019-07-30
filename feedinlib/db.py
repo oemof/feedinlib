@@ -73,7 +73,14 @@ class Weather:
     from shapely.geometry import Point
 
     point = Point(9.7311, 53.3899)
-    weather = Weather('2002-01-01', '2002-12-31', [point], ["T"], **defaultdb())
+    weather = Weather(
+        "2003-04-05 06:00",
+        "2003-04-05 07:31",
+        [point],
+        [10],
+        "pvlib",
+        **defaultdb()
+    )
     ```
 
 

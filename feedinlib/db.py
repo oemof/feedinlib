@@ -83,6 +83,13 @@ class Weather:
     )
     ```
 
+    Instead of the special values `"pvlib"` and `"windpowerlib"` you can
+    also supply a list of variables, like e.g. `["P", "T", "Z0"]`, to
+    retrieve from the database.
+
+    After initialization, you can use e.g. `weather.df(point, "pvlib")`
+    to retrieve a `DataFrame` with weather data from the measurement
+    location closest to the given `point`.
 
     Parameters
     ----------

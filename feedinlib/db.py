@@ -102,6 +102,11 @@ class Weather:
         self.session = session
         self.db = db
 
+        variables = {
+            "windpowerlib": ["P", "T", "VABS_AV", "Z0"],
+            "pvlib": ["ASWDIFD_S", "ASWDIRN_S", "ASWDIR_S", "T", "VABS_AV"],
+        }.get(variables, variables)
+
         self.locations = (
             {WKTE(l, srid=4326): self.location(l) for l in locations}
             if locations is not None

@@ -136,7 +136,8 @@ class Weather:
         variables = {
             "windpowerlib": ["P", "T", "VABS_AV", "Z0"],
             "pvlib": ["ASWDIFD_S", "ASWDIRN_S", "ASWDIR_S", "T", "VABS_AV"],
-        }.get(variables, variables)
+            None: variables
+        }[variables if variables in ["pvlib", "windpowerlib"] else None]
 
         self.locations = (
             {(l.x, l.y): self.location(l) for l in locations}

@@ -167,7 +167,7 @@ class Weather:
                 if segment_start >= tdt(start) and segment_stop <= tdt(stop)
             ]
             for k, g in groupby(
-                result, key=lambda p: (p[3], p[1].name, p[0].height,)
+                series, key=lambda p: (p[3], p[1].name, p[0].height,)
             )
         }
 

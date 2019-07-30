@@ -1,12 +1,29 @@
 from itertools import chain, groupby
 
-from pandas import to_datetime as tdt
+from pandas import DataFrame as DF, Series, Timedelta as TD, to_datetime as tdt
 from geoalchemy2.elements import WKTElement as WKTE
 from sqlalchemy.orm import sessionmaker
 import sqlalchemy as sqla
 import oedialect
 
 import openFRED as ofr
+
+
+TRANSLATIONS = {
+    "windpowerlib": {
+        "wind_speed": [("VABS_AV",)],
+        "temperature": [("T",)],
+        "roughness_length": [("Z0",)],
+        "pressure": [("P",)],
+    },
+    "pvlib": {
+        "wind_speed": [("VABS_AV", 10)],
+        "temp_air": [("T", 10)],
+        "dhi": [("ASWDIFD_S", 0)],
+        "ghi": [("ASWDIFD_S", 0), ("ASWDIR_S", 0)],
+        "dni": [("ASWDIRN_S", 0)],
+    },
+}
 
 
 def defaultdb():
@@ -200,5 +217,78 @@ class Weather:
             .all()
         )
 
-    def __call__(start=None, stop=None, locations=None):
-        pass
+    def df(self, location=None, lib=None):
+        xy = (location.x, location.y)
+        point = (
+            self.locations[xy]
+            if xy in self.locations
+            else self.location(location)
+        )
+        if format is None:
+            raise NotImplementedError(
+                "Arbitrary dataframes not supported yet.\n"
+                'Please use one of `lib="pvlib"` or `lib="windpowerlib"`.'
+            )
+        index = (
+            [
+                dhi[0] + (dhi[1] - dhi[0]) / 2
+                for dhi in self.series[point, "ASWDIFD_S", 0]
+            ]
+            if lib == "pvlib"
+            else [
+                wind_speed[0]
+                for wind_speed in self.series[
+                    point, "VABS_AV", self.variables["VABS_AV"]["heights"][0]
+                ]
+            ]
+            if lib == "windpowerlib"
+            else []
+        )
+
+        def to_series(v, h):
+            s = self.series[point, v, h]
+            return Series([p[2] for p in s], index=[p[0] for p in s])
+
+        series = {
+            k: sum(to_series(*p, *k[1:]) for p in TRANSLATIONS[lib][k[0]])
+            for k in (
+                [("dhi",), ("dni",), ("ghi",), ("temp_air",), ("wind_speed",)]
+                if lib == "pvlib"
+                else [
+                    (v, h)
+                    for v in [
+                        "pressure",
+                        "roughness_length",
+                        "temperature",
+                        "wind_speed",
+                    ]
+                    for h in self.variables[TRANSLATIONS[lib][v][0][0]][
+                        "heights"
+                    ]
+                ]
+                if lib == "windpowerlib"
+                else [(v,) for v in self.variables]
+            )
+        }
+        if lib == "pvlib":
+            series[("temp_air",)] = (
+                (series[("temp_air",)] - 273.15)
+                .resample("15min")
+                .interpolate()[series[("dhi",)].index]
+            )
+            ws = series[("wind_speed",)]
+            for k in series[("wind_speed",)].keys():
+                ws[k + TD("15min")] = ws[k]
+            ws.sort_values(inplace=True)
+        if lib == "windpowerlib":
+            roughness = TRANSLATIONS[lib]["roughness_length"][0][0]
+            series.update(
+                {
+                    ("roughness_length", h): series["roughness_length", h]
+                    .resample("30min")
+                    .interpolate()[index]
+                    for h in self.variables[roughness]["heights"]
+                }
+            )
+            series.update({k: series[k][index] for k in series})
+        return DF(index=index, data={k: series[k].values for k in series})

@@ -36,7 +36,7 @@ class Region:
         register : pd.DataFrame
             Contains power plant data and location of each power plant in columns
             'lat' (latitude) and 'lon' (longitude). Required power plant data:
-            turbine type in column 'name', hub height in m in column 'hub_height'.
+            turbine type in column 'turbine_type', hub height in m in column 'hub_height'.
             Optional data: rotor diameter in m in 'rotor_diameter'.
             todo what about nominal power - comes from oedb. Aber wenn eigene leistungskurve angegeben wird...?
         assignment_func : Funktion, die Anlagen in einer Wetterzelle mit
@@ -68,7 +68,7 @@ class Region:
                                                                       axis=1)
         # get turbine types (and data) from register
         turbine_data = register.groupby(
-            ['name', 'hub_height',
+            ['turbine_type', 'hub_height',
              'rotor_diameter']).size().reset_index().drop(0, axis=1)
         # initialize wind turbine objects for each turbine type in register
         turbine_data['turbine'] = turbine_data.apply(
@@ -76,7 +76,7 @@ class Region:
         # turbine_data['turbine'] = turbine_data.apply(
         #     lambda x: WindPowerPlant(fetch_curve='power_curve',
         #                              **x), axis=1) # todo fetch_curve und andere parameter wo?
-        turbine_data.index = turbine_data[['name', 'hub_height',
+        turbine_data.index = turbine_data[['turbine_type', 'hub_height',
              'rotor_diameter']].applymap(str).apply(lambda x: '_'.join(x),
                                                     axis=1)
         turbines_region = dict(turbine_data['turbine'])

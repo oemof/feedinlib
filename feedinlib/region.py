@@ -10,7 +10,6 @@ from feedinlib.models import WindpowerlibTurbineCluster
 
 # delete these imports after windpowerlib integration
 from windpowerlib.wind_turbine import WindTurbine
-from windpowerlib.wind_farm import WindFarm
 from windpowerlib.turbine_cluster_modelchain import TurbineClusterModelChain
 
 
@@ -70,17 +69,12 @@ class Region:
                                                                       axis=1)
         # get turbine types (and data) from register
         turbine_data = register.groupby(
-            ['name', 'hub_height',
+            ['turbine_type', 'hub_height',
              'rotor_diameter']).size().reset_index().drop(0, axis=1)
         # initialize wind turbine objects for each turbine type in register
         turbine_data['turbine'] = turbine_data.apply(
-            lambda x: WindPowerPlant(model=WindpowerlibTurbine,
-                                     power_curve=True,
-                                     nominal_power=True, **x), axis=1)
-        # turbine_data['turbine'] = turbine_data.apply(
-        #     lambda x: WindPowerPlant(fetch_curve='power_curve',
-        #                              **x), axis=1) # todo fetch_curve und andere parameter wo?
-        turbine_data.index = turbine_data[['name', 'hub_height',
+            lambda x: WindPowerPlant(model=WindpowerlibTurbine, **x), axis=1)
+        turbine_data.index = turbine_data[['turbine_type', 'hub_height',
              'rotor_diameter']].applymap(str).apply(lambda x: '_'.join(x),
                                                     axis=1)
         turbines_region = dict(turbine_data['turbine'])
@@ -104,10 +98,9 @@ class Region:
                     power_plants['id'] == turbine_type]['capacity'].sum()  # todo check capacpity of opsd register
                 wind_farm_data['wind_turbine_fleet'].append(
                     {'wind_turbine': turbines_region[turbine_type],
-                'number_of_turbines': capacity/turbines_region[turbine_type].nominal_power}) # todo: adapt to feedinlib WindPowerPlant
+                     'total_capacity': capacity})
 
             # initialize wind farm and run TurbineClusterModelChain
-            # todo: WindFarm model in feedinlib
             # todo: windpowerlib specific part from here in feedin()
             # todo: if nur ein turbine_type --> ModelChain verwenden??
             wind_farm = WindPowerPlant(model=WindpowerlibTurbineCluster, **wind_farm_data)

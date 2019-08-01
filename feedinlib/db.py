@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 import sqlalchemy as sqla
 import oedialect
 
-import openFRED as ofr
+from feedinlib import openFRED1 as ofr
 
 
 TRANSLATIONS = {
@@ -225,7 +225,7 @@ class Weather:
     def within(self, region=None):
         """ Get all measurement locations within the given `region`.
         """
-        region = WKTE(regions.to_wkt(), srid=4326)
+        region = WKTE(region.to_wkt(), srid=4326)
         return (
             self.session.query(self.db["Location"])
             .filter(self.db["Location"].point.ST_Within(region))

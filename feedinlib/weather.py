@@ -11,7 +11,7 @@ import pandas as pd
 class FeedinWeather:
     def __init__(self, **kwargs):
         r"""
-        Class, containing all meta informations regarding the weather data set.
+        Class, containing all meta information regarding the weather data set.
 
         Parameters
         ----------
@@ -55,7 +55,7 @@ class FeedinWeather:
 
     def read_feedinlib_csv(self, filename, overwrite=True):
         r"""
-        Reading a csv-file with a header containg the meta data of the time
+        Reading a csv-file with a header containing the meta data of the time
         series.
 
         The header has to contain the time zone and has to end with a blank

@@ -6,7 +6,10 @@ import pandas as pd
 import math
 
 
-class TestPowerplant:
+class Fixtures:
+    """
+    Class providing all fixtures for model tests.
+    """
 
     @pytest.fixture
     def pvlib_weather(self):
@@ -106,6 +109,12 @@ class TestPowerplant:
         """
         return {'wind_farms': [windpowerlib_farm, windpowerlib_farm_2]}
 
+
+class TestPowerplants(Fixtures):
+    """
+    Class to test some basic functionalities of the power plant classes.
+    """
+
     def test_powerplant_requirements(self, pvlib_pv_system, pvlib_weather):
         """
         Test that attribute error is not raised in case a valid model is
@@ -155,6 +164,12 @@ class TestPowerplant:
                                      scaling='capacity', scaling_value=2e6)
         assert 2 / 3 * 833050.32551 == pytest.approx(feedin.values[0], 1e-5)
 
+
+class TestPvlib(Fixtures):
+    """
+    Class to test Pvlib model.
+    """
+
     def test_pvlib_feedin(self, pvlib_pv_system, pvlib_weather):
         """
         Test basic feedin calculation using pvlib.
@@ -200,6 +215,12 @@ class TestPowerplant:
         with pytest.raises(AttributeError, match=msg):
             Photovoltaic(**pvlib_pv_system)
 
+
+class TestWindpowerlibSingleTurbine(Fixtures):
+    """
+    Class to test WindpowerlibTurbine model.
+    """
+
     def test_windpowerlib_single_turbine_feedin(
             self, windpowerlib_turbine, windpowerlib_weather):
         """
@@ -232,6 +253,12 @@ class TestPowerplant:
         msg = "The specified model 'windpowerlib_single_turbine' requires"
         with pytest.raises(AttributeError, match=msg):
             WindPowerPlant(**windpowerlib_turbine)
+
+
+class TestWindpowerlibCluster(Fixtures):
+    """
+    Class to test WindpowerlibTurbineCluster model.
+    """
 
     def test_windpowerlib_windfarm_feedin(
             self, windpowerlib_farm, windpowerlib_weather):

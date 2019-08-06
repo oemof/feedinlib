@@ -154,7 +154,7 @@ class Pvlib(PhotovoltaicModelBase):
         """
         # ToDo maybe add method to assign suitable inverter if none is specified
         required = ["azimuth", "tilt", "module_name",
-                    ["albedo", 'surface_type'], "inverter_name"]
+                    ["albedo", "surface_type"], "inverter_name"]
         if super().powerplant_requires is not None:
             required.extend(super().powerplant_requires)
         return required
@@ -200,14 +200,14 @@ class Pvlib(PhotovoltaicModelBase):
         for k in self.powerplant_requires:
             if not isinstance(k, list):
                 if k not in parameters:
-                    raise KeyError(
+                    raise AttributeError(
                         "The specified model '{model}' requires power plant "
                         "parameter '{k}' but it's not provided as an "
                         "argument.".format(k=k, model=self))
             else:
                 # in case one of several parameters can be provided
                 if not list(filter(lambda x: x in parameters, k)):
-                    raise KeyError(
+                    raise AttributeError(
                         "The specified model '{model}' requires one of the "
                         "following power plant parameters '{k}' but neither "
                         "is provided as an argument.".format(k=k, model=self))
@@ -314,7 +314,8 @@ class WindpowerlibTurbine(WindpowerModelBase):
             Name of the wind converter type. Use self.get_wind_pp_types() to
             see a list of all possible wind converters.
         """
-        required = ["hub_height", ["power_curve", "power_coefficient_curve"]]
+        required = ["hub_height",
+                    ["power_curve", "power_coefficient_curve", "turbine_type"]]
         if super().powerplant_requires is not None:
             required.extend(super().powerplant_requires)
         return required
@@ -347,21 +348,20 @@ class WindpowerlibTurbine(WindpowerModelBase):
         for k in self.powerplant_requires:
             if not isinstance(k, list):
                 if k not in parameters:
-                    raise KeyError(
+                    raise AttributeError(
                         "The specified model '{model}' requires power plant "
                         "parameter '{k}' but it's not provided as an "
                         "argument.".format(k=k, model=self))
             else:
                 # in case one of several parameters can be provided
                 if not list(filter(lambda x: x in parameters, k)):
-                    raise KeyError(
+                    raise AttributeError(
                         "The specified model '{model}' requires one of the "
                         "following power plant parameters '{k}' but neither "
                         "is provided as an argument.".format(k=k, model=self))
 
     def instantiate_turbine(self, **kwargs):
-        self.powerplant = WindpowerlibWindTurbine(**kwargs)
-        return self.powerplant
+        return WindpowerlibWindTurbine(**kwargs)
 
     def feedin(self, weather, power_plant_parameters, **kwargs):
         r"""
@@ -371,8 +371,8 @@ class WindpowerlibTurbine(WindpowerModelBase):
         weather : feedinlib Weather Object # @Günni, auch windpowerlibformat erlaubt?
         """
         # ToDo Zeitraum einführen (time_span)
-        mc = WindpowerlibModelChain(
-            self.instantiate_turbine(**power_plant_parameters), **kwargs)
+        self.powerplant = self.instantiate_turbine(**power_plant_parameters)
+        mc = WindpowerlibModelChain(self.powerplant, **kwargs)
         return mc.run_model(weather).power_output
 
 

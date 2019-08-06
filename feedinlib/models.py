@@ -4,6 +4,7 @@
 """
 
 from abc import ABC, abstractmethod
+import pandas as pd
 
 # windpowerlib
 from windpowerlib import ModelChain as WindpowerlibModelChain
@@ -154,7 +155,7 @@ class Pvlib(PhotovoltaicModelBase):
         """
         # ToDo maybe add method to assign suitable inverter if none is specified
         required = ["azimuth", "tilt", "module_name",
-                    ["albedo", 'surface_type'], "inverter_name"]
+                    ["albedo", "surface_type"], "inverter_name"]
         if super().powerplant_requires is not None:
             required.extend(super().powerplant_requires)
         return required
@@ -200,14 +201,14 @@ class Pvlib(PhotovoltaicModelBase):
         for k in self.powerplant_requires:
             if not isinstance(k, list):
                 if k not in parameters:
-                    raise KeyError(
+                    raise AttributeError(
                         "The specified model '{model}' requires power plant "
                         "parameter '{k}' but it's not provided as an "
                         "argument.".format(k=k, model=self))
             else:
                 # in case one of several parameters can be provided
                 if not list(filter(lambda x: x in parameters, k)):
-                    raise KeyError(
+                    raise AttributeError(
                         "The specified model '{model}' requires one of the "
                         "following power plant parameters '{k}' but neither "
                         "is provided as an argument.".format(k=k, model=self))
@@ -314,7 +315,8 @@ class WindpowerlibTurbine(WindpowerModelBase):
             Name of the wind converter type. Use self.get_wind_pp_types() to
             see a list of all possible wind converters.
         """
-        required = ["hub_height", ["power_curve", "power_coefficient_curve"]]
+        required = ["hub_height",
+                    ["power_curve", "power_coefficient_curve", "turbine_type"]]
         if super().powerplant_requires is not None:
             required.extend(super().powerplant_requires)
         return required
@@ -347,21 +349,20 @@ class WindpowerlibTurbine(WindpowerModelBase):
         for k in self.powerplant_requires:
             if not isinstance(k, list):
                 if k not in parameters:
-                    raise KeyError(
+                    raise AttributeError(
                         "The specified model '{model}' requires power plant "
                         "parameter '{k}' but it's not provided as an "
                         "argument.".format(k=k, model=self))
             else:
                 # in case one of several parameters can be provided
                 if not list(filter(lambda x: x in parameters, k)):
-                    raise KeyError(
+                    raise AttributeError(
                         "The specified model '{model}' requires one of the "
                         "following power plant parameters '{k}' but neither "
                         "is provided as an argument.".format(k=k, model=self))
 
     def instantiate_turbine(self, **kwargs):
-        self.powerplant = WindpowerlibWindTurbine(**kwargs)
-        return self.powerplant
+        return WindpowerlibWindTurbine(**kwargs)
 
     def feedin(self, weather, power_plant_parameters, **kwargs):
         r"""
@@ -371,8 +372,8 @@ class WindpowerlibTurbine(WindpowerModelBase):
         weather : feedinlib Weather Object # @Günni, auch windpowerlibformat erlaubt?
         """
         # ToDo Zeitraum einführen (time_span)
-        mc = WindpowerlibModelChain(
-            self.instantiate_turbine(**power_plant_parameters), **kwargs)
+        self.powerplant = self.instantiate_turbine(**power_plant_parameters)
+        mc = WindpowerlibModelChain(self.powerplant, **kwargs)
         return mc.run_model(weather).power_output
 
 
@@ -400,93 +401,6 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
 
         super().__init__(**kwargs)
         self.powerplant = None
-
-        # wind farm
-        if 'wind_turbine_fleet' in kwargs.keys():
-            self.wind_turbine_fleet_init(kwargs['wind_turbine_fleet'])
-        # wind turbine cluster
-        elif 'wind_farms' in kwargs.keys():
-            if isinstance(kwargs['wind_farms'], list):
-                for wind_farm in kwargs['wind_farms']:
-                    if isinstance(wind_farm, dict) and \
-                            'wind_turbine_fleet' in wind_farm.keys():
-                        self.wind_turbine_fleet_init(
-                            wind_farm['wind_turbine_fleet'])
-                    else:
-                        raise TypeError(
-                            "The WindpowerlibTurbineCluster model requires "
-                            "that a wind farm is provided as a dictionary "
-                            "with `wind_turbine_fleet` as a key.")
-            else:
-                raise TypeError(
-                    "The WindpowerlibTurbineCluster model requires that "
-                    "`wind_farms` parameter is provided as a list but type of"
-                    "`wind_farms` is {}.".format(
-                        type(kwargs['wind_farms'])))
-
-    def wind_turbine_fleet_init(self, wind_turbine_fleet):
-        """
-        Sets up a wind turbine fleet list and conducts some type checks
-
-        Parameters
-        ----------
-        wind_turbine_fleet : :obj:`list`
-            List of dictionaries defining the wind turbine types and numbers
-            of a wind farm. Dictionaries must have the following keys and
-            corresponding values:
-
-            * 'wind_turbine'
-              Wind turbine type as :class:`~.powerplants.WindPowerPlant` or
-              :obj:`dict` containing all turbine parameters required by the
-              model :class:`~.models.WindpowerlibTurbine`
-            * 'number_of_turbines'
-              number of wind turbines
-
-        Returns
-        ----------
-        :obj:`list`
-            List of dictionaries defining the wind turbine types and numbers
-            of a wind farm. Dictionaries has the following keys and
-            corresponding values:
-
-            * 'wind_turbine'
-              Wind turbine type as :class:`~.powerplants.WindPowerPlant`
-            * 'number_of_turbines'
-              number of wind turbines
-
-        """
-        if isinstance(wind_turbine_fleet, list):
-            # initialize wind turbines
-            for turbine_dict in wind_turbine_fleet:
-                turbine = turbine_dict['wind_turbine']
-                if isinstance(turbine, feedinlib.powerplants.WindPowerPlant):
-                    # check if model the turbine was instantiated with is
-                    # WindpowerlibTurbine, otherwise instantiate new
-                    # WindPowerPlant with WindpowerlibTurbine model
-                    if not isinstance(turbine.model, WindpowerlibTurbine):
-                        turbine = feedinlib.powerplants.WindPowerPlant(
-                            **turbine.parameters)
-                elif isinstance(turbine, dict):
-                    # instantiate WindPowerPlant with WindpowerlibTurbine model
-                    turbine = feedinlib.powerplants.WindPowerPlant(**turbine)
-                else:
-                    raise TypeError(
-                        "The WindpowerlibTurbineCluster model requires that "
-                        "wind turbines must either be provided as "
-                        "WindPowerPlant objects or as dictionary containing "
-                        "all turbine parameters required by the "
-                        "WindpowerlibTurbine model.")
-                turbine_dict['wind_turbine'] = turbine
-        else:
-            raise TypeError(
-                "The WindpowerlibTurbineCluster model requires that the "
-                "`wind_turbine_fleet` parameter is provided as a list but "
-                "type of `wind_turbine_fleet` is {}.".format(
-                    type(wind_turbine_fleet)))
-        # @Günni diese Fkt. verändert das wind_turbine_fleet dict. ist das
-        # zu undurchsichtig und es sollte besser returned werden oder ist es
-        # auch ohne return okay?
-        return wind_turbine_fleet
 
     def __repr__(self):
         return "WindpowerlibTurbineCluster"
@@ -538,7 +452,11 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         else:
             return None
 
-    def set_up_windfarm(self, **kwargs):
+    def instantiate_turbine(self, **kwargs):
+        powerplant = WindpowerlibWindTurbine(**kwargs)
+        return powerplant
+
+    def instantiate_windfarm(self, **kwargs):
         r"""
         Sets up a windpowerlib WindFarm object
 
@@ -550,36 +468,54 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         :class:`windpowerlib.wind_farm.WindFarm`
 
         """
-        # setup list of wind turbine fleet with windpowerlib's WindTurbine
-        # objects to use in instantiation of WindFarm
-        turbine_fleet = kwargs.pop('wind_turbine_fleet')
-        turbine_list = []  # a new list is created in order to not change
-                           # the original turbine fleet list
-        for turbine_dict in turbine_fleet:
-            turbine = turbine_dict['wind_turbine']
-            turbine_list.append(
-                {'wind_turbine': turbine.model.instantiate_turbine(
-                    **turbine.parameters),
-                 'number_of_turbines': turbine_dict['number_of_turbines']}
-            )
-        kwargs['wind_turbine_fleet'] = turbine_list
+        # check if turbine fleet is provided
+        try:
+            wind_turbine_fleet = kwargs.pop('wind_turbine_fleet')
+        except KeyError:
+            raise KeyError("Missing parameter `wind_turbine_fleet` in wind "
+                           "farm dictionary {}.".format(kwargs))
 
+        # if turbine fleet is provided as list, convert to dataframe
+        if isinstance(wind_turbine_fleet, list):
+            try:
+                wind_turbine_fleet = pd.DataFrame(wind_turbine_fleet)
+            except ValueError:
+                raise ValueError("`wind_turbine_fleet` in wind farm "
+                                 "dictionary {} not provided properly.")
+
+        # initialize wind turbines as windpowerlib WindTurbine
+        if isinstance(wind_turbine_fleet, pd.DataFrame):
+            for ix, row in wind_turbine_fleet.iterrows():
+                if isinstance(row['wind_turbine'],
+                              feedinlib.powerplants.WindPowerPlant):
+                    turbine_data = row['wind_turbine'].parameters
+                elif isinstance(row['wind_turbine'], dict):
+                    turbine_data = row['wind_turbine']
+                else:
+                    raise TypeError(
+                        "The WindpowerlibTurbineCluster model requires that "
+                        "wind turbines must either be provided as "
+                        "WindPowerPlant objects or as dictionary containing "
+                        "all turbine parameters required by the "
+                        "WindpowerlibTurbine model but type of `wind_turbine` "
+                        "is {}.".format(type(row['wind_turbine'])))
+                # initialize WindpowerlibTurbine instead of directly
+                # initializing windpowerlib.WindTurbine to check required
+                # power plant parameters
+                wind_turbine = WindpowerlibTurbine()
+                wind_turbine.powerplant_requires_check(turbine_data.keys())
+                wind_turbine_fleet.loc[
+                    ix, 'wind_turbine'] = wind_turbine.instantiate_turbine(
+                    **turbine_data)
+        else:
+            raise TypeError(
+                "The WindpowerlibTurbineCluster model requires that the "
+                "`wind_turbine_fleet` parameter is provided as a list or "
+                "pandas.DataFrame but type of `wind_turbine_fleet` is "
+                "{}.".format(type(wind_turbine_fleet)))
+
+        kwargs['wind_turbine_fleet'] = wind_turbine_fleet
         return WindpowerlibWindFarm(**kwargs)
-
-    def instantiate_windfarm(self, **kwargs):
-        r"""
-        Instantiates a windpowerlib WindFarm object
-
-        Parameters
-        ----------
-
-        Returns
-        --------
-        :class:`windpowerlib.wind_farm.WindFarm`
-
-        """
-        self.powerplant = self.set_up_windfarm(**kwargs)
-        return self.powerplant
 
     def instantiate_turbine_cluster(self, **kwargs):
         r"""
@@ -593,15 +529,11 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         :class:`windpowerlib.wind_turbine_cluster.WindTurbineCluster`
 
         """
-        wind_farms = kwargs.pop('wind_farms')
-        wind_farm_list = []  # a new list is created in order to not change the
-                             # the original wind farm list
-        for wind_farm in wind_farms:
-            wind_farm_list.append(self.set_up_windfarm(**wind_farm))
+        wind_farm_list = []
+        for wind_farm in kwargs.pop('wind_farms'):
+            wind_farm_list.append(self.instantiate_windfarm(**wind_farm))
         kwargs['wind_farms'] = wind_farm_list
-
-        self.powerplant = WindpowerlibWindTurbineCluster(**kwargs)
-        return self.powerplant
+        return WindpowerlibWindTurbineCluster(**kwargs)
 
     def feedin(self, weather, power_plant_parameters, **kwargs):
         r"""
@@ -618,10 +550,12 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         # ToDo Zeitraum einführen (time_span)
         # wind farm calculation
         if 'wind_turbine_fleet' in power_plant_parameters.keys():
-            self.instantiate_windfarm(**power_plant_parameters)
+            self.powerplant = self.instantiate_windfarm(
+                **power_plant_parameters)
         # wind cluster calculation
         else:
-            self.instantiate_turbine_cluster(**power_plant_parameters)
+            self.powerplant = self.instantiate_turbine_cluster(
+                **power_plant_parameters)
         mc = WindpowerlibClusterModelChain(self.powerplant, **kwargs)
         return mc.run_model(weather).power_output
 

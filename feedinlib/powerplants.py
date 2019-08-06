@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: oemof developing group
+@author: oemof developer group
 
 Classes in this module correspond to specific types of powerplants.
 
@@ -103,8 +103,6 @@ class Base(ABC):
           by a :py:class:`pandas.DataFrame`.
 
         """
-        # @Günni: sollte self.model hier überschrieben werden? könnte das neu
-        # initialisieren von model irgendwelche Probleme ergeben?
         model = kwargs.pop('model', self.model)
         if not model == self.model:
             model = model(**self.parameters)
@@ -127,12 +125,12 @@ class Base(ABC):
     def check_models_powerplant_requirements(self, parameters):
         try:
             self.model.powerplant_requires_check(parameters)
-        except KeyError:
+        except AttributeError:
             raise
         except:
             for k in self.required:
                 if k not in parameters:
-                    raise KeyError(
+                    raise AttributeError(
                         "The specified model '{model}' requires power plant "
                         "parameter '{k}' but it's not provided as an "
                         "argument.".format(k=k, model=self.model))

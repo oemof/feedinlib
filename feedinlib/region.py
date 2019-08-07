@@ -8,10 +8,6 @@ from feedinlib import Photovoltaic, WindPowerPlant
 from feedinlib.models import WindpowerlibTurbine
 from feedinlib.models import WindpowerlibTurbineCluster
 
-# delete these imports after windpowerlib integration
-from windpowerlib.wind_turbine import WindTurbine
-from windpowerlib.turbine_cluster_modelchain import TurbineClusterModelChain
-
 
 class Region:
     """
@@ -62,8 +58,7 @@ class Region:
         register = tools.add_weather_locations_to_register(
             register=register, weather_coordinates=self.weather)
         # todo: use function for retrieving all possible weather locations as
-        #  df[['lat', 'lon']] instead of the above
-        # register=register, weather_coordinates=self.weather.locations)
+        #  df[['lat', 'lon']] instead
         weather_locations = register[['weather_lat', 'weather_lon']].groupby(
             ['weather_lat', 'weather_lon']).size().reset_index().drop([0],
                                                                       axis=1)
@@ -101,18 +96,16 @@ class Region:
                      'total_capacity': capacity})
 
             # initialize wind farm and run TurbineClusterModelChain
-            # todo: windpowerlib specific part from here in feedin()
             # todo: if nur ein turbine_type --> ModelChain verwenden??
-            wind_farm = WindPowerPlant(model=WindpowerlibTurbineCluster, **wind_farm_data)
+            wind_farm = WindPowerPlant(model=WindpowerlibTurbineCluster,
+                                       **wind_farm_data)
             # select weather of weather location and drop location index
             weather = self.weather.loc[
                 (self.weather.index.get_level_values('lat') ==
                  weather_location[0]) & (
                         self.weather.index.get_level_values('lon') ==
                         weather_location[1])].droplevel(level=[1, 2])
-            feedin_ts = TurbineClusterModelChain(wind_farm,
-                                                 **kwargs).run_model(
-                weather).power_output
+            feedin_ts = wind_farm.feedin(weather=weather)
             feedin_df = pd.DataFrame(data=feedin_ts).rename(
                 columns={feedin_ts.name: 'feedin_{}'.format(weather_index)})
             region_feedin_df = pd.concat([region_feedin_df, feedin_df], axis=1)

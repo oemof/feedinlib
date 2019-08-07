@@ -294,7 +294,7 @@ class Weather:
             ws = series[("wind_speed",)]
             for k in series[("wind_speed",)].keys():
                 ws[k + TD("15min")] = ws[k]
-            ws.sort_values(inplace=True)
+            ws.sort_index(inplace=True)
         if lib == "windpowerlib":
             roughness = TRANSLATIONS[lib]["roughness_length"][0][0]
             series.update(

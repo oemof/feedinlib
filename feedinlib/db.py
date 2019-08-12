@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 import sqlalchemy as sqla
 import oedialect
 
-from feedinlib import openFRED1 as ofr
+from feedinlib import openFRED as ofr
 
 
 TRANSLATIONS = {

@@ -70,8 +70,9 @@ class Region:
         turbine_data['turbine'] = turbine_data.apply(
             lambda x: WindPowerPlant(model=WindpowerlibTurbine, **x), axis=1)
         turbine_data.index = turbine_data[['turbine_type', 'hub_height',
-             'rotor_diameter']].applymap(str).apply(lambda x: '_'.join(x),
-                                                    axis=1)
+                                           'rotor_diameter']].applymap(
+            lambda x: x if isinstance(x, str) else int(x)).applymap(str).apply(
+            lambda x: '_'.join(x), axis=1)
         turbines_region = dict(turbine_data['turbine'])
 
         region_feedin_df = pd.DataFrame()

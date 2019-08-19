@@ -90,11 +90,8 @@ def example_weather_wind(filename): # todo: to be deleted. Is used in region.py
     except FileNotFoundError:
         raise FileNotFoundError("Please adjust the filename incl. path.")
     # change type of height from str to int by resetting columns
-    weather_df.columns = [weather_df.axes[1].levels[0][
-                              weather_df.axes[1].labels[0]],
-                          weather_df.axes[1].levels[1][
-                              weather_df.axes[1].labels[1]].astype(int)]
-    # set time zone to UTC
-    weather_df.index = weather_df.index.set_levels(
-        weather_df.index.levels[0].tz_localize('UTC'), level=0)
+    l0 = [_[0] for _ in weather_df.columns]
+    l1 = [int(_[1]) for _ in weather_df.columns]
+    weather_df.columns = [l0, l1]
     return weather_df
+

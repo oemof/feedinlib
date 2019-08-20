@@ -145,10 +145,7 @@ class Weather:
             else {}
         )
         self.regions = (
-            {
-                WKTE(r, srid=4326): [l.point for l in self.within(r)]
-                for r in regions
-            }
+            {WKTE(r, srid=4326): self.within(r) for r in regions}
             if regions is not None
             else {}
         )

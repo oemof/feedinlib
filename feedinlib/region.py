@@ -23,7 +23,7 @@ class Region:
         self.weather = weather
 
     def wind_feedin(self, register, assignment_func=None, snapshots=None,
-                    **kwargs):
+                    capacity_periods=False, **kwargs):
         """
         Bekommt Anlagenregister wie MaStR oder bekommt Anlagenregister wie OPSD
         und macht über assignment_func Annahme welche Anlage installiert ist,
@@ -42,6 +42,9 @@ class Region:
             Windgeschwindigkeit der Wetterzelle bekommt und jeder Anlage einen
             Typ und eine Nabenhöhe zuordnet
         snapshots : Zeitschritte, für die Einspeisung berechnet werden soll
+        capacity_periods : bool
+            Zeitreihe wird in "periods" mit gleicher installierter Leistung
+            getrennt berechnet und am Ende zusammengefügt.
 
         Other parameters
         ----------------
@@ -82,46 +85,65 @@ class Region:
             # select power plants belonging to weather location
             power_plants = register.loc[
                 (register['weather_lat'] == weather_location[0]) & (
-                    register['weather_lon'] == weather_location[1])]  # todo: nicer way?
-            # todo: assignment func
-            # prepare power plants for windpowerlib TurbineClusterModelChain
-            turbine_types_location = power_plants.groupby(
-                'id').size().reset_index().drop(0, axis=1)
-            wind_farm_data = {'name': 'todo',
-                              'wind_turbine_fleet': []}
-            for turbine_type in turbine_types_location['id']:
-                capacity = power_plants.loc[
-                    power_plants['id'] == turbine_type]['capacity'].sum()  # todo check capacpity of opsd register
-                wind_farm_data['wind_turbine_fleet'].append(
-                    {'wind_turbine': turbines_region[turbine_type],
-                     'total_capacity': capacity})
+                    register['weather_lon'] == weather_location[1])]
 
-            # initialize wind farm and run TurbineClusterModelChain
-            # todo: if nur ein turbine_type --> ModelChain verwenden??
-            wind_farm = WindPowerPlant(model=WindpowerlibTurbineCluster,
-                                       **wind_farm_data)
             # select weather of weather location and drop location index
             weather = self.weather.loc[
                 (self.weather.index.get_level_values('lat') ==
                  weather_location[0]) & (
                         self.weather.index.get_level_values('lon') ==
                         weather_location[1])].droplevel(level=[1, 2])
-            feedin_ts = wind_farm.feedin(weather=weather)
-            feedin_df = pd.DataFrame(data=feedin_ts).rename(
+            # todo: assignment func
+
+            # form periods for feed-in time series calculation
+            if capacity_periods:
+                # periods with constant installed capacity
+                periods = tools.get_time_periods_with_equal_capacity(
+                    power_plants, start=weather.index[0],
+                    stop=weather.index[-1])
+            else:
+                # whole period as given in `self.weather`
+                periods = pd.DataFrame(data={
+                    'start': weather.index[0],
+                    'stop': weather.index[-1]}, index=[0])
+
+            # calculate feedin for periods and aggregate to `feedin`
+            feedin_weather_loc = pd.Series()
+            for start, stop in zip(periods['start'], periods['stop']):
+                # select weather # todo function in weather object?
+                weather_period = weather[weather.index >= start]
+                if stop == periods['stop'].iloc[-1]:
+                    weather_period = weather_period[
+                        weather_period.index <= stop]
+                else:
+                    weather_period = weather_period[
+                        weather_period.index < stop]
+                # select power plants
+                filtered_power_plants = tools.filter_register_by_period(
+                    register=power_plants, start=start, stop=stop)
+
+                # prepare power plants for windpowerlib TurbineClusterModelChain # todo make generic - other models must be usable
+                turbine_types_location = power_plants.groupby(
+                    'id').size().reset_index().drop(0, axis=1)
+                wind_farm_data = {'name': 'todo',
+                                  'wind_turbine_fleet': []}
+                for turbine_type in turbine_types_location['id']:
+                    capacity = power_plants.loc[
+                        power_plants['id'] == turbine_type]['capacity'].sum()  # todo check capacity of opsd register
+                    wind_farm_data['wind_turbine_fleet'].append(
+                        {'wind_turbine': turbines_region[turbine_type],
+                         'total_capacity': capacity})
+
+                # initialize wind farm and run TurbineClusterModelChain
+                wind_farm = WindPowerPlant(model=WindpowerlibTurbineCluster,
+                                           **wind_farm_data)
+                feedin_ts = wind_farm.feedin(weather=weather_period)  # todo scaling?
+                feedin_weather_loc = feedin_weather_loc.append(feedin_ts)
+            feedin_weather_loc.name = feedin_ts.name
+            feedin_df = pd.DataFrame(data=feedin_weather_loc).rename(
                 columns={feedin_ts.name: 'feedin_{}'.format(weather_index)})
             region_feedin_df = pd.concat([region_feedin_df, feedin_df], axis=1)
         feedin = region_feedin_df.sum(axis=1).rename('feedin')
-        # todo delete skeleton:
-        # weise jeder Anlage eine Wetterzelle zu
-        # for weather_cell in self.weather_cells
-        #   filtere Anlagen in Wetterzelle
-        #   wenn spezifiziert wähle Anlage mit assignment func
-        #   aggregiere Leistungskurven der anlagen in register (wird in Modelchain gemacht)
-        #   berechne mittlere Nabenhöhe? (wird in Modelchain gemacht)
-        #   rufe die windpowerlib Cluster ModelChain auf (evtl. bei nur einer
-        #       Anlage einfache ModelChain?)
-        # summiere feedin über alle Zellen
-        # return feedin
         return feedin
 
     def pv_feedin_distribution_register(self, distribution_dict,

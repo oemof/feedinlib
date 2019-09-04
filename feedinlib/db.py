@@ -19,6 +19,7 @@ TRANSLATIONS = {
     "pvlib": {
         "wind_speed": [("VABS_AV", 10)],
         "temp_air": [("T", 10)],
+        "pressure": [("P", 10)],
         "dhi": [("ASWDIFD_S", 0)],
         "ghi": [("ASWDIFD_S", 0), ("ASWDIR_S", 0)],
         "dni": [("ASWDIRN_S", 0)],
@@ -135,7 +136,7 @@ class Weather:
 
         variables = {
             "windpowerlib": ["P", "T", "VABS_AV", "Z0"],
-            "pvlib": ["ASWDIFD_S", "ASWDIRN_S", "ASWDIR_S", "T", "VABS_AV"],
+            "pvlib": ["ASWDIFD_S", "ASWDIRN_S", "ASWDIR_S", "T", "VABS_AV", "P"],
             None: variables
         }[variables if variables in ["pvlib", "windpowerlib"] else None]
 
@@ -264,7 +265,7 @@ class Weather:
         series = {
             k: sum(to_series(*p, *k[1:]) for p in TRANSLATIONS[lib][k[0]])
             for k in (
-                [("dhi",), ("dni",), ("ghi",), ("temp_air",), ("wind_speed",)]
+                [("dhi",), ("dni",), ("ghi",), ("temp_air",), ("wind_speed",), ("pressure",)]
                 if lib == "pvlib"
                 else [
                     (v, h)
@@ -287,6 +288,10 @@ class Weather:
                 (series[("temp_air",)] - 273.15)
                 .resample("15min")
                 .interpolate()[series[("dhi",)].index]
+            )
+            series[("pressure",)] = (
+                series[("pressure",)].resample("15min")
+                    .interpolate()[series[("dhi",)].index]
             )
             ws = series[("wind_speed",)]
             for k in series[("wind_speed",)].keys():

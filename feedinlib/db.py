@@ -19,6 +19,7 @@ TRANSLATIONS = {
     "pvlib": {
         "wind_speed": [("VABS_AV", 10)],
         "temp_air": [("T", 10)],
+        "pressure": [("P", 10)],
         "dhi": [("ASWDIFD_S", 0)],
         "ghi": [("ASWDIFD_S", 0), ("ASWDIR_S", 0)],
         "dni": [("ASWDIRN_S", 0)],
@@ -135,8 +136,15 @@ class Weather:
 
         variables = {
             "windpowerlib": ["P", "T", "VABS_AV", "Z0"],
-            "pvlib": ["ASWDIFD_S", "ASWDIRN_S", "ASWDIR_S", "T", "VABS_AV"],
-            None: variables
+            "pvlib": [
+                "ASWDIFD_S",
+                "ASWDIRN_S",
+                "ASWDIR_S",
+                "P",
+                "T",
+                "VABS_AV",
+            ],
+            None: variables,
         }[variables if variables in ["pvlib", "windpowerlib"] else None]
 
         self.locations = (
@@ -196,7 +204,7 @@ class Weather:
                 if segment_start >= tdt(start) and segment_stop <= tdt(stop)
             ]
             for k, g in groupby(
-                series, key=lambda p: (p[3], p[1].name, p[0].height,)
+                series, key=lambda p: (p[3], p[1].name, p[0].height)
             )
         }
 
@@ -264,7 +272,14 @@ class Weather:
         series = {
             k: sum(to_series(*p, *k[1:]) for p in TRANSLATIONS[lib][k[0]])
             for k in (
-                [("dhi",), ("dni",), ("ghi",), ("temp_air",), ("wind_speed",)]
+                [
+                    ("dhi",),
+                    ("dni",),
+                    ("ghi",),
+                    ("pressure",),
+                    ("temp_air",),
+                    ("wind_speed",),
+                ]
                 if lib == "pvlib"
                 else [
                     (v, h)
@@ -285,6 +300,11 @@ class Weather:
         if lib == "pvlib":
             series[("temp_air",)] = (
                 (series[("temp_air",)] - 273.15)
+                .resample("15min")
+                .interpolate()[series[("dhi",)].index]
+            )
+            series[("pressure",)] = (
+                series[("pressure",)]
                 .resample("15min")
                 .interpolate()[series[("dhi",)].index]
             )

@@ -244,6 +244,15 @@ class Weather:
         )
 
     def df(self, location=None, lib=None):
+        if lib is None and location is None:
+            columns = sorted(set((n, h) for (xy, n, h) in self.series))
+            index = sorted(xy for xy in set(xy for (xy, n, h) in self.series))
+            data = {
+                (n, h): [self.series[xy, n, h] for xy in index]
+                for (n, h) in columns
+            }
+            return DF(index=index, data=data)
+
         if lib is None:
             raise NotImplementedError(
                 "Arbitrary dataframes not supported yet.\n"

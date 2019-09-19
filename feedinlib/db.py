@@ -238,17 +238,18 @@ class Weather:
         )
 
     def df(self, location=None, lib=None):
+        if lib is None:
+            raise NotImplementedError(
+                "Arbitrary dataframes not supported yet.\n"
+                'Please use one of `lib="pvlib"` or `lib="windpowerlib"`.'
+            )
+
         xy = (location.x, location.y)
         point = (
             self.locations[xy]
             if xy in self.locations
             else self.location(location)
         )
-        if format is None:
-            raise NotImplementedError(
-                "Arbitrary dataframes not supported yet.\n"
-                'Please use one of `lib="pvlib"` or `lib="windpowerlib"`.'
-            )
         index = (
             [
                 dhi[0] + (dhi[1] - dhi[0]) / 2

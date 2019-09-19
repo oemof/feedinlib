@@ -2,6 +2,7 @@ from itertools import chain, groupby
 
 from pandas import DataFrame as DF, Series, Timedelta as TD, to_datetime as tdt
 from geoalchemy2.elements import WKTElement as WKTE
+from geoalchemy2.shape import to_shape
 from sqlalchemy.orm import sessionmaker
 import sqlalchemy as sqla
 import oedialect
@@ -204,7 +205,12 @@ class Weather:
                 if segment_start >= tdt(start) and segment_stop <= tdt(stop)
             ]
             for k, g in groupby(
-                series, key=lambda p: (p[3], p[1].name, p[0].height)
+                series,
+                key=lambda p: (
+                    (to_shape(p[3].point).x, to_shape(p[3].point).y),
+                    p[1].name,
+                    p[0].height,
+                ),
             )
         }
 
@@ -245,11 +251,13 @@ class Weather:
             )
 
         xy = (location.x, location.y)
-        point = (
+        location = (
             self.locations[xy]
             if xy in self.locations
             else self.location(location)
         )
+        point = (to_shape(location.point).x, to_shape(location.point).y)
+
         index = (
             [
                 dhi[0] + (dhi[1] - dhi[0]) / 2

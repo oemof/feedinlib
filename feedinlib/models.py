@@ -1,12 +1,20 @@
 # -*- coding: utf-8 -*-
+
 """
-@author: oemof developer group
+Feed-in model classes.
+
+This module provides abstract classes as blueprints for classes that implement
+feed-in models for weather dependent renewable energy resources. These models
+take in power plant and weather data to calculate power plant feed-in.
+Furthermore, this module holds implementations of feed-in models. So far models
+using the python libraries pvlib and windpowerlib to calculate photovoltaic and
+wind power feed-in, respectively, have been implemented.
+
 """
 
 from abc import ABC, abstractmethod
 import pandas as pd
 
-# windpowerlib
 from windpowerlib import ModelChain as WindpowerlibModelChain
 from windpowerlib import TurbineClusterModelChain \
     as WindpowerlibClusterModelChain
@@ -14,7 +22,6 @@ from windpowerlib import WindTurbine as WindpowerlibWindTurbine
 from windpowerlib import WindFarm as WindpowerlibWindFarm
 from windpowerlib import WindTurbineCluster as WindpowerlibWindTurbineCluster
 
-# pvlib
 from pvlib.modelchain import ModelChain as PvlibModelChain
 from pvlib.pvsystem import PVSystem as PvlibPVSystem
 from pvlib.location import Location as PvlibLocation
@@ -24,76 +31,157 @@ import feedinlib.powerplants
 
 
 class Base(ABC):
-    r""" The base class of feedinlib models.
+    r"""
+    The base class of feedinlib models.
 
-    As this is an abstract property, you have to override it in a subclass
-    so that the model can be instantiated. This forces implementors to make
-    the required parameters for a model explicit, even if they are empty,
-    and gives them a good place to document them.
+    This base class is an abstract class serving as a blueprint for classes
+    that implement feed-in models for weather dependent renewable energy
+    resources. It forces implementors to implement certain properties and
+    methods.
 
-    By default, this property is settable and its value can be specified
-    via and argument on construction. If you want to keep this
-    functionality, simply delegate all calls to the superclass.
-
-    Parameters
-    ----------
-    required : list of strings, optional
-        Containing the names of the required parameters to use the model.
-
-    # ToDo: Docstring
     """
     def __init__(self, **kwargs):
-        self._powerplant_requires = None
-        self._requires = None
+        self._powerplant_requires = kwargs.get("powerplant_requires", None)
+        self._requires = kwargs.get("requires", None)
 
     @property
     @abstractmethod
     def powerplant_requires(self):
-        """ The (names of the) power plant parameters this model requires in
-        order to calculate the feedin.
+        """
+        The (names of the) power plant parameters this model requires in
+        order to calculate the feed-in.
+
+        As this is an abstract property you have to override it in a subclass
+        so that the model can be instantiated. This forces implementors to make
+        the required power plant parameters for a model explicit, even if they
+        are empty, and gives them a good place to document them.
+
+        By default, this property is settable and its value can be specified
+        via an argument upon construction. If you want to keep this
+        functionality, simply delegate all calls to the superclass.
+
+        Parameters
+        ----------
+        names : list of strings, optional
+            Containing the names of the required power plant parameters.
 
         """
         return self._powerplant_requires
 
+    @powerplant_requires.setter
+    def powerplant_requires(self, names):
+        self._powerplant_requires = names
+
     @property
     @abstractmethod
     def requires(self):
-        """ The (names of the) parameters this model requires in order to
-        calculate the feedin.
+        """
+        The (names of the) parameters this model requires in order to
+        calculate the feed-in.
+
+        As this is an abstract property you have to override it in a subclass
+        so that the model can be instantiated. This forces implementors to make
+        the required model parameters explicit, even if they
+        are empty, and gives them a good place to document them.
+
+        By default, this property is settable and its value can be specified
+        via an argument upon construction. If you want to keep this
+        functionality, simply delegate all calls to the superclass.
+
+        Parameters
+        ----------
+        names : list of strings, optional
+            Containing the names of the required power plant parameters.
 
         """
         return self._requires
 
+    @requires.setter
+    def requires(self, names):
+        self._requires = names
+
+    @abstractmethod
+    def feedin(self, weather, power_plant_parameters, **kwargs):
+        """
+        Calculates power plant feed-in in Watt.
+
+        As this is an abstract method you have to override it in a subclass
+        so that the power plant feed-in using the respective model can be
+        calculated.
+
+        Parameters
+        ----------
+        weather :
+            Weather data to calculate feed-in. Format and required parameters
+            depend on the model.
+        power_plant_parameters : dict
+            Dictionary with power plant specifications. Keys of the dictionary
+            are the power plant parameter names, values of the dictionary hold
+            the corresponding value. The dictionary must at least contain the
+            power plant parameters required by the respective model and may
+            further contain optional power plant parameters. See
+            `powerplant_requires` property of the respective model for futher
+            information.
+        \**kwargs :
+            Keyword arguments for respective model's feed-in calculation.
+
+        Returns
+        -------
+        feedin : :pandas:`pandas.Series<series>` or :pandas:`pandas.DataFrame<dataframe>`
+            Power plant feed-in for specified time span in Watt.
+
+        """
+        pass
+
 
 class PhotovoltaicModelBase(Base):
     """
-    Expands model base class ModelBase by PV specific attributes
+    Expands model base class :class:`~.models.Base` by PV specific attributes.
 
     """
     @property
     @abstractmethod
     def pv_system_area(self):
-        """ Area of PV system in m²
+        r"""
+        Area of PV system in $m^2$.
+
+        As this is an abstract property you have to override it in a subclass
+        so that the model can be instantiated. This forces implementors to
+        provide a way to retrieve the area of the PV system that is e.g. used
+        to scale the feed-in by area.
 
         """
 
     @property
     @abstractmethod
     def pv_system_peak_power(self):
-        """ Peak power of PV system in W
+        """
+        Peak power of PV system in Watt.
+
+        As this is an abstract property you have to override it in a subclass
+        so that the model can be instantiated. This forces implementors to
+        provide a way to retrieve the peak power of the PV system that is e.g.
+        used to scale the feed-in by installed capacity.
 
         """
 
 
 class WindpowerModelBase(Base):
     """
-    Expands model base class ModelBase by windpower specific attributes
+    Expands model base class :class:`~.models.Base` by wind power specific
+    attributes.
 
     """
     @property
     @abstractmethod
     def nominal_power_wind_power_plant(self):
-        """ Nominal power of turbine or wind park
+        """
+        Nominal power of wind power plant in Watt.
+
+        As this is an abstract property you have to override it in a subclass
+        so that the model can be instantiated. This forces implementors to
+        provide a way to retrieve the nominal power of the wind power plant
+        that is e.g. used to scale the feed-in by installed capacity.
 
         """
 

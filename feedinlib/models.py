@@ -65,7 +65,7 @@ class Base(ABC):
 
         Parameters
         ----------
-        names : list of strings, optional
+        names : list(str), optional
             Containing the names of the required power plant parameters.
 
         """
@@ -105,7 +105,7 @@ class Base(ABC):
 
         Parameters
         ----------
-        names : list of strings, optional
+        names : list(str), optional
             Containing the names of the required power plant parameters.
 
         """
@@ -137,7 +137,7 @@ class Base(ABC):
             further contain optional power plant parameters. See
             `power_plant_requires` property of the respective model for futher
             information.
-        \**kwargs :
+        **kwargs :
             Keyword arguments for respective model's feed-in calculation.
 
         Returns
@@ -225,7 +225,7 @@ class Pvlib(PhotovoltaicModelBase):
 
     References
     ----------
-    .. [1] `pvlib on github <https://github.com/pvlib/pvlib-python>`_
+    .. [1] pvlib on github <https://github.com/pvlib/pvlib-python>
 
     See Also
     --------
@@ -253,12 +253,12 @@ class Pvlib(PhotovoltaicModelBase):
             Name of the PV module as in the Sandia module database. Use
             :func:`~.get_power_plant_data` with dataset='sandiamod' to get an
             overview of all provided modules. See the data set documentation
-            [1]_ for further information on provided parameters.
+            [2]_ for further information on provided parameters.
         inverter_name : str
             Name of the inverter as in the CEC inverter database. Use
             :func:`~.get_power_plant_data` with dataset='cecinverter' to get an
             overview of all provided inverters. See the data set documentation
-            [2]_ for further information on provided parameters.
+            [3]_ for further information on provided parameters.
         azimuth : float
             Azimuth angle of the module surface (South=180).
             See also :attr:`pvlib.pvsystem.PVSystem.surface_azimuth`.
@@ -275,8 +275,8 @@ class Pvlib(PhotovoltaicModelBase):
 
         References
         ----------
-        .. [1] `Sandia module database <https://prod-ng.sandia.gov/techlib-noauth/access-control.cgi/2004/043535.pdf>`_
-        .. [2] `CEC inverter database <https://prod-ng.sandia.gov/techlib-noauth/access-control.cgi/2007/075036.pdf>`_
+        .. [2] Sandia module database https://prod-ng.sandia.gov/techlib-noauth/access-control.cgi/2004/043535.pdf
+        .. [3] CEC inverter database <https://prod-ng.sandia.gov/techlib-noauth/access-control.cgi/2007/075036.pdf>
 
         """
         # ToDo Maybe add method to assign suitable inverter if none is
@@ -499,7 +499,7 @@ class WindpowerlibTurbine(WindpowerModelBase):
 
     References
     ----------
-    .. [1] `windpowerlib on github <https://github.com/wind-python/windpowerlib>`_
+    .. [1] windpowerlib on github <https://github.com/wind-python/windpowerlib>
 
     See Also
     --------
@@ -538,11 +538,11 @@ class WindpowerlibTurbine(WindpowerModelBase):
             Name of the wind turbine type as in the oedb turbine library. Use
             :func:`~.get_power_plant_data` with dataset='oedb_turbine_library'
             to get an overview of all provided turbines. See the data set
-            metadata [1]_ for further information on provided parameters.
+            metadata [2]_ for further information on provided parameters.
 
         References
         ----------
-        .. [1] `oedb wind turbine library <https://openenergy-platform.org/dataedit/view/supply/wind_turbine_library>`_
+        .. [2] oedb wind turbine library <https://openenergy-platform.org/dataedit/view/supply/wind_turbine_library>
 
         """
         required = ["hub_height",
@@ -568,6 +568,9 @@ class WindpowerlibTurbine(WindpowerModelBase):
     def nominal_power_wind_power_plant(self):
         """
         Nominal power of wind turbine in Watt.
+
+        See :attr:`windpowerlib.WindTurbine.nominal_power` for further
+        information.
 
         """
         if self.power_plant:
@@ -682,7 +685,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
 
     References
     ----------
-    .. [1] `windpowerlib on github <https://github.com/wind-python/windpowerlib>`_
+    .. [1] windpowerlib on github <https://github.com/wind-python/windpowerlib>
 
     See Also
     --------
@@ -771,6 +774,9 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         Nominal power of wind turbine cluster in Watt.
 
         The nominal power is the sum of the nominal power of all turbines.
+        See :attr:`windpowerlib.WindFarm.nominal_power` or
+        :attr:`windpowerlib.WindTurbineCluster.nominal_power` for further
+        information.
 
         """
         if self.power_plant:

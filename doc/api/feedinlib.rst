@@ -19,11 +19,3 @@ feedinlib.powerplants module
     :members:
     :undoc-members:
     :show-inheritance:
-    
-feedinlib.weather
-----------------------------
-
-.. automodule:: feedinlib.weather
-    :members:
-    :undoc-members:
-    :show-inheritance:

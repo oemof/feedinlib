@@ -9,8 +9,7 @@ Contents:
    
    getting_started
    whats_new
-   model_description
-   api/*
+   api
 
 
 Indices and tables

@@ -6,7 +6,7 @@ Power plant classes for specific weather dependent renewable energy resources.
 Power plant classes act as data holders for the attributes making up a
 power plant's specification. These classes should only contain little logic.
 Computing the actual feed-in provided by a power plant is done by the models
-(see :mod:`~.models`). The model the feed-in is calculated with is specified in
+(see models.py). The model the feed-in is calculated with is specified in
 the `model` attribute.
 
 """
@@ -22,56 +22,52 @@ class Base(ABC):
 
     The class mainly serves as a data container for power plant attributes.
     Actual calculation of feed-in provided by the power plant is done by the
-    chosen model. See :mod:`~.models` for implemented models.
+    chosen model. See model.py module for implemented models.
 
     This base class is an abstract class serving as a blueprint for classes
     that implement weather dependent renewable energy power plants. It
     forces implementors to implement certain properties and methods.
 
+    Parameters
+    ----------
+    model : A subclass or instance of subclass of :class:`~.models.Base`
+        The `model` parameter defines the feed-in model used to calculate
+        the power plant feed-in.
+
+        If a class (or in general, any instance of :class:`type`) is
+        provided, it is used to create the model instance encapsulating the
+        actual mathematical model used to calculate the feed-in provided by
+        this power plant.
+
+        In any other case, the provided object is used directly. Note
+        though, that a reference to this power plant is saved in the
+        provided object, so sharing model instances between two power plant
+        objects is not a good idea, as the second power plant will
+        overwrite the reference to the first.
+
+        The non-class version is only provided for users who need the extra
+        flexibility of controlling model instantiation and who know what
+        they are doing. In general, you'll want to provide a class for this
+        parameter or just go with the default for the specific subclass you
+        are using.
+
+    **attributes :
+        Besides `model` parameter provided attributes hold the technical
+        specification used to define the power plant. See
+        `power_plant_parameters` parameter in respective model's
+        :meth:`feedin` method for further information on the model's
+        required and optional plant parameters.
+
+    Raises
+    ------
+    AttributeError
+        In case an attribute listed in the given model's required
+        parameters is not present in the `parameters` parameter.
+
     """
 
     def __init__(self, **attributes):
-        r"""
-
-        An error is raised if the attributes required by the given model are
-        not contained in this hash.
-
-        Parameters
-        ----------
-        model : A subclass or instance of subclass of :class:`feedinlib.models.Base`
-            The `model` parameter defines the feed-in model used to calculate
-            the power plant feed-in.
-
-            If a class (or in general, any instance of :class:`type`) is
-            provided, it is used to create the model instance encapsulating the
-            actual mathematical model used to calculate the feed-in provided by
-            this power plant.
-
-            In any other case, the provided object is used directly. Note
-            though, that a reference to this power plant is saved in the
-            provided object, so sharing model instances between two power plant
-            objects is not a good idea, as the second power plant will
-            overwrite the reference to the first.
-
-            The non-class version is only provided for users who need the extra
-            flexibility of controlling model instantiation and who know what
-            they are doing. In general, you'll want to provide a class for this
-            parameter or just go with the default for the specific subclass you
-            are using.
-
-        **attributes :
-            Besides `model` parameter provided attributes hold the technical
-            specification used to define the power plant. See
-            `power_plant_parameters` parameter in respective model's
-            :meth:`feedin` method for further information on the model's
-            required and optional plant parameters.
-
-        Raises
-        ------
-        AttributeError
-            In case an attribute listed in the given model's required
-            parameters is not present in the `parameters` parameter.
-
+        """
         """
         model = attributes.pop("model")
         if isinstance(model, type):
@@ -82,7 +78,7 @@ class Base(ABC):
 
         # check if all power plant attributes required by the respective model
         # are provided
-        self.check_models_power_plant_requirements(attributes.keys())
+        self._check_models_power_plant_requirements(attributes.keys())
 
     @abstractmethod
     def feedin(self, weather, **kwargs):
@@ -101,11 +97,11 @@ class Base(ABC):
         ----------
         weather :
             Weather data to calculate feed-in. Check the `weather` parameter
-            of the respective model's :func:`feedin` method for required
+            of the respective model's :meth:`feedin` method for required
             weather data parameters and format.
         **kwargs :
             Keyword arguments for respective model's feed-in calculation.
-            Check the keyword arguments of the model's :func:`feedin` for
+            Check the keyword arguments of the model's :meth:`feedin` for
             further information.
 
         Returns
@@ -121,7 +117,7 @@ class Base(ABC):
         if not model == self.model:
             model = model(**self.parameters)
             self.model = model
-            self.check_models_power_plant_requirements(self.parameters.keys())
+            self._check_models_power_plant_requirements(self.parameters.keys())
 
         # check if all arguments required by the feed-in model are given
         keys = kwargs.keys()
@@ -135,7 +131,7 @@ class Base(ABC):
         return model.feedin(weather=weather,
                             power_plant_parameters=self.parameters, **kwargs)
 
-    def check_models_power_plant_requirements(self, parameters):
+    def _check_models_power_plant_requirements(self, parameters):
         """
         Checks if given model's required power plant parameters are provided.
 
@@ -156,7 +152,7 @@ class Base(ABC):
         """
         try:
             # call the given model's check function if implemented
-            self.model.power_plant_requires_check(parameters)
+            self.model._power_plant_requires_check(parameters)
         except NotImplementedError:
             for k in self.required:
                 if k not in parameters:
@@ -170,7 +166,8 @@ class Base(ABC):
         """
         The power plant parameters the specified model requires.
 
-        Check the model's :attr:`power_plant_requires` for further information.
+        Check the model's :attr:`power_plant_requires` attribute for further
+        information.
 
         """
         return self.model.power_plant_requires
@@ -183,29 +180,31 @@ class Photovoltaic(Base):
     The Photovoltaic class serves as a data container for PV system attributes.
     Actual calculation of feed-in provided by the PV system is done by the
     chosen PV model. So far there is only one PV model,
-    :class:`feedinlib.models.Pvlib`.
+    :class:`~.models.Pvlib`.
+
+    Parameters
+    ----------
+    model : A subclass or instance of subclass of \
+        :class:`~.models.PhotovoltaicModelBase`
+        The `model` parameter defines the feed-in model used to calculate
+        the PV system feed-in. It defaults to
+        :class:`~feedinlib.models.Pvlib` which is currently the only
+        implemented photovoltaic model.
+
+        `model` is used as the `model` parameter for :class:`Base`.
+    **attributes :
+        PV system parameters. See `power_plant_parameters` parameter
+        in respective model's :func:`feedin` method for further
+        information on the model's required and optional plant parameters.
+
+        As the :class:`~.models.Pvlib` model is currently the only
+        implemented photovoltaic model see `power_plant_parameters` parameter
+        :meth:`~.models.Pvlib.feedin` for further information.
 
     """
 
     def __init__(self, model=Pvlib, **attributes):
         """
-
-        Parameters
-        ----------
-        model : A subclass or instance of subclass of :class:`feedinlib.models.PhotovoltaicModelBase`
-            The `model` parameter defines the feed-in model used to calculate
-            the PV system feed-in. It defaults to
-            :class:`feedinlib.models.Pvlib` which is currently the only
-            implemented photovoltaic model.
-            `model` is used as the `model` parameter for :class:`Base`.
-        **attributes :
-            PV system parameters. See `power_plant_parameters` parameter
-            in respective model's :func:`feedin` method for further
-            information on the model's required and optional plant parameters.
-            As :class:`feedinlib.models.Pvlib` model is currently the only
-            implemented photovoltaic model see
-            :attr:`feedinlib.models.Pvlib.feedin.power_plant_parameters`.
-
         """
         super().__init__(model=model, **attributes)
 
@@ -219,9 +218,9 @@ class Photovoltaic(Base):
         This method delegates the actual computation to the model's
         :meth:`feedin` method while giving you the opportunity to override
         some of the inputs used to calculate the feed-in. As the
-        :class:`feedinlib.models.Pvlib` model is currently the only
+        :class:`~.models.Pvlib` model is currently the only
         implemented photovoltaic model see
-        :func:`feedinlib.models.Pvlib.feedin` for further information on
+        :meth:`~.models.Pvlib.feedin` for further information on
         feed-in calculation.
 
         If the respective model does calculate AC and DC feed-in, AC feed-in
@@ -232,7 +231,7 @@ class Photovoltaic(Base):
         ----------
         weather :
             Weather data to calculate feed-in. Check the `weather` parameter
-            of the respective model's :func:`feedin` method for required
+            of the respective model's :meth:`feedin` method for required
             weather data parameters and format.
         scaling : str
             Specifies what feed-in is scaled by. Possible options are
@@ -240,7 +239,7 @@ class Photovoltaic(Base):
             not scaled.
         **kwargs
             Keyword arguments for respective model's feed-in calculation.
-            Check the keyword arguments of the model's :func:`feedin` method
+            Check the keyword arguments of the model's :meth:`feedin` method
             for further information.
 
         Returns
@@ -264,9 +263,9 @@ class Photovoltaic(Base):
     @property
     def area(self):
         """
-        Area of PV system in $m^2$.
+        Area of PV system in :math:`m^2`.
 
-        See `pv_system_area` property of your chosen model for further
+        See :attr:`pv_system_area` attribute of your chosen model for further
         information on how the area is calculated.
 
         """
@@ -277,8 +276,9 @@ class Photovoltaic(Base):
         """
         Peak power of PV system in Watt.
 
-        See `pv_system_peak_power` property of your chosen model for further
-        information and specifications on how the peak power is calculated.
+        See :attr:`pv_system_peak_power` attribute of your chosen model for
+        further information and specifications on how the peak power is
+        calculated.
 
         """
         return self.model.pv_system_peak_power
@@ -291,29 +291,30 @@ class WindPowerPlant(Base):
     The WindPowerPlant class serves as a data container for wind power plant
     attributes. Actual calculation of feed-in provided by the wind power plant
     is done by the chosen wind power model. So far there are two wind power
-    models, :class:`feedinlib.models.WindpowerlibTurbine` and
-    :class:`feedinlib.models.WindpowerlibTurbineCluster`. The
-    :class:`feedinlib.models.WindpowerlibTurbine` model should be used for
+    models, :class:`~.models.WindpowerlibTurbine` and
+    :class:`~.models.WindpowerlibTurbineCluster`. The
+    :class:`~.models.WindpowerlibTurbine` model should be used for
     single wind turbines, whereas the
-    :class:`feedinlib.models.WindpowerlibTurbineCluster` model can be used
+    :class:`~.models.WindpowerlibTurbineCluster` model can be used
     for wind farm and wind turbine cluster calculations.
+
+    Parameters
+    ----------
+    model :  A subclass or instance of subclass of \
+        :class:`feedinlib.models.WindpowerModelBase`
+        The `model` parameter defines the feed-in model used to calculate
+        the wind power plant feed-in. It defaults to
+        :class:`~.models.WindpowerlibTurbine`.
+
+        `model` is used as the `model` parameter for :class:`Base`.
+    **attributes :
+        Wind power plant parameters. See `power_plant_parameters` parameter
+        in respective model's :meth:`feedin` method for further
+        information on the model's required and optional plant parameters.
 
     """
     def __init__(self, model=WindpowerlibTurbine, **attributes):
         """
-
-        Parameters
-        ----------
-        model :  A subclass or instance of subclass of :class:`feedinlib.models.WindpowerModelBase`
-            The `model` parameter defines the feed-in model used to calculate
-            the wind power plant feed-in. It defaults to
-            :class:`feedinlib.models.WindpowerlibTurbine`.
-            `model` is used as the `model` parameter for :class:`Base`.
-        **attributes :
-            Wind power plant parameters. See `power_plant_parameters` parameter
-            in respective model's :func:`feedin` method for further
-            information on the model's required and optional plant parameters.
-
         """
         super().__init__(model=model, **attributes)
 
@@ -327,14 +328,14 @@ class WindPowerPlant(Base):
         This method delegates the actual computation to the model's
         meth:`feedin` method while giving you the opportunity to override
         some of the inputs used to calculate the feed-in. See model's
-        :func:`feedin` method for further information on feed-in
+        :meth:`feedin` method for further information on feed-in
         calculation.
 
         Parameters
         ----------
         weather :
             Weather data to calculate feed-in. Check the `weather` parameter
-            of the respective model's :func:`feedin` method for required
+            of the respective model's :meth:`feedin` method for required
             weather data parameters and format.
         scaling : str
             Specifies what feed-in is scaled by. Possible option is
@@ -342,7 +343,7 @@ class WindPowerPlant(Base):
             not scaled.
         **kwargs
             Keyword arguments for respective model's feed-in calculation.
-            Check the keyword arguments of the model's :func:`feedin` method
+            Check the keyword arguments of the model's :meth:`feedin` method
             for further information.
 
         Returns
@@ -366,7 +367,7 @@ class WindPowerPlant(Base):
         """
         Nominal power of wind power plant in Watt.
 
-        See `nominal_power` property of your chosen model for further
+        See :attr:`nominal_power` attribute of your chosen model for further
         information on how the nominal power is derived.
 
         """

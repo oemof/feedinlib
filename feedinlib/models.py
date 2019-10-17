@@ -44,6 +44,8 @@ class Base(ABC):
 
     """
     def __init__(self, **kwargs):
+        """
+        """
         self._power_plant_requires = kwargs.get("powerplant_requires", None)
         self._requires = kwargs.get("requires", None)
 
@@ -75,7 +77,7 @@ class Base(ABC):
     def power_plant_requires(self, names):
         self._power_plant_requires = names
 
-    def power_plant_requires_check(self, parameters):
+    def _power_plant_requires_check(self, parameters):
         """
         Function to check if all required power plant parameters are provided.
 
@@ -147,7 +149,7 @@ class Base(ABC):
             If respective model does calculate AC and DC feed-in, AC feed-in
             should be returned by default. `mode` parameter can be used to
             overwrite this default behavior and return DC power output instead
-            (for an example see :func:`~.models.Pvlib.feedin`).
+            (for an example see :meth:`~.models.Pvlib.feedin`).
 
         """
         pass
@@ -162,7 +164,7 @@ class PhotovoltaicModelBase(Base):
     @abstractmethod
     def pv_system_area(self):
         r"""
-        Area of PV system in $m^2$.
+        Area of PV system in :math:`m^2`.
 
         As this is an abstract property you have to override it in a subclass
         so that the model can be instantiated. This forces implementors to
@@ -211,9 +213,7 @@ class Pvlib(PhotovoltaicModelBase):
 
     The pvlib [1]_ is a python library for simulating the performance of
     photovoltaic energy systems. For more information about the photovoltaic
-    model check the documentation of the pvlib:
-
-    https://pvlib-python.readthedocs.io
+    model check the documentation of the pvlib [2]_.
 
     Notes
     ------
@@ -221,11 +221,12 @@ class Pvlib(PhotovoltaicModelBase):
     be provided. See :attr:`~.power_plant_requires` as well as
     :attr:`~.requires` for further information. Furthermore, the weather
     data used to calculate the feed-in has to have a certain format. See
-    :func:`~.feedin` for further information.
+    :meth:`~.feedin` for further information.
 
     References
     ----------
-    .. [1] pvlib on github <https://github.com/pvlib/pvlib-python>
+    .. [1] `pvlib on github <https://github.com/pvlib/pvlib-python>`_
+    .. [2] `pvlib documentation <https://pvlib-python.readthedocs.io>`_
 
     See Also
     --------
@@ -235,6 +236,8 @@ class Pvlib(PhotovoltaicModelBase):
     """
 
     def __init__(self, **kwargs):
+        """
+        """
         super().__init__(**kwargs)
         self.power_plant = None
 
@@ -247,36 +250,43 @@ class Pvlib(PhotovoltaicModelBase):
         The power plant parameters this model requires to calculate a feed-in.
 
         The required power plant parameters are:
-        module_name, inverter_name, azimuth, tilt, albedo/surface_type
 
-        module_name : str
+        `module_name`, `inverter_name`, `azimuth`, `tilt`,
+        `albedo/surface_type`
+
+        module_name (str)
             Name of the PV module as in the Sandia module database. Use
-            :func:`~.get_power_plant_data` with dataset='sandiamod' to get an
-            overview of all provided modules. See the data set documentation
-            [2]_ for further information on provided parameters.
-        inverter_name : str
-            Name of the inverter as in the CEC inverter database. Use
-            :func:`~.get_power_plant_data` with dataset='cecinverter' to get an
-            overview of all provided inverters. See the data set documentation
+            :func:`~.get_power_plant_data` with `dataset` = 'sandiamod' to get
+            an overview of all provided modules. See the data set documentation
             [3]_ for further information on provided parameters.
-        azimuth : float
+        inverter_name (str)
+            Name of the inverter as in the CEC inverter database. Use
+            :func:`~.get_power_plant_data` with `dataset` = 'cecinverter' to
+            get an overview of all provided inverters. See the data set
+            documentation [4]_ for further information on provided parameters.
+        azimuth (float)
             Azimuth angle of the module surface (South=180).
-            See also :attr:`pvlib.pvsystem.PVSystem.surface_azimuth`.
-        tilt : float
+
+            See also :pvlib:`PVSystem.surface_azimuth <pvlib.pvsystem.\
+            PVSystem.surface_azimuth>` in pvlib documentation.
+        tilt (float)
             Surface tilt angle in decimal degrees.
             The tilt angle is defined as degrees from horizontal
             (e.g. surface facing up = 0, surface facing horizon = 90).
-            See also :attr:`pvlib.pvsystem.PVSystem.surface_tilt`.
-        albedo : float
-            The ground albedo. See also :attr:`pvlib.pvsystem.PVSystem.albedo`.
-        surface_type : str
-            The ground surface type. See ``SURFACE_ALBEDOS`` in
-            :mod:`pvlib.irradiance` for valid values.
+
+            See also :pvlib:`PVSystem.surface_tilt <pvlib.pvsystem.PVSystem.\
+            surface_tilt>` in pvlib documentation.
+        albedo (float)
+            The ground albedo. See also :pvlib:`PVSystem.albedo <pvlib.\
+            pvsystem.PVSystem.albedo>` in pvlib documentation.
+        surface_type (str)
+            The ground surface type. See `SURFACE_ALBEDOS` in
+            `pvlib.irradiance <https://github.com/pvlib/pvlib-python/blob/master/pvlib/irradiance.py>`_ module for valid values.
 
         References
         ----------
-        .. [2] Sandia module database https://prod-ng.sandia.gov/techlib-noauth/access-control.cgi/2004/043535.pdf
-        .. [3] CEC inverter database <https://prod-ng.sandia.gov/techlib-noauth/access-control.cgi/2007/075036.pdf>
+        .. [3] `Sandia module database documentation <https://prod-ng.sandia.gov/techlib-noauth/access-control.cgi/2004/043535.pdf>`_
+        .. [4] `CEC inverter database documentation <https://prod-ng.sandia.gov/techlib-noauth/access-control.cgi/2007/075036.pdf>`_
 
         """
         # ToDo Maybe add method to assign suitable inverter if none is
@@ -294,12 +304,13 @@ class Pvlib(PhotovoltaicModelBase):
         The parameters this model requires to calculate a feed-in.
 
         The required model parameters are:
-        location
 
-        location : tuple(float) or `shapely.geometry.Point`
+        `location`
+
+        location (:obj:`tuple` or :shapely:`Point`)
             Geo location of the PV system. Can either be provided as a tuple
             with first entry being the latitude and second entry being the
-            longitude or as a `shapely.geometry.Point`.
+            longitude or as a :shapely:`Point`.
 
         """
         required = ["location"]
@@ -309,8 +320,8 @@ class Pvlib(PhotovoltaicModelBase):
 
     @property
     def pv_system_area(self):
-        r"""
-        Area of PV system in $m^2$.
+        """
+        Area of PV system in :math:`m^2`.
 
         """
         if self.power_plant:
@@ -352,7 +363,7 @@ class Pvlib(PhotovoltaicModelBase):
         else:
             return None
 
-    def power_plant_requires_check(self, parameters):
+    def _power_plant_requires_check(self, parameters):
         """
         Function to check if all required power plant parameters are provided.
 
@@ -382,17 +393,18 @@ class Pvlib(PhotovoltaicModelBase):
 
     def instantiate_module(self, **kwargs):
         """
-        Instantiates a :class:`pvlib.pvsystem.PVSystem` object.
+        Instantiates a :pvlib:`pvlib.PVSystem <pvlib.pvsystem.PVSystem>`
+        object.
 
         Parameters
         -----------
         **kwargs
-            See `power_plant_parameters` parameter in :func:`~.feedin` for more
+            See `power_plant_parameters` parameter in :meth:`~.feedin` for more
             information.
 
         Returns
         --------
-        :class:`pvlib.pvsystem.PVSystem`
+        :pvlib:`pvlib.PVSystem <pvlib.pvsystem.PVSystem>`
             PV system to calculate feed-in for.
 
         """
@@ -414,9 +426,9 @@ class Pvlib(PhotovoltaicModelBase):
         r"""
         Calculates power plant feed-in in Watt.
 
-        This function uses the pvlib's :class:`pvlib.modelchain.ModelChain`
-        to calculate the feed-in for the given weather time series and
-        PV system.
+        This function uses the :pvlib:`pvlib.ModelChain <pvlib.modelchain.\
+        ModelChain>` to calculate the feed-in for the given weather time series
+        and PV system.
         By default the AC feed-in is returned. Set `mode` parameter to 'dc'
         to retrieve DC feed-in.
 
@@ -424,36 +436,35 @@ class Pvlib(PhotovoltaicModelBase):
         ----------
         weather : :pandas:`pandas.DataFrame<dataframe>`
             Weather time series used to calculate feed-in. See `weather`
-            parameter in :func:`pvlib.modelchain.ModelChain.run_model` for
-            more information on required variables, units, etc.
+            parameter in pvlib's Modelchain :pvlib:`run_model <pvlib.\
+            modelchain.ModelChain.run_model>` method for more information on
+            required variables, units, etc.
         power_plant_parameters : dict
             Dictionary with power plant specifications. Keys of the dictionary
             are the power plant parameter names, values of the dictionary hold
             the corresponding value. The dictionary must at least contain the
             required power plant parameters (see
             :attr:`~.power_plant_requires`) and may further contain optional
-            power plant parameters (see :class:`pvlib.pvsystem.PVSystem`).
-        location : tuple(float) or `shapely.geometry.Point`
+            power plant parameters (see :pvlib:`pvlib.PVSystem <pvlib.\
+            pvsystem.PVSystem>`).
+        location : :obj:`tuple` or :shapely:`Point`
             Geo location of the PV system. Can either be provided as a tuple
             with first entry being the latitude and second entry being the
-            longitude or as a `shapely.geometry.Point`.
+            longitude or as a :shapely:`Point`.
         mode : str (optional)
             Can be used to specify whether AC or DC feed-in is returned. By
             default `mode` is 'ac'. To retrieve DC feed-in set `mode` to 'dc'.
+
             `mode` also influences the peak power of the PV system. See
-            :attr:`~.models.Pvlib.pv_system_peak_power` for more information.
-        \**kwargs :
-            Further keyword arguments can be used to overwrite the pvlib's
-            :class:`pvlib.modelchain.ModelChain` parameters.
+            :attr:`~.pv_system_peak_power` for more information.
+        **kwargs :
+            Further keyword arguments can be used to overwrite :pvlib:`pvlib.\
+            ModelChain <pvlib.modelchain.ModelChain>` parameters.
 
         Returns
         -------
         :pandas:`pandas.Series<series>`
             Power plant feed-in time series in Watt.
-
-        See Also
-        --------
-        :class:`pvlib.modelchain.ModelChain`
 
         """
         self.mode = kwargs.pop('mode', 'ac').lower()
@@ -485,9 +496,7 @@ class WindpowerlibTurbine(WindpowerModelBase):
 
     The windpowerlib [1]_ is a python library for simulating the performance of
     wind turbines and farms. For more information about the model check the
-    documentation of the windpowerlib:
-
-    https://windpowerlib.readthedocs.io
+    documentation of the windpowerlib [2]_.
 
     Notes
     ------
@@ -495,11 +504,12 @@ class WindpowerlibTurbine(WindpowerModelBase):
     be provided. See :attr:`~.power_plant_requires` as well as
     :attr:`~.requires` for further information. Furthermore, the weather
     data used to calculate the feed-in has to have a certain format. See
-    :func:`~.feedin` for further information.
+    :meth:`~.feedin` for further information.
 
     References
     ----------
-    .. [1] windpowerlib on github <https://github.com/wind-python/windpowerlib>
+    .. [1] `windpowerlib on github <https://github.com/wind-python/windpowerlib>`_
+    .. [2] `windpowerlib documentation <https://windpowerlib.readthedocs.io>`_
 
     See Also
     --------
@@ -509,6 +519,8 @@ class WindpowerlibTurbine(WindpowerModelBase):
     """
 
     def __init__(self, **kwargs):
+        """
+        """
         super().__init__(**kwargs)
         self.power_plant = None
 
@@ -521,28 +533,39 @@ class WindpowerlibTurbine(WindpowerModelBase):
         The power plant parameters this model requires to calculate a feed-in.
 
         The required power plant parameters are:
-        hub_height, power_curve/power_coefficient_curve/turbine_type
 
-        hub_height : float
+        `hub_height`, `power_curve/power_coefficient_curve/turbine_type`
+
+        hub_height (float)
             Hub height in m.
-            See also :attr:`windpowerlib.WindTurbine.hub_height`.
-        power_curve : :pandas:`pandas.DataFrame<frame>` or dict
+
+            See also :wind_turbine:`WindTurbine.hub_height <windpowerlib.\
+            wind_turbine.WindTurbine.hub_height>` in windpowerlib
+            documentation.
+        power_curve (:pandas:`pandas.DataFrame<frame>` or dict)
             DataFrame/dictionary with wind speeds in m/s and corresponding
             power curve value in W.
-            See also :attr:`windpowerlib.WindTurbine.power_curve`.
-        power_coefficient_curve : :pandas:`pandas.DataFrame<frame>` or dict
+
+            See also :wind_turbine:`WindTurbine.power_curve <windpowerlib.\
+            wind_turbine.WindTurbine.power_curve>` in windpowerlib
+            documentation.
+        power_coefficient_curve (:pandas:`pandas.DataFrame<frame>` or dict)
             DataFrame/dictionary with wind speeds in m/s and corresponding
             power coefficient.
-            See also :attr:`windpowerlib.WindTurbine.power_coefficient_curve`.
-        turbine_type : str
+
+            See also :wind_turbine:`WindTurbine.power_coefficient_curve \
+            <windpowerlib.wind_turbine.WindTurbine.power_coefficient_curve>`
+            in windpowerlib documentation.
+        turbine_type (str)
             Name of the wind turbine type as in the oedb turbine library. Use
-            :func:`~.get_power_plant_data` with dataset='oedb_turbine_library'
-            to get an overview of all provided turbines. See the data set
-            metadata [2]_ for further information on provided parameters.
+            :func:`~.get_power_plant_data` with `dataset` =
+            'oedb_turbine_library' to get an overview of all provided turbines.
+            See the data set metadata [3]_ for further information on provided
+            parameters.
 
         References
         ----------
-        .. [2] oedb wind turbine library <https://openenergy-platform.org/dataedit/view/supply/wind_turbine_library>
+        .. [3] `oedb wind turbine library <https://openenergy-platform.org/dataedit/view/supply/wind_turbine_library>`_
 
         """
         required = ["hub_height",
@@ -569,7 +592,8 @@ class WindpowerlibTurbine(WindpowerModelBase):
         """
         Nominal power of wind turbine in Watt.
 
-        See :attr:`windpowerlib.WindTurbine.nominal_power` for further
+        See :wind_turbine:`WindTurbine.nominal_power <windpowerlib.\
+        wind_turbine.WindTurbine.nominal_power>` in windpowerlib for further
         information.
 
         """
@@ -578,12 +602,12 @@ class WindpowerlibTurbine(WindpowerModelBase):
         else:
             return None
 
-    def power_plant_requires_check(self, parameters):
+    def _power_plant_requires_check(self, parameters):
         """
         Function to check if all required power plant parameters are provided.
 
         Power plant parameters this model requires are specified in
-        :attr:`~.models.WindpowerlibTurbine.power_plant_requires`.
+        :attr:`~.power_plant_requires`.
 
         Parameters
         -----------
@@ -608,17 +632,19 @@ class WindpowerlibTurbine(WindpowerModelBase):
 
     def instantiate_turbine(self, **kwargs):
         """
-        Instantiates a :class:`windpowerlib.WindTurbine` object.
+        Instantiates a :windpowerlib:`windpowerlib.WindTurbine \
+        <windpowerlib.wind_turbine.WindTurbine>` object.
 
         Parameters
         -----------
         **kwargs
-            See `power_plant_parameters` parameter in :func:`~.feedin` for more
+            See `power_plant_parameters` parameter in :meth:`~.feedin` for more
             information.
 
         Returns
         --------
-        :class:`windpowerlib.WindTurbine`
+        :windpowerlib:`windpowerlib.WindTurbine \
+            <windpowerlib.wind_turbine.WindTurbine>`
             Wind turbine to calculate feed-in for.
 
         """
@@ -628,15 +654,16 @@ class WindpowerlibTurbine(WindpowerModelBase):
         r"""
         Calculates power plant feed-in in Watt.
 
-        This function uses the windpowerlib's :class:`windpowerlib.ModelChain`
-        to calculate the feed-in for the given weather time series and
-        wind turbine.
+        This function uses the windpowerlib's :windpowerlib:`ModelChain \
+        <windpowerlib.modelchain.ModelChain>` to calculate the feed-in for the
+        given weather time series and wind turbine.
 
         Parameters
         ----------
         weather : :pandas:`pandas.DataFrame<dataframe>`
             Weather time series used to calculate feed-in. See `weather_df`
-            parameter in :func:`windpowerlib.ModelChain.run_model` for
+            parameter in windpowerlib's Modelchain :windpowerlib:`run_model \
+            <windpowerlib.modelchain.ModelChain.run_model>` method for
             more information on required variables, units, etc.
         power_plant_parameters : dict
             Dictionary with power plant specifications. Keys of the dictionary
@@ -644,19 +671,17 @@ class WindpowerlibTurbine(WindpowerModelBase):
             the corresponding value. The dictionary must at least contain the
             required power plant parameters (see
             :attr:`~.power_plant_requires`) and may further contain optional
-            power plant parameters (see :class:`windpowerlib.WindTurbine`).
-        \**kwargs :
+            power plant parameters (see :windpowerlib:`windpowerlib.\
+            WindTurbine <windpowerlib.wind_turbine.WindTurbine>`).
+        **kwargs :
             Keyword arguments can be used to overwrite the windpowerlib's
-            :class:`windpowerlib.ModelChain` parameters.
+            :windpowerlib:`ModelChain <windpowerlib.modelchain.ModelChain>`
+            parameters.
 
         Returns
         -------
         :pandas:`pandas.Series<series>`
             Power plant feed-in time series in Watt.
-
-        See Also
-        --------
-        :class:`windpowerlib.ModelChain`
 
         """
         self.power_plant = self.instantiate_turbine(**power_plant_parameters)
@@ -665,15 +690,13 @@ class WindpowerlibTurbine(WindpowerModelBase):
 
 
 class WindpowerlibTurbineCluster(WindpowerModelBase):
-    r"""
+    """
     Model to determine the feed-in of a wind turbine cluster using the
     windpowerlib.
 
     The windpowerlib [1]_ is a python library for simulating the performance of
     wind turbines and farms. For more information about the model check the
-    documentation of the windpowerlib:
-
-    https://windpowerlib.readthedocs.io
+    documentation of the windpowerlib [2]_.
 
     Notes
     ------
@@ -681,21 +704,23 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
     be provided. See :attr:`~.power_plant_requires` as well as
     :attr:`~.requires` for further information. Furthermore, the weather
     data used to calculate the feed-in has to have a certain format. See
-    :func:`~.feedin` for further information.
-
-    References
-    ----------
-    .. [1] windpowerlib on github <https://github.com/wind-python/windpowerlib>
+    :meth:`~.feedin` for further information.
 
     See Also
     --------
     :class:`~.models.Base`
     :class:`~.models.WindpowerModelBase`
 
+    References
+    ----------
+    .. [1] `windpowerlib on github <https://github.com/wind-python/windpowerlib>`_
+    .. [2] `windpowerlib documentation <https://windpowerlib.readthedocs.io>`_
+
     """
 
     def __init__(self, **kwargs):
-
+        """
+        """
         super().__init__(**kwargs)
         self.power_plant = None
 
@@ -708,21 +733,25 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         The power plant parameters this model requires to calculate a feed-in.
 
         The required power plant parameters are:
-        wind_turbine_fleet/wind_farms
+
+        `wind_turbine_fleet/wind_farms`
 
         The windpowerlib differentiates between wind farms as a group of wind
         turbines (of the same or different type) in the same location and
         wind turbine clusters as wind farms and turbines that are assigned the
         same weather data point to obtain weather data for feed-in calculations
         and can therefore be clustered to speed up calculations.
-        The WindpowerlibTurbineCluster class can be used for both
-        :class:`windpowerlib.WindFarm` and
-        :class:`windpowerlib.WindTurbineCluster` calculations. To set up a
-        :class:`windpowerlib.WindFarm` please provide a `wind_turbine_fleet`
-        and to set up a :class:`windpowerlib.WindTurbineCluster` please
+        The `WindpowerlibTurbineCluster` class can be used for both
+        :windpowerlib:`windpowerlib.WindFarm <windpowerlib.wind_farm.\
+        WindFarm>` and :windpowerlib:`windpowerlib.WindTurbineCluster \
+        <windpowerlib.wind_turbine_cluster.WindTurbineCluster>` calculations.
+        To set up a :windpowerlib:`windpowerlib.WindFarm <windpowerlib.\
+        wind_farm.WindFarm>` please provide a `wind_turbine_fleet`
+        and to set up a :windpowerlib:`windpowerlib.WindTurbineCluster \
+        <windpowerlib.wind_turbine_cluster.WindTurbineCluster>` please
         provide a list of `wind_farms`. See below for further information.
 
-        wind_turbine_fleet : :pandas:`pandas.DataFrame<frame>`
+        wind_turbine_fleet (:pandas:`pandas.DataFrame<frame>`)
             The wind turbine fleet specifies the turbine types and their
             corresponding number or total installed capacity in the wind farm.
             DataFrame must have columns 'wind_turbine' and either
@@ -730,24 +759,32 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
             type in the wind farm, can be a float) or 'total_capacity'
             (installed capacity of wind turbines of the same turbine type in
             the wind farm in Watt).
+
             The wind turbine in column 'wind_turbine' can be provided as a
             :class:`~.powerplants.WindPowerPlant` object, a dictionary with
             power plant parameters (see
-            :attr:`feedinlib.models.WindpowerlibTurbine.power_plant_requires`
-            for required parameters) or a :attr:`windpowerlib.WindTurbine`.
-            See also :attr:`windpowerlib.WindFarm.wind_turbine_fleet`.
+            :attr:`~.models.WindpowerlibTurbine.power_plant_requires`
+            for required parameters) or a :windpowerlib:`windpowerlib.\
+            WindTurbine <windpowerlib.wind_turbine.WindTurbine>`.
+
+            See also `wind_turbine_fleet` parameter of
+            :windpowerlib:`windpowerlib.WindFarm <windpowerlib.wind_farm.\
+            WindFarm>`.
+
             The wind turbine fleet may also be provided as a list of
-            :class:`~windpowerlib.wind_turbine.WindTurbineGroup` as described
-            there.
-        wind_farms : list(dict) or list(:class:`windpowerlib.WindFarm`)
+            :windpowerlib:`windpowerlib.WindTurbineGroup <windpowerlib.\
+            wind_turbine.WindTurbineGroup>` as described there.
+        wind_farms (list(dict) or list(:windpowerlib:`windpowerlib.WindFarm <windpowerlib.wind_farm.WindFarm>`))
             List of wind farms in cluster. Wind farms in the list can either
-            be provided as :class:`windpowerlib.WindFarm` or as dictionaries
+            be provided as :windpowerlib:`windpowerlib.WindFarm \
+            <windpowerlib.wind_farm.WindFarm>` or as dictionaries
             where the keys of the dictionary are the wind farm parameter names
             and the values of the dictionary hold the corresponding value.
             The dictionary must at least contain a wind turbine fleet (see
             'wind_turbine_fleet' parameter specifications above) and may
             further contain optional wind farm parameters (see
-            :class:`windpowerlib.WindFarm`).
+            :windpowerlib:`windpowerlib.WindFarm <windpowerlib.wind_farm.\
+            WindFarm>`).
 
         """
         required = ["wind_turbine_fleet", "wind_farms"]
@@ -774,8 +811,10 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         Nominal power of wind turbine cluster in Watt.
 
         The nominal power is the sum of the nominal power of all turbines.
-        See :attr:`windpowerlib.WindFarm.nominal_power` or
-        :attr:`windpowerlib.WindTurbineCluster.nominal_power` for further
+        See `nominal_power` of :windpowerlib:`windpowerlib.WindFarm \
+        <windpowerlib.wind_farm.WindFarm>` or
+        :windpowerlib:`windpowerlib.WindTurbineCluster \
+        <windpowerlib.wind_turbine_cluster.WindTurbineCluster>` for further
         information.
 
         """
@@ -784,12 +823,12 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         else:
             return None
 
-    def power_plant_requires_check(self, parameters):
+    def _power_plant_requires_check(self, parameters):
         r"""
         Function to check if all required power plant parameters are provided.
 
         Power plant parameters this model requires are specified in
-        :attr:`~.models.WindpowerlibTurbineCluster.power_plant_requires`.
+        :attr:`~.power_plant_requires`.
 
         Parameters
         -----------
@@ -806,7 +845,8 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
 
     def instantiate_turbine(self, **kwargs):
         """
-        Instantiates a :class:`windpowerlib.WindTurbine` object.
+        Instantiates a :windpowerlib:`windpowerlib.WindTurbine \
+        <windpowerlib.wind_turbine.WindTurbine>` object.
 
         Parameters
         -----------
@@ -815,13 +855,15 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
             are the power plant parameter names, values of the dictionary hold
             the corresponding value. The dictionary must at least contain the
             required turbine parameters (see
-            :attr:`~.models.WindpowerlibWindTurbine.power_plant_requires`) and
+            :attr:`~.models.WindpowerlibTurbine.power_plant_requires`) and
             may further contain optional power plant parameters (see
-            :class:`windpowerlib.WindTurbine`).
+            :windpowerlib:`windpowerlib.WindTurbine \
+            <windpowerlib.wind_turbine.WindTurbine>`).
 
         Returns
         --------
-        :class:`windpowerlib.WindTurbine`
+        :windpowerlib:`windpowerlib.WindTurbine \
+        <windpowerlib.wind_turbine.WindTurbine>`
             Wind turbine in wind farm or turbine cluster.
 
         """
@@ -830,7 +872,8 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
 
     def instantiate_windfarm(self, **kwargs):
         r"""
-        Instantiates a :class:`windpowerlib.WindFarm` object.
+        Instantiates a :windpowerlib:`windpowerlib.WindFarm <windpowerlib.\
+        wind_farm.WindFarm>` object.
 
         Parameters
         ----------
@@ -840,11 +883,12 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
             corresponding value. The dictionary must at least contain a wind
             turbine fleet (see 'wind_turbine_fleet' specifications in
             :attr:`~.power_plant_requires`) and may further contain optional
-            wind farm parameters (see :class:`windpowerlib.WindFarm`).
+            wind farm parameters (see :windpowerlib:`windpowerlib.WindFarm \
+            <windpowerlib.wind_farm.WindFarm>`).
 
         Returns
         --------
-        :class:`windpowerlib.WindFarm`
+        :windpowerlib:`windpowerlib.WindFarm <windpowerlib.wind_farm.WindFarm>`
 
         """
         # deepcopy turbine fleet to not alter original turbine fleet
@@ -895,7 +939,8 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
 
     def instantiate_turbine_cluster(self, **kwargs):
         r"""
-        Instantiates a :class:`windpowerlib.WindTurbineCluster` object.
+        Instantiates a :windpowerlib:`windpowerlib.WindTurbineCluster \
+        <windpowerlib.wind_turbine_cluster.WindTurbineCluster>` object.
 
         Parameters
         ----------
@@ -906,11 +951,12 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
             list of wind farms (see 'wind_farms' specifications in
             :attr:`~.power_plant_requires`) and may further contain optional
             wind turbine cluster parameters (see
-            :class:`windpowerlib.WindTurbineCluster`).
+            :windpowerlib:`windpowerlib.WindTurbineCluster \
+            <windpowerlib.wind_turbine_cluster.WindTurbineCluster>`).
 
         Returns
         --------
-        :class:`windpowerlib.WindTurbineCluster`
+        :windpowerlib:`windpowerlib.WindTurbineCluster <windpowerlib.wind_turbine_cluster.WindTurbineCluster>`
 
         """
         wind_farm_list = []
@@ -927,36 +973,33 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         Calculates power plant feed-in in Watt.
 
         This function uses the windpowerlib's
-        :class:`windpowerlib.TurbineClusterModelChain` to calculate the feed-in
-        for the given weather time series and wind farm or cluster.
+        :windpowerlib:`TurbineClusterModelChain <windpowerlib.\
+        turbine_cluster_modelchain.TurbineClusterModelChain>` to calculate the
+        feed-in for the given weather time series and wind farm or cluster.
 
         Parameters
         ----------
         weather : :pandas:`pandas.DataFrame<dataframe>`
             Weather time series used to calculate feed-in. See `weather_df`
-            parameter in
-            :func:`windpowerlib.TurbineClusterModelChain.run_model` for
-            more information on required variables, units, etc.
+            parameter in windpowerlib's TurbineClusterModelChain
+            :windpowerlib:`run_model <windpowerlib.turbine_cluster_modelchain.\
+            TurbineClusterModelChain.run_model>` method for more information on
+            required variables, units, etc.
         power_plant_parameters : dict
             Dictionary with either wind farm or wind turbine cluster
             specifications. For more information on wind farm parameters see
-            kwargs definition in
-            :func:`~.models.WindpowerlibTurbineCluster.instantiate_windfarm`.
-            For information on turbine cluster parameters see kwargs definition
-            in
-            :func:`~.instantiate_turbine_cluster`.
-        \**kwargs :
+            `kwargs` in :meth:`~.instantiate_windfarm`.
+            For information on turbine cluster parameters see `kwargs`
+            in :meth:`~.instantiate_turbine_cluster`.
+        **kwargs :
             Keyword arguments can be used to overwrite the windpowerlib's
-            :class:`windpowerlib.TurbineClusterModelChain` parameters.
+            :windpowerlib:`TurbineClusterModelChain <windpowerlib.\
+            turbine_cluster_modelchain.TurbineClusterModelChain>` parameters.
 
         Returns
         -------
         :pandas:`pandas.Series<series>`
             Power plant feed-in time series in Watt.
-
-        See Also
-        --------
-        :class:`windpowerlib.TurbineClusterModelChain`
 
         """
         # wind farm calculation
@@ -985,12 +1028,16 @@ def get_power_plant_data(dataset, **kwargs):
         Specifies data set to retrieve. Possible options are:
 
         * pvlib PV module and inverter datasets: 'sandiamod', 'cecinverter'
+
           The original data sets are hosted here:
           https://github.com/NREL/SAM/tree/develop/deploy/libraries
-          See :func:`pvlib.pvsystem.PVSystem.retrieve_sam` for further
+
+          See :pvlib:`retrieve_sam <pvlib.pvsystem.retrieve_sam>` for further
           information.
         * windpowerlib wind turbine dataset: 'oedb_turbine_library'
-          See :func:`windpowerlib.get_turbine_types` for further information.
+
+          See :windpowerlib:`get_turbine_types <windpowerlib.wind_turbine.\
+          get_turbine_types>` for further information.
 
     **kwargs
         See referenced functions for each dataset above for further optional

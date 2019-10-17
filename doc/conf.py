@@ -44,7 +44,16 @@ autoclass_content = 'both'
 autodoc_member_order = 'bysource'
 
 extlinks = {'pandas':('http://pandas.pydata.org/pandas-docs/stable/reference/%s.html',
-                      'pandas.')
+                      'pandas.'),
+            'pvlib':('https://pvlib-python.readthedocs.io/en/stable/generated/%s.html#',
+                     ''),
+            'windpowerlib':('https://windpowerlib.readthedocs.io/en/stable/temp/%s.html#',
+                     ''),
+            # work around for wind turbine attributes
+            'wind_turbine':('https://windpowerlib.readthedocs.io/en/stable/temp/windpowerlib.wind_turbine.WindTurbine.html#%s',
+                     ''),
+            'shapely':('https://shapely.readthedocs.io/en/latest/manual.html#%s',
+                     'shapely.')
             }
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
@@ -115,6 +124,7 @@ pygments_style = 'sphinx'
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
 
+autosummary_generate = True
 
 # -- Options for HTML output ----------------------------------------------
 # The theme to use for HTML and HTML Help pages.  See the documentation for

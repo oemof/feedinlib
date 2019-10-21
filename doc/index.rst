@@ -8,6 +8,7 @@ Contents:
    :glob:
    
    getting_started
+   examples
    whats_new
    api
 

@@ -35,13 +35,15 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.autosummary'
+    'sphinx.ext.autosummary',
+    'nbsphinx'
 
 ]
 
 # 
 autoclass_content = 'both'
 autodoc_member_order = 'bysource'
+nbsphinx_allow_errors = True
 
 extlinks = {'pandas':('http://pandas.pydata.org/pandas-docs/stable/reference/%s.html',
                       'pandas.'),

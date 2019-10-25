@@ -5,6 +5,7 @@ from geoalchemy2.elements import WKTElement as WKTE
 from geoalchemy2.shape import to_shape
 from sqlalchemy.orm import sessionmaker
 import oedialect
+import pandas as pd
 import sqlalchemy as sqla
 
 from feedinlib import openFRED as ofr
@@ -251,7 +252,7 @@ class Weather:
                 (n, h): [self.series[xy, n, h] for xy in index]
                 for (n, h) in columns
             }
-            return DF(index=index, data=data)
+            return DF(index=pd.MultiIndex.from_tuples(index), data=data)
 
         if lib is None:
             raise NotImplementedError(

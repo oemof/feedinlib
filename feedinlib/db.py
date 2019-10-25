@@ -4,8 +4,8 @@ from pandas import DataFrame as DF, Series, Timedelta as TD, to_datetime as tdt
 from geoalchemy2.elements import WKTElement as WKTE
 from geoalchemy2.shape import to_shape
 from sqlalchemy.orm import sessionmaker
-import sqlalchemy as sqla
 import oedialect
+import sqlalchemy as sqla
 
 from feedinlib import openFRED as ofr
 

@@ -154,6 +154,7 @@ class Weather:
             if locations is not None
             else {}
         )
+
         self.regions = (
             {WKTE(r, srid=4326): self.within(r) for r in regions}
             if regions is not None

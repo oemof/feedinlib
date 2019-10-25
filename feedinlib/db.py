@@ -136,6 +136,9 @@ class Weather:
         self.session = session
         self.db = db
 
+        if self.session is None and self.db is None:
+            return
+
         variables = {
             "windpowerlib": ["P", "T", "VABS_AV", "Z0"],
             "pvlib": [

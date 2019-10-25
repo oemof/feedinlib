@@ -228,6 +228,37 @@ class Weather:
         }
         self.variables = {k: {"heights": v} for k, v in self.variables.items()}
 
+    @classmethod
+    def from_df(klass, df):
+        assert isinstance(df.columns, pd.MultiIndex), (
+            "DataFrame's columns aren't a `pandas.indexes.multi.MultiIndex`.\n"
+            "Got `{}` instead."
+        ).format(type(df.columns))
+        assert len(df.columns.levels) == 2, (
+            "DataFrame's columns have more than two levels.\nGot: {}.\n"
+            "Should be exactly two, the first containing variable names and "
+            "the\n"
+            "second containing matching height levels."
+        )
+        variables = {
+            variable: {"heights": [vhp[1] for vhp in variable_height_pairs]}
+            for variable, variable_height_pairs in groupby(
+                df.columns.values,
+                key=lambda variable_height_pair: variable_height_pair[0],
+            )
+        }
+        locations = {xy: None for xy in df.index.values}
+        series = {
+            (xy, *variable_height_pair): df.loc[xy, variable_height_pair]
+            for xy in df.index.values
+            for variable_height_pair in df.columns.values
+        }
+        instance = klass(start=None, stop=None, locations=None)
+        instance.locations = locations
+        instance.series = series
+        instance.variables = variables
+        return instance
+
     def location(self, point=None):
         """ Get the measurement location closest to the given `point`.
         """

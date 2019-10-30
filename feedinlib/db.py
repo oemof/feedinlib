@@ -4,8 +4,9 @@ from pandas import DataFrame as DF, Series, Timedelta as TD, to_datetime as tdt
 from geoalchemy2.elements import WKTElement as WKTE
 from geoalchemy2.shape import to_shape
 from sqlalchemy.orm import sessionmaker
-import sqlalchemy as sqla
 import oedialect
+import pandas as pd
+import sqlalchemy as sqla
 
 from feedinlib import openFRED as ofr
 
@@ -135,6 +136,9 @@ class Weather:
         self.session = session
         self.db = db
 
+        if self.session is None and self.db is None:
+            return
+
         variables = {
             "windpowerlib": ["P", "T", "VABS_AV", "Z0"],
             "pvlib": [
@@ -153,6 +157,7 @@ class Weather:
             if locations is not None
             else {}
         )
+
         self.regions = (
             {WKTE(r, srid=4326): self.within(r) for r in regions}
             if regions is not None
@@ -223,6 +228,37 @@ class Weather:
         }
         self.variables = {k: {"heights": v} for k, v in self.variables.items()}
 
+    @classmethod
+    def from_df(klass, df):
+        assert isinstance(df.columns, pd.MultiIndex), (
+            "DataFrame's columns aren't a `pandas.indexes.multi.MultiIndex`.\n"
+            "Got `{}` instead."
+        ).format(type(df.columns))
+        assert len(df.columns.levels) == 2, (
+            "DataFrame's columns have more than two levels.\nGot: {}.\n"
+            "Should be exactly two, the first containing variable names and "
+            "the\n"
+            "second containing matching height levels."
+        )
+        variables = {
+            variable: {"heights": [vhp[1] for vhp in variable_height_pairs]}
+            for variable, variable_height_pairs in groupby(
+                df.columns.values,
+                key=lambda variable_height_pair: variable_height_pair[0],
+            )
+        }
+        locations = {xy: None for xy in df.index.values}
+        series = {
+            (xy, *variable_height_pair): df.loc[xy, variable_height_pair]
+            for xy in df.index.values
+            for variable_height_pair in df.columns.values
+        }
+        instance = klass(start=None, stop=None, locations=None)
+        instance.locations = locations
+        instance.series = series
+        instance.variables = variables
+        return instance
+
     def location(self, point=None):
         """ Get the measurement location closest to the given `point`.
         """
@@ -251,7 +287,7 @@ class Weather:
                 (n, h): [self.series[xy, n, h] for xy in index]
                 for (n, h) in columns
             }
-            return DF(index=index, data=data)
+            return DF(index=pd.MultiIndex.from_tuples(index), data=data)
 
         if lib is None:
             raise NotImplementedError(

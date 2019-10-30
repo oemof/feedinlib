@@ -127,6 +127,11 @@ def get_time_periods_with_equal_capacity(register, start=None, stop=None):
     # find dates with capacity change within start and stop
     dates = register['commissioning_date']
     dates = dates.append(register['decommissioning_date']).dropna().unique()
+    # add time zone to start and stop
+    if stop.tz is None:
+        stop = stop.tz_localize(dates.tz)
+    if start.tz is None:
+        start = start.tz_localize(dates.tz)
     dates_filtered = pd.Series(dates[(dates >= start) & (dates <= stop)])
     # build data frame with periods with constant capacity
     start_dates = dates_filtered.append(pd.Series(start)).sort_values()

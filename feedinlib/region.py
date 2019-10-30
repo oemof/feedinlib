@@ -111,6 +111,8 @@ class Region:
             feedin_weather_loc = pd.Series()
             for start, stop in zip(periods['start'], periods['stop']):
                 # select weather # todo function in weather object?
+                if weather.index[0].tz is None:
+                    weather.index = weather.index.tz_localize(start.tz)
                 weather_period = weather[weather.index >= start]
                 if stop == periods['stop'].iloc[-1]:
                     weather_period = weather_period[

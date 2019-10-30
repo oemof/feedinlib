@@ -63,6 +63,9 @@ class Region:
             ['weather_lat', 'weather_lon']).size().reset_index().drop([0],
                                                                       axis=1)
         # get turbine types (and data) from register
+        # first round hub_height and rotor_diameter values
+        register['hub_height'] = register['hub_height'].round()
+        register['rotor_diameter'] = register['rotor_diameter'].round()
         turbine_data = register.groupby(
             ['turbine_type', 'hub_height',
              'rotor_diameter']).size().reset_index().drop(0, axis=1)

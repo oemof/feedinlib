@@ -1,3 +1,4 @@
+import pandas as pd
 import geopandas as gpd
 from feedinlib.db_bs import Weather
 from feedinlib.db_bs import defaultdb
@@ -6,6 +7,7 @@ import os.path
 
 from geoalchemy2.elements import WKTElement as WKTE
 from itertools import chain
+from shapely.ops import cascaded_union
 
 
 def within(region=None):
@@ -77,45 +79,79 @@ def get_districts_for_state(state, dump_shape=False):
     landkreise_shape = gpd.read_file(file)
     districts_shape = landkreise_shape[
         landkreise_shape.nuts.str.contains(nuts_id[state])]
+
+    for nut_id in districts_shape.nuts.unique():
+        tmp_df = districts_shape[districts_shape.nuts == nut_id]
+        if len(tmp_df) > 1:
+            polyg = cascaded_union(
+                districts_shape[districts_shape.nuts == nut_id].geometry)
+            counter = 0
+            for index, row in tmp_df.iterrows():
+                if counter == 0:
+                    districts_shape.loc[index, 'geometry'] = polyg
+                else:
+                    districts_shape.drop(index=[index], inplace=True)
+                counter += 1
+
     if dump_shape:
         districts_shape.to_file('districts_{}.shp'.format(state))
     return districts_shape
 
 
-def make_weather_df_from_pkl_for_districts(state, dump_districts_shape=False):
+def make_weather_df_from_pkl_for_districts(
+        state, year, server_path, dump_districts_shape=False):
 
     districts_df = get_districts_for_state(
         state, dump_shape=dump_districts_shape)
 
-    for district in districts_df.iterrows():
+    for index, rows in districts_df.iterrows():
 
-        # get all location ids in district
-        locations_dict = get_location_ids_within_region(district.geometry)
+        weather_data_filename = 'weather_data_{}_{}.csv'.format(
+            rows['nuts'], year)
 
-        location_ids = locations_dict.keys()
-        pickle_dict = {}
-        for location in location_ids:
-            pickle_dict[location] = pickle.load(
-                open("{}.pkl".format(location), "rb"))
+        if not os.path.isfile(weather_data_filename):
 
-        open_FRED_weather = pickle_dict[location_ids[0]]
-        for location in location_ids[1:]:
-            open_FRED_weather.series.update(pickle_dict[location].series)
-            open_FRED_weather.variables.update(pickle_dict[location].variables)
+            # get all location ids in district
+            location_ids = get_location_ids_within_region(rows['geometry'])
+            print('{}: number of location ids {}'.format(
+                rows['nuts'], len(location_ids)))
 
-    # # load locations dict with location ids and corresponding coordinates
-    # locations_dict = pickle.load(
-    #     open("locations_dict_{}.pkl".format(state), "rb"))
-    #
-    # location = list(locations_dict.keys())[0]
-    # open_FRED_weather.df(
-    #     location=locations_dict[location],
-    #     lib='pvlib')
+            # first location
+            fname = os.path.join(server_path,
+                                 '{}_{}.pkl'.format(location_ids[0], year))
+            open_FRED_weather = pickle.load(open(fname, "rb"))
+
+            # all other locations
+            for location in location_ids[1:]:
+                fname = os.path.join(
+                    server_path, '{}_{}.pkl'.format(location, year))
+                tmp_data = pickle.load(open(fname, "rb"))
+
+                open_FRED_weather.series.update(tmp_data.series)
+                open_FRED_weather.variables.update(tmp_data.variables)
+
+            open_FRED_weather.df().to_csv(weather_data_filename)
+
+
+def make_weather_object_from_dumped_csv(district, state):
+
+    df = pd.read_csv('weather_data_{}.csv'.format(district))
+    open_FRED_weather = Weather.from_df(df)
+
+    # test if it worked:
+    # load locations dict with location ids and corresponding coordinates
+    locations_dict = pickle.load(
+        open("locations_dict_{}.pkl".format(state), "rb"))
+
+    location = list(locations_dict.keys())[0]
+    open_FRED_weather.df(
+        location=locations_dict[location],
+        lib='pvlib')
 
 
 if __name__ == "__main__":
 
-    server_path = ''
+    server_path = '/home/birgit/rli-daten/open_FRED_Wetterdaten_pkl'
     # years 2013 - 2017
     year = 2017
     state = 'Mecklenburg-Vorpommern'  # 'Mecklenburg-Vorpommern', 'Sachsen', 'Brandenburg', 'Sachsen-Anhalt', 'Thüringen', 'Berlin'
@@ -125,4 +161,7 @@ if __name__ == "__main__":
 
     #download_and_dump_weather_data(shape, state, year, server_path)
 
-    make_weather_df_from_pkl_for_districts(state, dump_districts_shape=False)
+    #get_districts_for_state(state, dump_shape=True)
+
+    make_weather_df_from_pkl_for_districts(state, year, server_path,
+                                           dump_districts_shape=False)

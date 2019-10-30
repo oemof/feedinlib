@@ -84,17 +84,21 @@ class Region:
                 (register['weather_lat'] == weather_location[0]) & (
                     register['weather_lon'] == weather_location[1])]  # todo: nicer way?
             # todo: assignment func
-            # prepare power plants for windpowerlib TurbineClusterModelChain
+
+            # prepare power plants for windpowerlib TurbineClusterModelChain # todo make generic - other models must be usable
             turbine_types_location = power_plants.groupby(
                 'id').size().reset_index().drop(0, axis=1)
-            wind_farm_data = {'name': 'todo',
-                              'wind_turbine_fleet': []}
+            wind_turbine_fleet = pd.DataFrame()
             for turbine_type in turbine_types_location['id']:
                 capacity = power_plants.loc[
-                    power_plants['id'] == turbine_type]['capacity'].sum()  # todo check capacpity of opsd register
-                wind_farm_data['wind_turbine_fleet'].append(
-                    {'wind_turbine': turbines_region[turbine_type],
-                     'total_capacity': capacity})
+                    power_plants['id'] == turbine_type][
+                    'capacity'].sum()  # todo check capacity of opsd register
+                df = pd.DataFrame(
+                    {'wind_turbine': [turbines_region[turbine_type]],
+                     'total_capacity': [capacity]})
+                wind_turbine_fleet = pd.concat([wind_turbine_fleet, df])
+            wind_farm_data = {'name': 'todo',
+                              'wind_turbine_fleet': wind_turbine_fleet}
 
             # initialize wind farm and run TurbineClusterModelChain
             # todo: if nur ein turbine_type --> ModelChain verwenden??

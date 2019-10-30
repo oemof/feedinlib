@@ -66,6 +66,9 @@ class Region:
             ['weather_lat', 'weather_lon']).size().reset_index().drop([0],
                                                                       axis=1)
         # get turbine types (and data) from register
+        # first round hub_height and rotor_diameter values
+        register['hub_height'] = register['hub_height'].round()
+        register['rotor_diameter'] = register['rotor_diameter'].round()
         turbine_data = register.groupby(
             ['turbine_type', 'hub_height',
              'rotor_diameter']).size().reset_index().drop(0, axis=1)
@@ -87,6 +90,25 @@ class Region:
                 (register['weather_lat'] == weather_location[0]) & (
                     register['weather_lon'] == weather_location[1])]
 
+            # prepare power plants for windpowerlib TurbineClusterModelChain # todo make generic - other models must be usable
+            turbine_types_location = power_plants.groupby(
+                'id').size().reset_index().drop(0, axis=1)
+            wind_turbine_fleet = pd.DataFrame()
+            for turbine_type in turbine_types_location['id']:
+                capacity = power_plants.loc[
+                    power_plants['id'] == turbine_type][
+                    'capacity'].sum()  # todo check capacity of opsd register
+                df = pd.DataFrame(
+                    {'wind_turbine': [turbines_region[turbine_type]],
+                     'total_capacity': [capacity]})
+                wind_turbine_fleet = pd.concat([wind_turbine_fleet, df])
+            wind_farm_data = {'name': 'todo',
+                              'wind_turbine_fleet': wind_turbine_fleet}
+
+            # initialize wind farm and run TurbineClusterModelChain
+            # todo: if nur ein turbine_type --> ModelChain verwenden??
+            wind_farm = WindPowerPlant(model=WindpowerlibTurbineCluster,
+                                       **wind_farm_data)
             # select weather of weather location and drop location index
             weather = self.weather.loc[
                 (self.weather.index.get_level_values('lat') ==

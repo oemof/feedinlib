@@ -27,7 +27,8 @@ class Region:
         self.weather = weather
         self.weather_locations = kwargs.get('weather_locations', None)
         if self.weather_locations is None:
-            self.weather_locations = self.weather.groupby(['lat', 'lon'])
+            self.weather_locations = self.weather.groupby(
+                ['lat', 'lon']).size().reset_index().drop([0], axis=1)
 
     def wind_feedin(self, register, assignment_func=None, snapshots=None,
                     capacity_periods=False, **kwargs):

@@ -225,6 +225,9 @@ class Region:
                     (self.weather['lon'] == lon)]
             else:
                 weather_df = self.weather(lat, lon, lib='pvlib', **kwargs)
+                weather_df = weather_df.tz_localize('UTC')
+                col_list = [col[0] for col in weather_df.columns]
+                weather_df.columns = col_list
 
             for key in technical_parameters.keys():
 

@@ -16,10 +16,17 @@ class Region:
     def __init__(self, geom, weather, **kwargs):
         """
 
-        :param geom: polygon
-        :param weather: Weather Objekt
-
-        weather_locations : dataframe
+        Parameters
+        -----------
+        geom : polygon
+        weather : pandas.DataFrame or function
+            In case of function that function must take in the parameters
+            `lat` (float, latitude of location),
+            `lon` (float, longitude of location), and return a pandas
+            dataframe that can be directly used to calculate feed-in. If
+            your function requires further parameters you can provide them
+            through the kwargs.
+        weather_locations : dataframe, optional
             dataframe with 'lat' and 'lon' in index or as columns
 
         """
@@ -27,7 +34,14 @@ class Region:
         self.weather = weather
         self.weather_locations = kwargs.get('weather_locations', None)
         if self.weather_locations is None:
-            self.weather_locations = self.weather.groupby(['lat', 'lon'])
+            try:
+                self.weather_locations = self.weather.groupby(
+                    ['lat', 'lon']).size().reset_index().drop([0], axis=1)
+            except:
+                raise AttributeError(
+                    "Region object needs attribute `weather_locations` but it"
+                    "was not provided and cannot be retrieved from `weather` "
+                    "attribute.")
 
     def wind_feedin(self, register, assignment_func=None, snapshots=None,
                     capacity_periods=False, **kwargs):
@@ -100,12 +114,16 @@ class Region:
                 (register['weather_lat'] == weather_location[0]) & (
                     register['weather_lon'] == weather_location[1])]
 
-            # select weather of weather location and drop location index
-            weather = self.weather.loc[
-                (self.weather.index.get_level_values('lat') ==
-                 weather_location[0]) & (
-                        self.weather.index.get_level_values('lon') ==
-                        weather_location[1])].droplevel(level=[1, 2])
+            if not hasattr(self.weather, '__call__'):
+                # select weather of weather location and drop location index
+                weather = self.weather.loc[
+                    (self.weather.index.get_level_values('lat') ==
+                     weather_location[0]) & (
+                            self.weather.index.get_level_values('lon') ==
+                            weather_location[1])].droplevel(level=[1, 2])
+            else:
+                weather = self.weather(
+                    weather_location[0], weather_location[1], **kwargs)
 
             # todo: assignment func
 

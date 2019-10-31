@@ -59,9 +59,6 @@ class Region:
         power_curves : optional, falls eigene power_curves vorgegeben werde
             sollen
             .... copy from windpowerlib --> ModelChain parameters
-        open_FRED_pkl : bool
-            If True weather data is loaded from open_FRED pickle files per
-            location.
 
         Returns
         -------

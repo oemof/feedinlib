@@ -39,7 +39,7 @@ class Region:
                     ['lat', 'lon']).size().reset_index().drop([0], axis=1)
             except:
                 raise AttributeError(
-                    "Region object needs attribute `weather_locations` but it"
+                    "Region object needs attribute `weather_locations` but it "
                     "was not provided and cannot be retrieved from `weather` "
                     "attribute.")
 
@@ -183,7 +183,7 @@ class Region:
         return feedin
 
     def pv_feedin_distribution_register(self, distribution_dict,
-                                    technical_parameters, register):
+                                    technical_parameters, register, **kwargs):
         """
         Innerhalb eines Wetterpunktes werden die Anlagen entsprechend des
         distribution_dict gewichtet. Jeder Wetterpunkt wird entsprechend der
@@ -204,41 +204,46 @@ class Region:
             absolute Einspeisung für Region
         """
 
-        #lese Wetterdaten ein und preprocessing todo: hier Openfred-daten einsetzen
-
-        output=pd.Series()
-        register_pv_locations = tools.add_weather_locations_to_register(
-            register=register, weather_coordinates=self.weather)
+        # get weather data location for each PV system
+        register = tools.add_weather_locations_to_register(
+            register=register, weather_coordinates=self.weather_locations)
 
         # calculate installed capacity per weathercell
-        installed_capacity = register_pv_locations.groupby(
+        installed_capacity = register.groupby(
             ['weather_lat', 'weather_lon'])['capacity'].agg('sum').reset_index()
 
+        output = pd.Series()
         for index, row in installed_capacity.iterrows():
+
+            lat = row['weather_lat']
+            lon = row['weather_lon']
+
+            # get weather dataframe for location
+            if not hasattr(self.weather, '__call__'):
+                weather_df = self.weather.loc[
+                    (self.weather['lat'] == lat) &
+                    (self.weather['lon'] == lon)]
+            else:
+                weather_df = self.weather(lat, lon, lib='pvlib', **kwargs)
+
             for key in technical_parameters.keys():
+
                 module = technical_parameters[key]
                 pv_system = Photovoltaic(**module)
-                lat = row['weather_lat']
-                lon = row['weather_lon']
-                weather_df = self.weather.loc[(self.weather['lat'] == lat)
-                                              & (self.weather['lon'] == lon)]
-                # calculate the feedin and set the scaling to 'area' or 'peak_power'
-                feedin = pv_system.feedin(
-                    weather=weather_df[
-                        ['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
-                    location=(lat, lon))
+
+                # calculate the feed-in scaled by peak_power
                 feedin_scaled = pv_system.feedin(
-                    weather=weather_df[
-                        ['wind_speed', 'temp_air', 'dhi', 'dirhi', 'ghi']],
-                    location=(lat, lon), scaling='peak_power', scaling_value=10)
-                # get the distribution for the pv_module
-                dist = distribution_dict[key]
-                local_installed_capacity = row['capacity']
-                # scale the output with the module_distribution and the local installed capacity
+                    weather=weather_df, location=(lat, lon),
+                    scaling='peak_power')
+
+                # scale the output with the module_distribution and the local
+                # installed capacity
                 module_feedin = feedin_scaled.multiply(
-                    dist * local_installed_capacity)
-                #        # add the module output to the output series
-                output = output.add(other=module_feedin, fill_value=0).rename('feedin')
+                    distribution_dict[key] * row['capacity'])
+
+                # add the module output to the output series
+                output = output.add(
+                    other=module_feedin, fill_value=0).rename('feedin')
                 output[output < 0] = 0
 
         return output.fillna(0)

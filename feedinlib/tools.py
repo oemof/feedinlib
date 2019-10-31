@@ -55,9 +55,9 @@ def add_weather_locations_to_register(register, weather_coordinates):
         Contains location of each power plant in columns 'lat' (latitude) and
         'lon' (longitude).
     weather_coordinates : pd.DataFrame
-        Contains columns specified in `column_names` with coordinates of the
-        weather data grid point locations. Columns with other column names are
-        ignored.
+        Contains coordinates of the weather data grid point locations in
+        columns/multi index named 'lat' and 'lon'. Columns with other column
+        names are ignored.
 
     Returns
     -------

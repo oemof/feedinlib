@@ -2,9 +2,11 @@ from itertools import chain, groupby
 
 from pandas import DataFrame as DF, Series, Timedelta as TD, to_datetime as tdt
 from geoalchemy2.elements import WKTElement as WKTE
+from geoalchemy2.shape import to_shape
 from sqlalchemy.orm import sessionmaker
-import sqlalchemy as sqla
 import oedialect
+import pandas as pd
+import sqlalchemy as sqla
 
 from feedinlib import openFRED as ofr
 
@@ -19,6 +21,7 @@ TRANSLATIONS = {
     "pvlib": {
         "wind_speed": [("VABS_AV", 10)],
         "temp_air": [("T", 10)],
+        "pressure": [("P", 10)],
         "dhi": [("ASWDIFD_S", 0)],
         "ghi": [("ASWDIFD_S", 0), ("ASWDIR_S", 0)],
         "dni": [("ASWDIRN_S", 0)],
@@ -133,10 +136,20 @@ class Weather:
         self.session = session
         self.db = db
 
+        if self.session is None and self.db is None:
+            return
+
         variables = {
             "windpowerlib": ["P", "T", "VABS_AV", "Z0"],
-            "pvlib": ["ASWDIFD_S", "ASWDIRN_S", "ASWDIR_S", "T", "VABS_AV"],
-            None: variables
+            "pvlib": [
+                "ASWDIFD_S",
+                "ASWDIRN_S",
+                "ASWDIR_S",
+                "P",
+                "T",
+                "VABS_AV",
+            ],
+            None: variables,
         }[variables if variables in ["pvlib", "windpowerlib"] else None]
 
         self.locations = (
@@ -144,6 +157,7 @@ class Weather:
             if locations is not None
             else {}
         )
+
         self.regions = (
             {WKTE(r, srid=4326): self.within(r) for r in regions}
             if regions is not None
@@ -196,7 +210,12 @@ class Weather:
                 if segment_start >= tdt(start) and segment_stop <= tdt(stop)
             ]
             for k, g in groupby(
-                series, key=lambda p: (p[3], p[1].name, p[0].height,)
+                series,
+                key=lambda p: (
+                    (to_shape(p[3].point).x, to_shape(p[3].point).y),
+                    p[1].name,
+                    p[0].height,
+                ),
             )
         }
 
@@ -208,6 +227,37 @@ class Weather:
             )
         }
         self.variables = {k: {"heights": v} for k, v in self.variables.items()}
+
+    @classmethod
+    def from_df(klass, df):
+        assert isinstance(df.columns, pd.MultiIndex), (
+            "DataFrame's columns aren't a `pandas.indexes.multi.MultiIndex`.\n"
+            "Got `{}` instead."
+        ).format(type(df.columns))
+        assert len(df.columns.levels) == 2, (
+            "DataFrame's columns have more than two levels.\nGot: {}.\n"
+            "Should be exactly two, the first containing variable names and "
+            "the\n"
+            "second containing matching height levels."
+        )
+        variables = {
+            variable: {"heights": [vhp[1] for vhp in variable_height_pairs]}
+            for variable, variable_height_pairs in groupby(
+                df.columns.values,
+                key=lambda variable_height_pair: variable_height_pair[0],
+            )
+        }
+        locations = {xy: None for xy in df.index.values}
+        series = {
+            (xy, *variable_height_pair): df.loc[xy, variable_height_pair]
+            for xy in df.index.values
+            for variable_height_pair in df.columns.values
+        }
+        instance = klass(start=None, stop=None, locations=None)
+        instance.locations = locations
+        instance.series = series
+        instance.variables = variables
+        return instance
 
     def location(self, point=None):
         """ Get the measurement location closest to the given `point`.
@@ -230,17 +280,29 @@ class Weather:
         )
 
     def df(self, location=None, lib=None):
-        xy = (location.x, location.y)
-        point = (
-            self.locations[xy]
-            if xy in self.locations
-            else self.location(location)
-        )
-        if format is None:
+        if lib is None and location is None:
+            columns = sorted(set((n, h) for (xy, n, h) in self.series))
+            index = sorted(xy for xy in set(xy for (xy, n, h) in self.series))
+            data = {
+                (n, h): [self.series[xy, n, h] for xy in index]
+                for (n, h) in columns
+            }
+            return DF(index=pd.MultiIndex.from_tuples(index), data=data)
+
+        if lib is None:
             raise NotImplementedError(
                 "Arbitrary dataframes not supported yet.\n"
                 'Please use one of `lib="pvlib"` or `lib="windpowerlib"`.'
             )
+
+        xy = (location.x, location.y)
+        location = (
+            self.locations[xy]
+            if xy in self.locations
+            else self.location(location)
+        )
+        point = (to_shape(location.point).x, to_shape(location.point).y)
+
         index = (
             [
                 dhi[0] + (dhi[1] - dhi[0]) / 2
@@ -264,7 +326,14 @@ class Weather:
         series = {
             k: sum(to_series(*p, *k[1:]) for p in TRANSLATIONS[lib][k[0]])
             for k in (
-                [("dhi",), ("dni",), ("ghi",), ("temp_air",), ("wind_speed",)]
+                [
+                    ("dhi",),
+                    ("dni",),
+                    ("ghi",),
+                    ("pressure",),
+                    ("temp_air",),
+                    ("wind_speed",),
+                ]
                 if lib == "pvlib"
                 else [
                     (v, h)
@@ -285,6 +354,11 @@ class Weather:
         if lib == "pvlib":
             series[("temp_air",)] = (
                 (series[("temp_air",)] - 273.15)
+                .resample("15min")
+                .interpolate()[series[("dhi",)].index]
+            )
+            series[("pressure",)] = (
+                series[("pressure",)]
                 .resample("15min")
                 .interpolate()[series[("dhi",)].index]
             )

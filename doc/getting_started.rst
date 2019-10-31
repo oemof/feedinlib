@@ -2,14 +2,6 @@
 Getting started
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. important:: The feedinlib as of version 0.0.12 will receive an API breaking overhaul. After that we'll move to 0.1.x and initially focus on developing the following features:
-
-    * a standardized/unified weather object containing standardized names for measured variables and the ability to convert itself to pvlib and windpowerlib compatible dataframes
-    * easy access to at least one freely available weather dataset and
-    * if possible a unified interface to access functionality of technically more specialized libraries like `pvlib <https://github.com/pvlib/pvlib-python>`_ and `windpowerlib <https://github.com/wind-python/windpowerlib>`_.
-
-    If you want to stay informed follow issue `#29 <https://github.com/oemof/feedinlib/issues/29>`_.
-
 The feedinlib is designed to calculate feedin timeseries of photovoltaic and wind power plants. It is part of the oemof group but works as a standalone application.
 
 The feedinlib is ready to use but may have some teething troubles. It definitely has a lot of space for further development, new and improved models and nice features.
@@ -98,26 +90,11 @@ Example
 ~~~~~~~~~~~~~~~~~~~~~~~~
 Download the example file and execute it:
 
-http://vernetzen.uni-flensburg.de/~git/feedinlib_example.py
+
 
 
 Basic Usage
 ===========
-
-You need three steps to get a time series.
-
-Warning
-~~~~~~~
-Be accurate with the units. In the example all units are given without a prefix.
- * pressure [Pa]
- * wind speed [m/s]
- * irradiation [W/m²]
- * peak power [W]
- * installed capacity [W]
- * nominal power [W]
- * area [m²]
-
-You can also use kW instead of W but you have to make sure that all units change in the same way.
 
 1. Initialise your Turbine or Module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

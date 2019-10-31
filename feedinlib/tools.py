@@ -94,3 +94,80 @@ def example_weather_wind(filename): # todo: to be deleted. Is used in region.py
     l1 = [int(_[1]) for _ in weather_df.columns]
     weather_df.columns = [l0, l1]
     return weather_df
+
+
+def get_time_periods_with_equal_capacity(register, start=None, stop=None):
+    r"""
+
+    Parameters:
+    -----------
+    register : pd.DataFrame
+        Contains commissioning dates'(TimeStamp) in column 'commissioning_date' and
+        decommissioning dates in 'decommissioning_date'.
+    start : int or str (or pd.DatetimeIndex?)
+        Specifies the year (int) or date (str) from which the periods of equal
+        capacities are fetched.
+    stop : int or str (or pd.DatetimeIndex?)
+        Specifies the year (int) or date (str) up to which the periods of equal
+        capacities are fetched. If stop is an integer the whole year is
+        fetched.
+
+    Returns
+    -------
+    periods : pd.DataFrame
+        Start dates (column 'start') and end dates (column 'end) of periods
+        with constant capacity.
+
+    todo: check edges of periods and raise errors z.B. time stamp
+    """
+    if isinstance(start, int):
+        start = '{}-01-01 00:00:00'.format(start)
+    if isinstance(stop, int):
+        stop = '{}-12-31 23:59:59'.format(stop)
+    # find dates with capacity change within start and stop
+    dates = register['commissioning_date']
+    dates = dates.append(register['decommissioning_date']).dropna().unique()
+    # add time zone to start and stop
+    if stop.tz is None:
+        stop = stop.tz_localize(dates.tz)
+    if start.tz is None:
+        start = start.tz_localize(dates.tz)
+    dates_filtered = pd.Series(dates[(dates >= start) & (dates <= stop)])
+    # build data frame with periods with constant capacity
+    start_dates = dates_filtered.append(pd.Series(start)).sort_values()
+    start_dates.index = np.arange(0, len(start_dates))
+    stop_dates = dates_filtered.append(pd.Series(stop)).sort_values()
+    stop_dates.index = np.arange(0, len(stop_dates))
+    periods = pd.DataFrame({'start': start_dates,'stop': stop_dates})
+    # to datetime
+    periods['start'] = pd.to_datetime(periods['start'], utc=True)
+    periods['stop'] = pd.to_datetime(periods['stop'], utc=True)
+    return periods
+
+
+def filter_register_by_period(register, start, stop):
+    r"""
+    Filter register by period.
+
+    Parameters:
+    -----------
+    register : pd.DataFrame
+        Contains commissioning dates in column 'commissioning_date' and
+        decommissioning dates in 'decommissioning_date'. Make sure there are
+        no missing values!
+    start : int or str (or pd.DatetimeIndex?)
+        Start of period. Power plants decommissioned before this date are
+        neglected.
+    stop : int or str (or pd.DatetimeIndex?)
+        End of period. Power plants installed from this date are neglected.
+
+    """
+    if not isinstance(register['commissioning_date'].iloc[0], pd.Timestamp):
+        register['commissioning_date'] = pd.to_datetime(
+            register['commissioning_date'], utc=True)
+    if not isinstance(register['decommissioning_date'].iloc[0], pd.Timestamp):
+        register['decommissioning_date'] = pd.to_datetime(
+            register['decommissioning_date'], utc=True)
+    df_1 = register[register['decommissioning_date'] > start]
+    filtered_register = df_1[df_1['commissioning_date'] < stop]
+    return filtered_register

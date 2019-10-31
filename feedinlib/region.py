@@ -120,7 +120,8 @@ class Region:
                             weather_location[1])].droplevel(level=[1, 2])
             else:
                 weather = self.weather(
-                    weather_location[0], weather_location[1], **kwargs)
+                    weather_location[0], weather_location[1],
+                    lib='windpowerlib', **kwargs)
 
             # todo: assignment func
 

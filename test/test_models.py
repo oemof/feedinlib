@@ -1,9 +1,12 @@
 import pytest
+from pandas.util.testing import assert_frame_equal
+import pandas as pd
+from copy import deepcopy
+
 from feedinlib import WindPowerPlant, Photovoltaic
 from feedinlib.models import WindpowerlibTurbine, Pvlib, \
     WindpowerlibTurbineCluster
-import pandas as pd
-import math
+from windpowerlib import WindTurbine as WindpowerlibWindTurbine
 
 
 class Fixtures:
@@ -70,22 +73,18 @@ class Fixtures:
         """
         Returns a test wind farm to use in tests for windpowerlib model.
         """
-        return {'wind_turbine_fleet': [
-            {'wind_turbine': windpowerlib_turbine,
-             'number_of_turbines': 6},
-            {'wind_turbine': windpowerlib_turbine_2,
-             'total_capacity': 3 * 2e6}]
-        }
+        return {'wind_turbine_fleet': pd.DataFrame(
+            {'wind_turbine': [windpowerlib_turbine, windpowerlib_turbine_2],
+             'number_of_turbines': [6, None],
+             'total_capacity': [None, 3 * 2e6]})}
 
     @pytest.fixture
     def windpowerlib_farm_2(self, windpowerlib_turbine):
         """
         Returns a test wind farm to use in tests for windpowerlib model.
         """
-        return {'wind_turbine_fleet': [
-            {'wind_turbine': WindPowerPlant(**windpowerlib_turbine),
-             'number_of_turbines': 1}]
-        }
+        return {'wind_turbine_fleet': [WindpowerlibWindTurbine(
+            **windpowerlib_turbine).to_group(1)]}
 
     @pytest.fixture
     def windpowerlib_farm_3(
@@ -93,12 +92,11 @@ class Fixtures:
         """
         Returns a test wind farm to use in tests for windpowerlib model.
         """
-        return {'wind_turbine_fleet': [
-            {'wind_turbine': WindPowerPlant(**windpowerlib_turbine),
-             'number_of_turbines': 6},
-            {'wind_turbine': WindPowerPlant(**windpowerlib_turbine_2),
-             'number_of_turbines': 3}]
-        }
+
+        return {'wind_turbine_fleet': pd.DataFrame(
+            {'wind_turbine': [WindPowerPlant(**windpowerlib_turbine),
+                              WindPowerPlant(**windpowerlib_turbine_2)],
+             'number_of_turbines': [6, 3]})}
 
     @pytest.fixture
     def windpowerlib_turbine_cluster(self, windpowerlib_farm,
@@ -143,13 +141,11 @@ class TestPowerplants(Fixtures):
         """
         test_module = Photovoltaic(**pvlib_pv_system)
         feedin = test_module.feedin(
-            weather=pvlib_weather,
-            location=(52, 13), scaling='peak_power', scaling_value=10)
-        assert 6.74616 == pytest.approx(feedin.values[0], 1e-5)
+            weather=pvlib_weather, location=(52, 13), scaling='peak_power')
+        assert 0.67462 == pytest.approx(feedin.values[0], 1e-5)
         feedin = test_module.feedin(
-            weather=pvlib_weather,
-            location=(52, 13), scaling='area', scaling_value=10)
-        assert 842.87318 == pytest.approx(feedin.values[0], 1e-5)
+            weather=pvlib_weather, location=(52, 13), scaling='area')
+        assert 84.28732 == pytest.approx(feedin.values[0], 1e-5)
 
     def test_wind_feedin_scaling(
             self, windpowerlib_turbine, windpowerlib_weather):
@@ -158,11 +154,8 @@ class TestPowerplants(Fixtures):
         """
         test_turbine = WindPowerPlant(**windpowerlib_turbine)
         feedin = test_turbine.feedin(weather=windpowerlib_weather,
-                                     scaling='number', scaling_value=2)
-        assert 2 * 833050.32551 == pytest.approx(feedin.values[0], 1e-5)
-        feedin = test_turbine.feedin(weather=windpowerlib_weather,
-                                     scaling='capacity', scaling_value=2e6)
-        assert 2 / 3 * 833050.32551 == pytest.approx(feedin.values[0], 1e-5)
+                                     scaling='capacity')
+        assert 833050.32551 / 3e6 == pytest.approx(feedin.values[0], 1e-5)
 
 
 class TestPvlib(Fixtures):
@@ -173,11 +166,16 @@ class TestPvlib(Fixtures):
     def test_pvlib_feedin(self, pvlib_pv_system, pvlib_weather):
         """
         Test basic feedin calculation using pvlib.
+        It is also tested if dictionary with PV system parameters remains the
+        same to make sure it could be further used to calculate feed-in with
+        a different model.
         """
+        test_copy = deepcopy(pvlib_pv_system)
         test_module = Photovoltaic(**pvlib_pv_system)
         feedin = test_module.feedin(weather=pvlib_weather,
                                     location=(52, 13))
         assert 143.28844 == pytest.approx(feedin.values[0], 1e-5)
+        assert test_copy == pvlib_pv_system
 
     def test_pvlib_feedin_with_surface_type(
             self, pvlib_pv_system, pvlib_weather):
@@ -205,6 +203,21 @@ class TestPvlib(Fixtures):
         # one string
         assert 250.0 == pytest.approx(feedin.values[0], 1e-5)
 
+    def test_pvlib_feedin_with_optional_model_parameters(
+            self, pvlib_pv_system, pvlib_weather):
+        """
+        Test basic feedin calculation using pvlib and providing an optional
+        PV system parameter.
+        """
+        pvlib_pv_system['strings_per_inverter'] = 2
+        test_module = Photovoltaic(**pvlib_pv_system)
+        feedin = test_module.feedin(weather=pvlib_weather, location=(52, 13),
+                                    mode='dc')
+        # power output is in this case limited by the inverter, which is why
+        # power output with 2 strings is not twice as high as power output of
+        # one string
+        assert 298.27921 == pytest.approx(feedin.values[0], 1e-5)
+
     def test_pvlib_missing_powerplant_parameter(self, pvlib_pv_system):
         """
         Test if initialization of powerplant fails in case of missing power
@@ -225,10 +238,15 @@ class TestWindpowerlibSingleTurbine(Fixtures):
             self, windpowerlib_turbine, windpowerlib_weather):
         """
         Test basic feedin calculation using windpowerlib single turbine.
+        It is also tested if dictionary with turbine parameters remains the
+        same to make sure it could be further used to calculate feed-in with
+        a different model.
         """
+        test_copy = deepcopy(windpowerlib_turbine)
         test_turbine = WindPowerPlant(**windpowerlib_turbine)
         feedin = test_turbine.feedin(weather=windpowerlib_weather)
         assert 833050.32551 == pytest.approx(feedin.values[0], 1e-5)
+        assert test_copy == windpowerlib_turbine
 
     def test_windpowerlib_single_turbine_feedin_with_optional_pp_parameter(
             self, windpowerlib_turbine, windpowerlib_weather):
@@ -266,12 +284,18 @@ class TestWindpowerlibCluster(Fixtures):
         Test basic feedin calculation using windpowerlib wind turbine cluster
         modelchain for a wind farm where wind turbine data is provided in a
         dictionary.
+        It is also tested if dataframe with wind turbine fleet remains the
+        same to make sure it could be further used to calculate feed-in with
+        a different model.
         """
+        test_copy = deepcopy(windpowerlib_farm)
         farm = WindPowerPlant(**windpowerlib_farm,
                               model=WindpowerlibTurbineCluster)
         feedin = farm.feedin(weather=windpowerlib_weather,
                              wake_losses_model=None)
         assert 7658841.386277 == pytest.approx(feedin.values[0], 1e-5)
+        assert_frame_equal(test_copy['wind_turbine_fleet'],
+                           windpowerlib_farm['wind_turbine_fleet'])
 
     def test_windpowerlib_windfarm_feedin_2(
             self, windpowerlib_farm_3, windpowerlib_weather):
@@ -279,20 +303,24 @@ class TestWindpowerlibCluster(Fixtures):
         Test basic feedin calculation using windpowerlib wind turbine cluster
         modelchain for a wind farm where wind turbines are provided as
         feedinlib WindPowerPlant objects.
+        It is also tested if dataframe with wind turbine fleet remains the
+        same to make sure it could be further used to calculate feed-in with
+        a different model.
         """
+        test_copy = deepcopy(windpowerlib_farm_3)
         farm = WindPowerPlant(**windpowerlib_farm_3,
                               model=WindpowerlibTurbineCluster)
         feedin = farm.feedin(weather=windpowerlib_weather,
                              wake_losses_model=None)
         assert 7658841.386277 == pytest.approx(feedin.values[0], 1e-5)
-
+        assert_frame_equal(test_copy['wind_turbine_fleet'],
+                           windpowerlib_farm_3['wind_turbine_fleet'])
 
     def test_windpowerlib_turbine_cluster_feedin(
             self, windpowerlib_turbine_cluster, windpowerlib_weather):
         """
         Test basic feedin calculation using windpowerlib wind turbine cluster
         modelchain for a wind turbine cluster.
-
         """
         test_cluster = WindPowerPlant(**windpowerlib_turbine_cluster,
                                       model=WindpowerlibTurbineCluster)
@@ -316,7 +344,8 @@ class TestWindpowerlibCluster(Fixtures):
         assert 6892957.24764 == pytest.approx(feedin.values[0], 1e-5)
 
     def test_windpowerlib_turbine_equals_windfarm(
-            self, windpowerlib_turbine, windpowerlib_weather):
+            self, windpowerlib_turbine, windpowerlib_farm_2,
+            windpowerlib_weather):
         """
         Test if wind turbine feedin calculation yields the same as wind farm
         calculation with one turbine.
@@ -325,11 +354,8 @@ class TestWindpowerlibCluster(Fixtures):
         test_turbine = WindPowerPlant(**windpowerlib_turbine)
         feedin = test_turbine.feedin(weather=windpowerlib_weather)
         # farm feedin
-        test_farm = {'wind_turbine_fleet': [
-            {'wind_turbine': windpowerlib_turbine,
-             'number_of_turbines': 1}]}
         test_farm = WindPowerPlant(
-            **test_farm, model=WindpowerlibTurbineCluster)
+            **windpowerlib_farm_2, model=WindpowerlibTurbineCluster)
         feedin_farm = test_farm.feedin(weather=windpowerlib_weather,
                                        wake_losses_model=None)
         assert feedin.values[0] == pytest.approx(feedin_farm.values[0], 1e-5)

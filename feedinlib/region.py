@@ -142,6 +142,8 @@ class Region:
                             'wind_turbine': [turbines_region[turbine_type]],
                         'total_capacity': [capacity]})
                     wind_turbine_fleet = pd.concat([wind_turbine_fleet, df])
+                    wind_turbine_fleet.index = np.arange(0, len(
+                        wind_turbine_fleet))
                     wind_farm_data = {'name': 'todo',
                                       'wind_turbine_fleet': wind_turbine_fleet}
 

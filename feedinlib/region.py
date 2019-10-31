@@ -13,14 +13,21 @@ class Region:
     """
     can also be multi-region
     """
-    def __init__(self, geom, weather):
+    def __init__(self, geom, weather, **kwargs):
         """
 
         :param geom: polygon
         :param weather: Weather Objekt
+
+        weather_locations : dataframe
+            dataframe with 'lat' and 'lon' in index or as columns
+
         """
         self.geom = geom
         self.weather = weather
+        self.weather_locations = kwargs.get('weather_locations', None)
+        if self.weather_locations is None:
+            self.weather_locations = self.weather.groupby(['lat', 'lon'])
 
     def wind_feedin(self, register, assignment_func=None, snapshots=None,
                     **kwargs):
@@ -56,7 +63,7 @@ class Region:
 
         """
         register = tools.add_weather_locations_to_register(
-            register=register, weather_coordinates=self.weather)
+            register=register, weather_coordinates=self.weather_locations)
         # todo: use function for retrieving all possible weather locations as
         #  df[['lat', 'lon']] instead
         weather_locations = register[['weather_lat', 'weather_lon']].groupby(

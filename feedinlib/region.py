@@ -182,8 +182,9 @@ class Region:
         feedin = region_feedin_df.sum(axis=1).rename('feedin')
         return feedin
 
-    def pv_feedin_distribution_register(self, distribution_dict,
-                                    technical_parameters, register, **kwargs):
+    def pv_feedin_distribution_register(
+            self, distribution_dict, technical_parameters, register,
+            capacity_periods=False, **kwargs):
         """
         Innerhalb eines Wetterpunktes werden die Anlagen entsprechend des
         distribution_dict gewichtet. Jeder Wetterpunkt wird entsprechend der
@@ -200,6 +201,10 @@ class Region:
             benötigt)
         register : dataframe mit Standort und installierter Leistung für jede
             Anlage
+        capacity_periods : bool
+            Zeitreihe wird in "periods" mit gleicher installierter Leistung
+            getrennt berechnet und am Ende zusammengefügt.
+
         :return:
             absolute Einspeisung für Region
         """
@@ -213,6 +218,7 @@ class Region:
             ['weather_lat', 'weather_lon'])['capacity'].agg('sum').reset_index()
 
         output = pd.Series()
+        # iterate over weather locations
         for index, row in installed_capacity.iterrows():
 
             lat = row['weather_lat']
@@ -229,6 +235,29 @@ class Region:
                 col_list = [col[0] for col in weather_df.columns]
                 weather_df.columns = col_list
 
+            # form periods for feed-in time series calculation
+            if capacity_periods:
+                # select power plants belonging to weather location
+                power_plants = register.loc[
+                    (register['weather_lat'] == lat) &
+                    (register['weather_lon'] == lon)]
+                # periods with constant installed capacity
+                periods = tools.get_time_periods_with_equal_capacity(
+                    power_plants, start=weather_df.index[0],
+                    stop=weather_df.index[-1])
+                capacity = pd.Series()
+                for start, stop in zip(periods['start'], periods['stop']):
+                    filtered_power_plants = tools.filter_register_by_period(
+                        register=power_plants, start=start, stop=stop)
+                    capacity = capacity.append(
+                        pd.Series(filtered_power_plants.capacity.sum(),
+                                  index=weather_df.loc[start:stop].index))
+                # drop duplicated time steps that come from overlapping of
+                # `stop` in period and `start` in following period
+                capacity = capacity[capacity.duplicated(keep='last')]
+            else:
+                capacity = row['capacity']
+
             for key in technical_parameters.keys():
 
                 module = technical_parameters[key]
@@ -242,7 +271,7 @@ class Region:
                 # scale the output with the module_distribution and the local
                 # installed capacity
                 module_feedin = feedin_scaled.multiply(
-                    distribution_dict[key] * row['capacity'])
+                    distribution_dict[key] * capacity)
 
                 # add the module output to the output series
                 output = output.add(

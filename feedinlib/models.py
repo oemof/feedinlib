@@ -924,7 +924,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
                     # initializing windpowerlib.WindTurbine to check required
                     # power plant parameters
                     wind_turbine = WindpowerlibTurbine()
-                    wind_turbine.power_plant_requires_check(
+                    wind_turbine._power_plant_requires_check(
                         turbine_data.keys())
                     wind_turbine_fleet.loc[ix, 'wind_turbine'] = \
                         wind_turbine.instantiate_turbine(**turbine_data)

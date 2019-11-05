@@ -287,6 +287,64 @@ class Weather:
             .all()
         )
 
+    def to_csv(self, path):
+        df = self.df()
+        df = df.applymap(
+            # Unzip, i.e. convert a list of tuples to a tuple of lists, the
+            # list of triples in each DataFrame cell and convert the result to
+            # a JSON string. Unzipping is necessary because the pandas'
+            # `to_json` wouldn't format the `Timestamps` correctly otherwise.
+            lambda s: pd.Series(pd.Series(xs) for xs in zip(*s)).to_json(
+                date_format="iso"
+            )
+        )
+        return df.to_csv(path, quotechar="'")
+
+    @classmethod
+    def from_csv(cls, path_or_buffer):
+        df = pd.read_csv(
+            path_or_buffer,
+            # This is necessary because the automatic conversion isn't precise
+            # enough.
+            converters={0: float, 1: float},
+            header=[0, 1],
+            index_col=[0, 1],
+            quotechar="'",
+        )
+        df.columns.set_levels(
+            [df.columns.levels[0], [float(l) for l in df.columns.levels[1]]],
+            inplace=True,
+        )
+        df = df.applymap(lambda s: pd.read_json(s, typ="series"))
+        # Reading the JSON string back in yields a weird format. Instead of a
+        # nested `Series` we get a `Series` containing three dictionaries. The
+        # `dict`s "emulate" a `Series` since their keys are string
+        # representations of integers and their values are the actual values
+        # that would be stored at the corresponding position in a `Series`. So
+        # we have to manually reformat the data we get back. Since there's no
+        # point in doing two conversions, we don't convert it back to nested
+        # `Series`, but immediately to `list`s of `(start, stop, value)`
+        # triples.
+        df = df.applymap(
+            lambda s: list(
+                zip(
+                    *[
+                        [
+                            # The `Timestamp`s in the inner `Series`/`dict`s
+                            # where also not converted, so we have to do this
+                            # manually, too.
+                            pd.to_datetime(v, utc=True) if n in [0, 1] else v
+                            for k, v in sorted(
+                                s[n].items(), key=lambda kv: int(kv[0])
+                            )
+                        ]
+                        for n in s.index
+                    ]
+                )
+            )
+        )
+        return cls.from_df(df)
+
     def df(self, location=None, lib=None):
         if lib is None and location is None:
             columns = sorted(set((n, h) for (xy, n, h) in self.series))

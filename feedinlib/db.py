@@ -324,7 +324,7 @@ class Weather:
             return Series([p[2] for p in s], index=[p[0] for p in s])
 
         series = {
-            k: sum(to_series(*p, *k[1:]) for p in TRANSLATIONS[lib][k[0]])
+            k[0]: sum(to_series(*p, *k[1:]) for p in TRANSLATIONS[lib][k[0]])
             for k in (
                 [
                     ("dhi",),
@@ -352,18 +352,18 @@ class Weather:
             )
         }
         if lib == "pvlib":
-            series[("temp_air",)] = (
-                (series[("temp_air",)] - 273.15)
+            series["temp_air"] = (
+                (series["temp_air"] - 273.15)
                 .resample("15min")
-                .interpolate()[series[("dhi",)].index]
+                .interpolate()[series["dhi"].index]
             )
-            series[("pressure",)] = (
-                series[("pressure",)]
+            series["pressure"] = (
+                series["pressure"]
                 .resample("15min")
-                .interpolate()[series[("dhi",)].index]
+                .interpolate()[series["dhi"].index]
             )
-            ws = series[("wind_speed",)]
-            for k in series[("wind_speed",)].keys():
+            ws = series["wind_speed"]
+            for k in series["wind_speed"].keys():
                 ws[k + TD("15min")] = ws[k]
             ws.sort_index(inplace=True)
         if lib == "windpowerlib":

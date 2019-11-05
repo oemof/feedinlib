@@ -202,7 +202,15 @@ class Weather:
 
         self.series = {
             k: [
-                (segment_start, segment_stop, value)
+                (
+                    segment_start.tz_localize("UTC")
+                    if segment_start.tz is None
+                    else segment_start,
+                    segment_stop.tz_localize("UTC")
+                    if segment_stop.tz is None
+                    else segment_stop,
+                    value,
+                )
                 for (series, variable, timespan, location) in g
                 for (segment, value) in zip(timespan.segments, series.values)
                 for segment_start in [tdt(segment[0])]
@@ -377,6 +385,4 @@ class Weather:
                 }
             )
             series.update({k: series[k][index] for k in series})
-        df = DF(index=index, data={k: series[k].values for k in series})
-        df = df.tz_localize("UTC")
-        return df
+        return DF(index=index, data={k: series[k].values for k in series})

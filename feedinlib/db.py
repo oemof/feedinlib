@@ -378,5 +378,5 @@ class Weather:
             )
             series.update({k: series[k][index] for k in series})
         df = DF(index=index, data={k: series[k].values for k in series})
-        df = df.tz_localize('UTC')
+        df = df.tz_localize("UTC")
         return df

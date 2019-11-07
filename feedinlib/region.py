@@ -155,7 +155,7 @@ class Region:
                     register=power_plants, start=start, stop=stop)
 
                 # prepare power plants for windpowerlib TurbineClusterModelChain # todo make generic - other models must be usable
-                turbine_types_location = power_plants.groupby(
+                turbine_types_location = filtered_power_plants.groupby(
                     'id').size().reset_index().drop(0, axis=1)
                 wind_turbine_fleet = pd.DataFrame()
                 for turbine_type in turbine_types_location['id']:

@@ -1,13 +1,27 @@
+.. contents::
+    :depth: 1
+    :local:
+    :backlinks: top
+
+Introduction
+============
+
 The feedinlib is designed to calculate feed-in time series of photovoltaic and wind power plants.
 It is part of the oemof group but works as a standalone application.
 
 The feedinlib is ready to use but it definitely has a lot of space for
 further development, new and improved models and nice features.
 
-.. contents::
-    :depth: 1
-    :local:
-    :backlinks: top
+
+
+* so far the feedinlib provides interfaces to download open_FRED and ERA5 weather data
+* open_FRED data is local reanalysis data for Germany (and bounding box). further information can be found at...
+* ERA5 provides global reanalysis data. further information can be found at...
+* the weather data can be used to calculate the electrical output of pv or wind power plants.
+* at the moment it provides interfaces to the pvlib and the windpowerlib
+* Basic parameters for many manufacturers are provided with the library so that you can start directly using one of these parameter sets.
+* for further information see function get_power_plant_data
+* the feedinlib is designed in such a way, that the application of different feed-in models with different weather data sets can be done easily
 
 
 Documentation
@@ -19,17 +33,7 @@ Use the `project site <https://readthedocs.org/projects/feedinlib/>`_ of readthe
 Go to the `download page <https://readthedocs.org/projects/feedinlib/downloads/>`_ to download different versions and formats (pdf, html, epub) of the documentation.
 
 
-Introduction
-============
 
-* so far the feedinlib provides interfaces to download open_FRED and ERA5 weather data
-* open_FRED data is local reanalysis data for Germany (and bounding box). further information can be found at...
-* ERA5 provides global reanalysis data. further information can be found at...
-* the weather data can be used to calculate the electrical output of pv or wind power plants.
-* at the moment it provides interfaces to the pvlib and the windpowerlib
-* Basic parameters for many manufacturers are provided with the library so that you can start directly using one of these parameter sets.
-* for further information see function get_power_plant_data
-* the feedinlib is designed in such a way, that the application of different feed-in models with different weather data sets can be done easily
 
 Installation
 ============

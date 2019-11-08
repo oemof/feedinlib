@@ -18,6 +18,7 @@ setup(name='feedinlib',
       long_description_content_type='text/x-rst',
       zip_safe=False,
       install_requires=['pandas',
+                        'scipy',
                         'pvlib >= 0.6.0',
                         'windpowerlib >= 0.2.0'],
       extras_require={

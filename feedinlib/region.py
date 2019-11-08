@@ -1,8 +1,6 @@
-import xarray as xr # todo add to setup
 import numpy as np
 import pandas as pd
 
-import os
 from feedinlib import tools
 from feedinlib import Photovoltaic, WindPowerPlant
 from feedinlib.models import WindpowerlibTurbine

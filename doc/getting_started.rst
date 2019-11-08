@@ -57,6 +57,7 @@ The basic usage of the feedinlib is shown in the :ref:`examples_section_label` s
 The examples are provided as jupyter notebooks that you can download here:
 
  * :download:`open_FRED weather data example <../example/load_open_fred_weather_data.ipynb>`
+ * :download:`Pvlib model example <../example/run_pvlib_model.ipynb>`
 
 Furthermore, you have to install the feedinlib with additional packages needed to run the notebooks, e.g. `jupyter`.
 

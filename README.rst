@@ -1,18 +1,11 @@
-.. contents::
-    :depth: 1
-    :local:
-    :backlinks: top
-
-Introduction
-============
-
 The feedinlib is designed to calculate feed-in time series of photovoltaic and wind power plants.
 It is part of the oemof group but works as a standalone application.
 
 The feedinlib is ready to use but it definitely has a lot of space for
 further development, new and improved models and nice features.
 
-
+Introduction
+============
 
 * so far the feedinlib provides interfaces to download open_FRED and ERA5 weather data
 * open_FRED data is local reanalysis data for Germany (and bounding box). further information can be found at...

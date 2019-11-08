@@ -8,11 +8,6 @@ It is part of the oemof group but works as a standalone application.
 The feedinlib is ready to use but it definitely has a lot of space for
 further development, new and improved models and nice features.
 
-.. contents:: `Table of contents`
-    :depth: 1
-    :local:
-    :backlinks: top
-
 Introduction
 ============
 
@@ -28,13 +23,15 @@ Introduction
 Installation
 ============
 
-If you have a working Python 3 environment, use pypi to install the latest feedinlib version:
+If you have a working Python 3 environment, use pip to install the latest feedinlib version:
 
 ::
 
     pip install feedinlib
 
-The feedinlib is designed for Python 3 and tested on Python >= 3.5. We highly recommend to use virtual environments.
+The feedinlib is designed for Python 3 and tested on Python >= 3.5.
+
+We highly recommend to use virtual environments.
 Please see the `installation page <http://oemof.readthedocs.io/en/stable/installation_and_setup.html>`_ of the oemof documentation for complete instructions on how to install python and a virtual environment on your operating system.
 
 Optional Packages

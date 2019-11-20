@@ -8,9 +8,9 @@ Contents:
    :glob:
    
    getting_started
+   examples
    whats_new
-   model_description
-   api/*
+   api
 
 
 Indices and tables

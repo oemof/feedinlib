@@ -2,233 +2,119 @@
 Getting started
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. important:: The feedinlib as of version 0.0.12 will receive an API breaking overhaul. After that we'll move to 0.1.x and initially focus on developing the following features:
+The feedinlib is designed to calculate feed-in time series of photovoltaic and wind power plants.
+It is part of the oemof group but works as a standalone application.
 
-    * a standardized/unified weather object containing standardized names for measured variables and the ability to convert itself to pvlib and windpowerlib compatible dataframes
-    * easy access to at least one freely available weather dataset and
-    * if possible a unified interface to access functionality of technically more specialized libraries like `pvlib <https://github.com/pvlib/pvlib-python>`_ and `windpowerlib <https://github.com/wind-python/windpowerlib>`_.
-
-    If you want to stay informed follow issue `#29 <https://github.com/oemof/feedinlib/issues/29>`_.
-
-The feedinlib is designed to calculate feedin timeseries of photovoltaic and wind power plants. It is part of the oemof group but works as a standalone application.
-
-The feedinlib is ready to use but may have some teething troubles. It definitely has a lot of space for further development, new and improved models and nice features.
-
-.. contents:: `Table of contents`
-    :depth: 1
-    :local:
-    :backlinks: top
+The feedinlib is ready to use but it definitely has a lot of space for
+further development, new and improved models and nice features.
 
 Introduction
 ============
 
-Having weather data sets you can use the feedinlib to calculate the electrical output of common pv or wind power plants. Basic parameters for many manufacturers are provided with the library so that you can start directly using one of these parameter sets. Of course you are free to add your own parameter set.
-
-The parameter sets for pv modules are provided by Sandia Laboratories and can be found here:
-
- * https://sam.nrel.gov/sites/default/files/sam-library-sandia-modules-2015-6-30.csv
- * https://sam.nrel.gov/sites/default/files/sam-library-cec-modules-2015-6-30.csv
-
-The cp-values for the wind turbines are provided by the Reiner Lemoine Institut and can be found here:
-
- * http://vernetzen.uni-flensburg.de/~git/cp_values.csv
- 
-If just want to use the feedinlib to calculate pv systems, you should think of using the `pvlib <https://github.com/pvlib/pvlib-python>`_ directly. At the moment the pv part of the feedinlib is just a high level (easy to use) interface for same pvlib functionalities.
-
-Actual Release
-~~~~~~~~~~~~~~
-
-Download/Install: https://pypi.python.org/pypi/feedinlib/
-
-Documentation: http://pythonhosted.org/feedinlib/
-
-Developing Version
-~~~~~~~~~~~~~~~~~~
-
-Clone/Fork: https://github.com/oemof/feedinlib
-
-Documentation: http://feedinlib.readthedocs.org/en/latest/
-
-As the feedinlib is part of the oemof developer group we use the same developer rules:
-http://oemof.readthedocs.io/en/stable/developer_notes.html
+* so far the feedinlib provides interfaces to download open_FRED and ERA5 weather data
+* open_FRED data is local reanalysis data for Germany (and bounding box). further information can be found at...
+* ERA5 provides global reanalysis data. further information can be found at...
+* the weather data can be used to calculate the electrical output of pv or wind power plants.
+* at the moment it provides interfaces to the pvlib and the windpowerlib
+* Basic parameters for many manufacturers are provided with the library so that you can start directly using one of these parameter sets.
+* for further information see function get_power_plant_data
+* the feedinlib is designed in such a way, that the application of different feed-in models with different weather data sets can be done easily
 
 Installation
 ============
 
-Using the Feedinlib
-~~~~~~~~~~~~~~~~~~~
-
-So far, the feedinlib is mainly tested on python 3.4 but seems to work down
-to 2.7.
-
-Install the feedinlib using pip3 (or pip2).
+If you have a working Python 3 environment, use pip to install the latest feedinlib version:
 
 ::
 
-    sudo pip3 install feedinlib
+    pip install feedinlib
 
-Developing the Feedinlib
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The feedinlib is designed for Python 3 and tested on Python >= 3.5.
 
-If you have push rights clone this repository to your local system.
+We highly recommend to use virtual environments.
+Please see the `installation page <http://oemof.readthedocs.io/en/stable/installation_and_setup.html>`_ of the oemof documentation for complete instructions on how to install python and a virtual environment on your operating system.
 
-::
-
-    git clone git@github.com:oemof/feedinlib.git
-    
-If you do not have push rights, fork the project at github, clone your personal fork to your system and send a pull request.
-
-If the project is cloned you can install it using pip3 (or pip2) with the -e flag. Using this installation, every change is applied directly.
-
-::
-
-    sudo pip3 install -e <path/to/the/feedinlib/root/dir>
-    
-  
 Optional Packages
 ~~~~~~~~~~~~~~~~~
 
-To see the plots of the example file one should install the matplotlib package.
+can be installed using pip:
 
-Matplotlib can be installed using pip but some Linux users reported that it is easier and more stable to use the pre-built packages of your Linux distribution.
+::
 
-http://matplotlib.org/users/installing.html
-
-Example
-~~~~~~~~~~~~~~~~~~~~~~~~
-Download the example file and execute it:
-
-http://vernetzen.uni-flensburg.de/~git/feedinlib_example.py
+    pip install ..
 
 
-Basic Usage
-===========
-
-You need three steps to get a time series.
-
-Warning
-~~~~~~~
-Be accurate with the units. In the example all units are given without a prefix.
- * pressure [Pa]
- * wind speed [m/s]
- * irradiation [W/m²]
- * peak power [W]
- * installed capacity [W]
- * nominal power [W]
- * area [m²]
-
-You can also use kW instead of W but you have to make sure that all units change in the same way.
-
-1. Initialise your Turbine or Module
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To initialise your specific module or turbine you need a dictionary that contains your basic parameters. 
-
-The most import parameter is the name of the module or turbine to get technical parameters from the provided libraries.
-
-The other parameters are related to location of the plant like orientation of the pv module or the hub height of the wind turbine. The existing models need the following parameters:
-
-Wind Model
-++++++++++
-
- * h_hub: height of the hub in meters
- * d_rotor: diameter of the rotor in meters
- * wind_conv_type: Name of the wind converter according to the list in the csv file
-
-PV Model
-++++++++
-
- * azimuth: Azimuth angle of the pv module in degree
- * tilt: Tilt angle of the pv module in degree
- * module_name: According to the sandia module library (see the link above)
- * albedo: Albedo value
-
-.. code:: python
-
-    your_wind_turbine = plants.WindPowerPlant(model=SimpleWindModel, **your_parameter_set)
-    your_pv_module = plants.Photovoltaic(model=PvlibBased, **your_parameter_set)
-    
-If you do not pass a model the default model is used. So far we only have one model, so the follwing lines will have the same effect than the lines above.
 
 
- .. code:: python
 
-    your_wind_turbine = plants.WindPowerPlant(**your_parameter_set)
-    your_pv_module = plants.Photovoltaic(**your_parameter_set)
-       
-2. Initialise a weather object
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Examples and basic usage
+=========================
 
-A weather object contains one weather data set and all its necessary meta data. You can define it passing all the information from your weather data source to the FeedinWeatehr class.
+The basic usage of the feedinlib is shown in the :ref:`examples_section_label` section.
+The examples are provided as jupyter notebooks that you can download here:
 
-.. code:: python
+ * :download:`open_FRED weather data example <../example/load_open_fred_weather_data.ipynb>`
+ * :download:`Pvlib model example <../example/run_pvlib_model.ipynb>`
 
-    my_weather_a = weather.FeedinWeather(
-        data=my_weather_pandas_DataFrame,
-        timezone='Continent/City',  # e.g. Europe/Berlin or America/Caracas
-        latitude=x,  # float 
-        longitude=y,  # float
-        data_heigth=coastDat2  # Dictionary, for the data heights (see below).
-        )
+Furthermore, you have to install the feedinlib with additional packages needed to run the notebooks, e.g. `jupyter`.
 
-Depending on the model you do not need all of the optional parameters. For example the standard wind model does not need the longitude. If the DataFrame has a full time index with a time zone you don't have to set the time zone.
+::
 
-For wind and pv calculations the DataFrame needs to have radiation, temperature and wind speed for the pv model and pressure, wind speed, temperature and the roughness length for the wind model.
+    pip install feedinlib[examples]
 
-The data_height dictionary should be of the following form.
+To launch jupyter notebook type ``jupyter notebook`` in the terminal.
+This will open a browser window. Navigate to the directory containing the notebook(s) to open it. See the jupyter
+notebook quick start guide for more information on
+`how to run <http://jupyter-notebook-beginner-guide.readthedocs.io/en/latest/execute.html>`_ jupyter notebooks.
 
-.. code:: python  
-     
-    coastDat2 = {
-        'dhi': 0,
-        'dirhi': 0,
-        'pressure': 0,
-        'temp_air': 2,
-        'v_wind': 10,
-        'Z0': 0}
-        
-If your DataFrame has different column names you have to rename them. This can easily be done by using a conversion dictionary:
+Contributing
+==============
 
-.. code:: python
+We are warmly welcoming all who want to contribute to the feedinlib. If you are interested
+do not hesitate to contact us via github.
 
-    name_dc = {
-        'your diffuse horizontal radiation': 'dhi',
-        'your direct horizontal radiation': 'dirhi',
-        'your pressure data set': 'pressure',
-        'your ambient temperature': 'temp_air',
-        'your wind speed': 'v_wind',
-        'your roughness length': 'z0'}
-    
-    your_weather_DataFrame.rename(columns=name_dc)
-    
-3. Get your Feedin Time Series
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+As the feedinlib started with contributors from the
+`oemof developer group <https://github.com/orgs/oemof/teams/oemof-developer-group>`_
+we use the same
+`developer rules <http://oemof.readthedocs.io/en/stable/developing_oemof.html>`_.
 
-To get your time series you have to pass the weather object to your model. If you pass only the weather object, you get the electrical output of the turbine or module specified by your parameters. You can use optional parameters to calculated more than one module or turbine.
- 
-The possible parameters are *number* and *installed capacity* for wind turbines and *number*, *peak_power* and *area* for pv modules.
- 
-.. code:: python
- 
-    feedin_series_pv1 = your_pv_module.feedin(weather=my_weather_df)  # One Module
-    feedin_series_wp1 = your_wind_turbine.feedin(data=my_weather_df, number=5)
-    
-You always should know the nominal power, area or peak_power of your plant. An area of two square meters (area=2) of a specific module that has an area of 1.5 sqm per module might not be realistic. 
+**How to create a pull request:**
 
-4. Using your own model
-~~~~~~~~~~~~~~~~~~~~~~~
+* `Fork <https://help.github.com/articles/fork-a-repo>`_ the feedinlib repository to your own github account.
+* Create a local clone of your fork and  install the cloned repository using pip with -e option:
 
-If you use your own model it is safer to pass a list of the required parameters but you don't have to:
+.. code:: bash
 
-.. code:: python
+  pip install -e /path/to/the/repository
 
-    own_wind_model = models.YourWindModelClass(required=[parameter1, parameter2])
-    own_pv_model = models.YourPVModelClass()
-    
-    your_wind_turbine = plants.WindPowerPlant(model=own_wind_model, **your_parameter_set)
-    your_pv_module = plants.Photovoltaic(model=own_pv_model, **your_parameter_set)
-    
-    feedin_series_wp1 = your_wind_turbine.feedin(data=my_weather_df, number=5)
-    feedin_series_pv1 = your_pv_module.feedin(data=my_weather_df)  # One Module
-   
+* Change, add or remove code.
+* Commit your changes.
+* Create a `pull request <https://guides.github.com/activities/hello-world/>`_ and describe what you will do and why.
+* Wait for approval.
 
+**Generally the following steps are required when changing, adding or removing code:**
+
+* Add new tests if you have written new functions/classes.
+* Add/change the documentation (new feature, API changes ...).
+* Add a whatsnew entry and your name to Contributors.
+* Check if all tests still work by simply executing pytest in your feedinlib directory:
+
+.. role:: bash(code)
+   :language: bash
+
+.. code:: bash
+
+    pytest
+
+Citing the feedinlib
+========================
+
+We use the zenodo project to get a DOI for each version.
+`Search zenodo for the right citation of your feedinlib version <https://zenodo.org/record/2554102>`_.
+
+License
+============
+
+MIT License
+
+Copyright (C) 2017 oemof developer group

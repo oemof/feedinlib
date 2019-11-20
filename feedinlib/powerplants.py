@@ -322,7 +322,7 @@ class WindPowerPlant(Base):
         """
         Calculates wind power plant feed-in in Watt.
 
-        The feed-in can further be scaled by the total installed capacity of
+        The feed-in can further be scaled by the nominal power of
         the wind power plant using the `scaling` parameter.
 
         This method delegates the actual computation to the model's
@@ -339,7 +339,7 @@ class WindPowerPlant(Base):
             weather data parameters and format.
         scaling : str
             Specifies what feed-in is scaled by. Possible option is
-            'capacity'. Defaults to None in which case feed-in is
+            'nominal_power'. Defaults to None in which case feed-in is
             not scaled.
         **kwargs
             Keyword arguments for respective model's feed-in calculation.
@@ -357,7 +357,7 @@ class WindPowerPlant(Base):
         # scale feed-in
         if scaling:
             feedin_scaling = {
-                'capacity': lambda feedin: feedin / float(
+                'nominal_power': lambda feedin: feedin / float(
                     self.nominal_power)}
             return feedin_scaling[scaling](feedin)
         return feedin

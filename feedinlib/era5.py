@@ -38,12 +38,12 @@ def get_era5_data_from_datespan_and_position(
 
     """
     if variable == 'pvlib':
-        variable = ['fdir', 'ssrd', 't2m', '10u', '10v']
+        variable = ['fdir', 'ssrd', '2t', '10u', '10v']
     elif variable == 'windpowerlib':
-        variable = ['100u', '100v', '10u', '10v', 't2m', 'fsr', 'sp']
+        variable = ['100u', '100v', '10u', '10v', '2t', 'fsr', 'sp']
     elif variable == 'feedinlib':
-        variable = ['100u', '100v', '10u', '10v', 't2m', 'fsr', 'sp',
-                    'fdir', 'ssrd', 't2m', '10u', '10v']
+        variable = ['100u', '100v', 'fsr', 'sp', 'fdir', 'ssrd', '2t',
+                    '10u', '10v']
     return get_cds_data_from_datespan_and_position(**locals())
 
 

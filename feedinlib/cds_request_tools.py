@@ -256,10 +256,6 @@ def get_cds_data_from_datespan_and_position(
         latitude=None,
         longitude=None,
         grid=None,
-        dataset_name='reanalysis-era5-single-levels',
-        target_file=None,
-        chunks=None,
-        cds_client=None,
         **cds_params
 ):
     """
@@ -306,11 +302,9 @@ def get_cds_data_from_datespan_and_position(
 
     """
 
-    kwargs = locals()
-
     # Get the formatted year, month and day parameter from the datespan
     request_dates = _format_cds_request_datespan(start_date, end_date)
-    kwargs.update(request_dates)
+    cds_params.update(request_dates)
 
     # Get the area corresponding to a position on the globe for a given grid
     # size
@@ -319,7 +313,6 @@ def get_cds_data_from_datespan_and_position(
     if isinstance(longitude, (int, float)) \
             or isinstance(latitude, (int, float)):
         request_area = _format_cds_request_position(latitude, longitude, grid)
-        kwargs.update(request_area)
     # if longitude or latitude is provided as list and the other one is either
     # None (in which case all latitudes or longitudes are selected) or also
     # provided as list, select area
@@ -327,22 +320,11 @@ def get_cds_data_from_datespan_and_position(
         if not isinstance(longitude, (int, float)) \
                 and not isinstance(latitude, (int, float)):
             request_area =_format_cds_request_area(latitude, longitude, grid)
-            kwargs.update(request_area)
         else:
             raise ValueError(
                 "It is currently not supported that latitude or longitude is "
                 "provided as a number while the other is provided as a list.")
     # in any other case no geographical subset is selected
+    cds_params.update(request_area)
 
-    # Remove the arguments that will not be passed to the _get_cds_data
-    # function
-    kwargs.pop('start_date')
-    kwargs.pop('end_date')
-    kwargs.pop('longitude')
-    kwargs.pop('latitude')
-
-    # Merge the two dictionaries
-    kwargs.pop('cds_params')
-    kwargs.update(cds_params)
-
-    return _get_cds_data(**kwargs)
+    return _get_cds_data(**cds_params)

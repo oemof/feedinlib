@@ -8,9 +8,9 @@ from feedinlib.cds_request_tools import get_cds_data_from_datespan_and_position
 
 
 def get_era5_data_from_datespan_and_position(
-        variable, start_date, end_date,
+        start_date, end_date, variable='feedinlib',
         latitude=None, longitude=None, grid=None,
-        target_file=None, chunks=None, cds_client=None, **cds_params):
+        target_file=None, chunks=None, cds_client=None):
     """
     Send request for era5 data to the Climate Data Store (CDS)
 
@@ -34,7 +34,6 @@ def get_era5_data_from_datespan_and_position(
     :param chunks: (dict)
     :param cds_client: handle to CDS client (if none is provided, then it is
         created)
-    :param cds_params: (dict) parameter to pass to the CDS request
     :return: CDS data in an xarray format
 
     """

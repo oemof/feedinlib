@@ -18,8 +18,9 @@ import pandas as pd
 from copy import deepcopy
 
 from windpowerlib import ModelChain as WindpowerlibModelChain
-from windpowerlib import TurbineClusterModelChain \
-    as WindpowerlibClusterModelChain
+from windpowerlib import (
+    TurbineClusterModelChain as WindpowerlibClusterModelChain,
+)
 from windpowerlib import WindTurbine as WindpowerlibWindTurbine
 from windpowerlib import WindFarm as WindpowerlibWindFarm
 from windpowerlib import WindTurbineCluster as WindpowerlibWindTurbineCluster
@@ -43,6 +44,7 @@ class Base(ABC):
     methods.
 
     """
+
     def __init__(self, **kwargs):
         """
         """
@@ -160,6 +162,7 @@ class PhotovoltaicModelBase(Base):
     Expands model base class :class:`~.models.Base` by PV specific attributes.
 
     """
+
     @property
     @abstractmethod
     def pv_system_area(self):
@@ -193,6 +196,7 @@ class WindpowerModelBase(Base):
     attributes.
 
     """
+
     @property
     @abstractmethod
     def nominal_power_wind_power_plant(self):
@@ -291,8 +295,13 @@ class Pvlib(PhotovoltaicModelBase):
         """
         # ToDo Maybe add method to assign suitable inverter if none is
         # specified
-        required = ["azimuth", "tilt", "module_name",
-                    ["albedo", "surface_type"], "inverter_name"]
+        required = [
+            "azimuth",
+            "tilt",
+            "module_name",
+            ["albedo", "surface_type"],
+            "inverter_name",
+        ]
         # ToDo @Günni: is this necessary?
         if super().power_plant_requires is not None:
             required.extend(super().power_plant_requires)
@@ -325,9 +334,11 @@ class Pvlib(PhotovoltaicModelBase):
 
         """
         if self.power_plant:
-            return self.power_plant.module_parameters.Area * \
-                   self.power_plant.strings_per_inverter * \
-                   self.power_plant.modules_per_string
+            return (
+                self.power_plant.module_parameters.Area
+                * self.power_plant.strings_per_inverter
+                * self.power_plant.modules_per_string
+            )
         else:
             return None
 
@@ -346,20 +357,26 @@ class Pvlib(PhotovoltaicModelBase):
 
         """
         if self.power_plant:
-            if self.mode == 'ac':
-                return min(self.power_plant.module_parameters.Impo *
-                           self.power_plant.module_parameters.Vmpo *
-                           self.power_plant.strings_per_inverter *
-                           self.power_plant.modules_per_string,
-                           self.power_plant.inverter_parameters.Paco)
-            elif self.mode == 'dc':
-                return (self.power_plant.module_parameters.Impo *
-                        self.power_plant.module_parameters.Vmpo *
-                        self.power_plant.strings_per_inverter *
-                        self.power_plant.modules_per_string)
+            if self.mode == "ac":
+                return min(
+                    self.power_plant.module_parameters.Impo
+                    * self.power_plant.module_parameters.Vmpo
+                    * self.power_plant.strings_per_inverter
+                    * self.power_plant.modules_per_string,
+                    self.power_plant.inverter_parameters.Paco,
+                )
+            elif self.mode == "dc":
+                return (
+                    self.power_plant.module_parameters.Impo
+                    * self.power_plant.module_parameters.Vmpo
+                    * self.power_plant.strings_per_inverter
+                    * self.power_plant.modules_per_string
+                )
             else:
-                raise ValueError("{} is not a valid `mode`. `mode` must "
-                                 "either be 'ac' or 'dc'.".format(self.mode))
+                raise ValueError(
+                    "{} is not a valid `mode`. `mode` must "
+                    "either be 'ac' or 'dc'.".format(self.mode)
+                )
         else:
             return None
 
@@ -382,14 +399,16 @@ class Pvlib(PhotovoltaicModelBase):
                     raise AttributeError(
                         "The specified model '{model}' requires power plant "
                         "parameter '{k}' but it's not provided as an "
-                        "argument.".format(k=k, model=self))
+                        "argument.".format(k=k, model=self)
+                    )
             else:
                 # in case one of several parameters can be provided
                 if not list(filter(lambda x: x in parameters, k)):
                     raise AttributeError(
                         "The specified model '{model}' requires one of the "
                         "following power plant parameters '{k}' but neither "
-                        "is provided as an argument.".format(k=k, model=self))
+                        "is provided as an argument.".format(k=k, model=self)
+                    )
 
     def instantiate_module(self, **kwargs):
         """
@@ -411,12 +430,14 @@ class Pvlib(PhotovoltaicModelBase):
         # match all power plant parameters from power_plant_requires property
         # to pvlib's PVSystem parameters
         rename = {
-            'module_parameters': get_power_plant_data('SandiaMod')[
-                kwargs.pop('module_name')],
-            'inverter_parameters': get_power_plant_data('CECInverter')[
-                kwargs.pop('inverter_name')],
-            'surface_azimuth': kwargs.pop('azimuth'),
-            'surface_tilt': kwargs.pop('tilt'),
+            "module_parameters": get_power_plant_data("SandiaMod")[
+                kwargs.pop("module_name")
+            ],
+            "inverter_parameters": get_power_plant_data("CECInverter")[
+                kwargs.pop("inverter_name")
+            ],
+            "surface_azimuth": kwargs.pop("azimuth"),
+            "surface_tilt": kwargs.pop("tilt"),
         }
         # update kwargs with renamed power plant parameters
         kwargs.update(rename)
@@ -467,27 +488,30 @@ class Pvlib(PhotovoltaicModelBase):
             Power plant feed-in time series in Watt.
 
         """
-        self.mode = kwargs.pop('mode', 'ac').lower()
+        self.mode = kwargs.pop("mode", "ac").lower()
 
         # ToDo Allow usage of feedinlib weather object which makes location
         # parameter obsolete
-        location = kwargs.pop('location')
+        location = kwargs.pop("location")
         # ToDo Allow location provided as shapely Point
-        location = PvlibLocation(latitude=location[0], longitude=location[1],
-                                 tz=weather.index.tz)
+        location = PvlibLocation(
+            latitude=location[0], longitude=location[1], tz=weather.index.tz
+        )
         self.power_plant = self.instantiate_module(**power_plant_parameters)
 
         mc = PvlibModelChain(self.power_plant, location, **kwargs)
         mc.complete_irradiance(times=weather.index, weather=weather)
         mc.run_model()
 
-        if self.mode == 'ac':
+        if self.mode == "ac":
             return mc.ac
-        elif self.mode == 'dc':
+        elif self.mode == "dc":
             return mc.dc.p_mp
         else:
-            raise ValueError("{} is not a valid `mode`. `mode` must "
-                             "either be 'ac' or 'dc'.".format(self.mode))
+            raise ValueError(
+                "{} is not a valid `mode`. `mode` must "
+                "either be 'ac' or 'dc'.".format(self.mode)
+            )
 
 
 class WindpowerlibTurbine(WindpowerModelBase):
@@ -568,8 +592,10 @@ class WindpowerlibTurbine(WindpowerModelBase):
         .. [3] `oedb wind turbine library <https://openenergy-platform.org/dataedit/view/supply/wind_turbine_library>`_
 
         """
-        required = ["hub_height",
-                    ["power_curve", "power_coefficient_curve", "turbine_type"]]
+        required = [
+            "hub_height",
+            ["power_curve", "power_coefficient_curve", "turbine_type"],
+        ]
         if super().power_plant_requires is not None:
             required.extend(super().power_plant_requires)
         return required
@@ -621,14 +647,16 @@ class WindpowerlibTurbine(WindpowerModelBase):
                     raise AttributeError(
                         "The specified model '{model}' requires power plant "
                         "parameter '{k}' but it's not provided as an "
-                        "argument.".format(k=k, model=self))
+                        "argument.".format(k=k, model=self)
+                    )
             else:
                 # in case one of several parameters can be provided
                 if not list(filter(lambda x: x in parameters, k)):
                     raise AttributeError(
                         "The specified model '{model}' requires one of the "
                         "following power plant parameters '{k}' but neither "
-                        "is provided as an argument.".format(k=k, model=self))
+                        "is provided as an argument.".format(k=k, model=self)
+                    )
 
     def instantiate_turbine(self, **kwargs):
         """
@@ -836,12 +864,13 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
             List of provided power plant parameters.
 
         """
-        if not any([_ in parameters
-                    for _ in self.power_plant_requires]):
+        if not any([_ in parameters for _ in self.power_plant_requires]):
             raise KeyError(
                 "The specified model '{model}' requires one of the following "
                 "power plant parameters: {parameters}".format(
-                    model=self, parameters=self.power_plant_requires))
+                    model=self, parameters=self.power_plant_requires
+                )
+            )
 
     def instantiate_turbine(self, **kwargs):
         """
@@ -892,7 +921,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
 
         """
         # deepcopy turbine fleet to not alter original turbine fleet
-        wind_turbine_fleet = deepcopy(kwargs.pop('wind_turbine_fleet'))
+        wind_turbine_fleet = deepcopy(kwargs.pop("wind_turbine_fleet"))
 
         # if turbine fleet is provided as list, it is assumed that list
         # contains WindTurbineGroups and WindFarm can be directly instantiated
@@ -904,10 +933,11 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         # WindTurbine object
         elif isinstance(wind_turbine_fleet, pd.DataFrame):
             for ix, row in wind_turbine_fleet.iterrows():
-                turbine = row['wind_turbine']
+                turbine = row["wind_turbine"]
                 if not isinstance(turbine, WindpowerlibWindTurbine):
                     if isinstance(
-                            turbine, feedinlib.powerplants.WindPowerPlant):
+                        turbine, feedinlib.powerplants.WindPowerPlant
+                    ):
                         turbine_data = turbine.parameters
                     elif isinstance(turbine, dict):
                         turbine_data = turbine
@@ -919,23 +949,27 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
                             "objects or as dictionary containing all turbine "
                             "parameters required by the WindpowerlibTurbine "
                             "model but type of `wind_turbine` "
-                            "is {}.".format(type(row['wind_turbine'])))
+                            "is {}.".format(type(row["wind_turbine"]))
+                        )
                     # initialize WindpowerlibTurbine instead of directly
                     # initializing windpowerlib.WindTurbine to check required
                     # power plant parameters
                     wind_turbine = WindpowerlibTurbine()
                     wind_turbine._power_plant_requires_check(
-                        turbine_data.keys())
-                    wind_turbine_fleet.loc[ix, 'wind_turbine'] = \
-                        wind_turbine.instantiate_turbine(**turbine_data)
-            kwargs['wind_turbine_fleet'] = wind_turbine_fleet
+                        turbine_data.keys()
+                    )
+                    wind_turbine_fleet.loc[
+                        ix, "wind_turbine"
+                    ] = wind_turbine.instantiate_turbine(**turbine_data)
+            kwargs["wind_turbine_fleet"] = wind_turbine_fleet
             return WindpowerlibWindFarm(**kwargs)
         else:
             raise TypeError(
                 "The WindpowerlibTurbineCluster model requires that the "
                 "`wind_turbine_fleet` parameter is provided as a list or "
                 "pandas.DataFrame but type of `wind_turbine_fleet` is "
-                "{}.".format(type(wind_turbine_fleet)))
+                "{}.".format(type(wind_turbine_fleet))
+            )
 
     def instantiate_turbine_cluster(self, **kwargs):
         r"""
@@ -960,12 +994,12 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
 
         """
         wind_farm_list = []
-        for wind_farm in kwargs.pop('wind_farms'):
+        for wind_farm in kwargs.pop("wind_farms"):
             if not isinstance(wind_farm, WindpowerlibWindFarm):
                 wind_farm_list.append(self.instantiate_windfarm(**wind_farm))
             else:
                 wind_farm_list.append(wind_farm)
-        kwargs['wind_farms'] = wind_farm_list
+        kwargs["wind_farms"] = wind_farm_list
         return WindpowerlibWindTurbineCluster(**kwargs)
 
     def feedin(self, weather, power_plant_parameters, **kwargs):
@@ -1003,13 +1037,15 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
 
         """
         # wind farm calculation
-        if 'wind_turbine_fleet' in power_plant_parameters.keys():
+        if "wind_turbine_fleet" in power_plant_parameters.keys():
             self.power_plant = self.instantiate_windfarm(
-                **power_plant_parameters)
+                **power_plant_parameters
+            )
         # wind cluster calculation
         else:
             self.power_plant = self.instantiate_turbine_cluster(
-                **power_plant_parameters)
+                **power_plant_parameters
+            )
         mc = WindpowerlibClusterModelChain(self.power_plant, **kwargs)
         return mc.run_model(weather).power_output
 
@@ -1056,14 +1092,16 @@ def get_power_plant_data(dataset, **kwargs):
 
     """
     dataset = dataset.lower()
-    if dataset in ['sandiamod', 'cecinverter']:
+    if dataset in ["sandiamod", "cecinverter"]:
         return pvlib.pvsystem.retrieve_sam(
-            name=dataset, path=kwargs.get('path', None))
-    elif dataset == 'oedb_turbine_library':
+            name=dataset, path=kwargs.get("path", None)
+        )
+    elif dataset == "oedb_turbine_library":
         return get_turbine_types(
-            turbine_library=kwargs.get('turbine_library', 'local'),
-            print_out=kwargs.get('print_out', False),
-            filter_=kwargs.get('filter_', True))
+            turbine_library=kwargs.get("turbine_library", "local"),
+            print_out=kwargs.get("print_out", False),
+            filter_=kwargs.get("filter_", True),
+        )
     else:
-        warnings.warn('Unknown dataset {}.'.format(dataset))
+        warnings.warn("Unknown dataset {}.".format(dataset))
         return None

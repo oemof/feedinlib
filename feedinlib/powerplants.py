@@ -110,7 +110,7 @@ class Base(ABC):
             Series with power plant feed-in in Watt.
 
         """
-        model = kwargs.pop('model', self.model)
+        model = kwargs.pop("model", self.model)
         # in case a different model used to calculate feed-in than originally
         # assigned is given, self.model is overwritten and required power plant
         # parameters for new model are checked
@@ -126,10 +126,12 @@ class Base(ABC):
                 raise AttributeError(
                     "The specified model '{model}' requires model "
                     "parameter '{k}' but it's not provided as an "
-                    "argument.".format(k=k, model=model))
+                    "argument.".format(k=k, model=model)
+                )
         # call respective model's feed-in method
-        return model.feedin(weather=weather,
-                            power_plant_parameters=self.parameters, **kwargs)
+        return model.feedin(
+            weather=weather, power_plant_parameters=self.parameters, **kwargs
+        )
 
     def _check_models_power_plant_requirements(self, parameters):
         """
@@ -159,7 +161,8 @@ class Base(ABC):
                     raise AttributeError(
                         "The specified model '{model}' requires power plant "
                         "parameter '{k}' but it's not provided as an "
-                        "argument.".format(k=k, model=self.model))
+                        "argument.".format(k=k, model=self.model)
+                    )
 
     @property
     def required(self):
@@ -253,10 +256,9 @@ class Photovoltaic(Base):
         # scale feed-in
         if scaling:
             feedin_scaling = {
-                'peak_power': lambda feedin: feedin / float(
-                    self.peak_power),
-                'area': lambda feedin: feedin / float(
-                    self.area)}
+                "peak_power": lambda feedin: feedin / float(self.peak_power),
+                "area": lambda feedin: feedin / float(self.area),
+            }
             return feedin_scaling[scaling](feedin)
         return feedin
 
@@ -313,6 +315,7 @@ class WindPowerPlant(Base):
         information on the model's required and optional plant parameters.
 
     """
+
     def __init__(self, model=WindpowerlibTurbine, **attributes):
         """
         """
@@ -357,8 +360,9 @@ class WindPowerPlant(Base):
         # scale feed-in
         if scaling:
             feedin_scaling = {
-                'nominal_power': lambda feedin: feedin / float(
-                    self.nominal_power)}
+                "nominal_power": lambda feedin: feedin
+                / float(self.nominal_power)
+            }
             return feedin_scaling[scaling](feedin)
         return feedin
 

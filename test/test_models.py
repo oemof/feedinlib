@@ -154,7 +154,7 @@ class TestPowerplants(Fixtures):
         """
         test_turbine = WindPowerPlant(**windpowerlib_turbine)
         feedin = test_turbine.feedin(weather=windpowerlib_weather,
-                                     scaling='capacity')
+                                     scaling='nominal_power')
         assert 833050.32551 / 3e6 == pytest.approx(feedin.values[0], 1e-5)
 
 

@@ -8,9 +8,16 @@ from feedinlib.cds_request_tools import get_cds_data_from_datespan_and_position
 
 
 def get_era5_data_from_datespan_and_position(
-        start_date, end_date, variable='feedinlib',
-        latitude=None, longitude=None, grid=None,
-        target_file=None, chunks=None, cds_client=None):
+    start_date,
+    end_date,
+    variable="feedinlib",
+    latitude=None,
+    longitude=None,
+    grid=None,
+    target_file=None,
+    chunks=None,
+    cds_client=None,
+):
     """
     Send request for era5 data to the Climate Data Store (CDS)
 
@@ -37,13 +44,22 @@ def get_era5_data_from_datespan_and_position(
     :return: CDS data in an xarray format
 
     """
-    if variable == 'pvlib':
-        variable = ['fdir', 'ssrd', '2t', '10u', '10v']
-    elif variable == 'windpowerlib':
-        variable = ['100u', '100v', '10u', '10v', '2t', 'fsr', 'sp']
-    elif variable == 'feedinlib':
-        variable = ['100u', '100v', 'fsr', 'sp', 'fdir', 'ssrd', '2t',
-                    '10u', '10v']
+    if variable == "pvlib":
+        variable = ["fdir", "ssrd", "2t", "10u", "10v"]
+    elif variable == "windpowerlib":
+        variable = ["100u", "100v", "10u", "10v", "2t", "fsr", "sp"]
+    elif variable == "feedinlib":
+        variable = [
+            "100u",
+            "100v",
+            "fsr",
+            "sp",
+            "fdir",
+            "ssrd",
+            "2t",
+            "10u",
+            "10v",
+        ]
     return get_cds_data_from_datespan_and_position(**locals())
 
 
@@ -77,20 +93,22 @@ def format_windpowerlib(ds):
     """
 
     # compute the norm of the wind speed
-    ds['wnd100m'] = (np.sqrt(ds['u100'] ** 2 + ds['v100'] ** 2)
-                     .assign_attrs(units=ds['u100'].attrs['units'],
-                                   long_name="100 metre wind speed"))
+    ds["wnd100m"] = np.sqrt(ds["u100"] ** 2 + ds["v100"] ** 2).assign_attrs(
+        units=ds["u100"].attrs["units"], long_name="100 metre wind speed"
+    )
 
-    ds['wnd10m'] = (np.sqrt(ds['u10'] ** 2 + ds['v10'] ** 2)
-                    .assign_attrs(units=ds['u10'].attrs['units'],
-                                  long_name="10 metre wind speed"))
+    ds["wnd10m"] = np.sqrt(ds["u10"] ** 2 + ds["v10"] ** 2).assign_attrs(
+        units=ds["u10"].attrs["units"], long_name="10 metre wind speed"
+    )
 
     # drop not needed variables
-    windpowerlib_vars = ['wnd10m', 'wnd100m', 'sp', 't2m', 'fsr']
+    windpowerlib_vars = ["wnd10m", "wnd100m", "sp", "t2m", "fsr"]
     ds_vars = list(ds.variables)
-    drop_vars = [_ for _ in ds_vars
-                 if _ not in windpowerlib_vars +
-                 ['latitude', 'longitude', 'time']]
+    drop_vars = [
+        _
+        for _ in ds_vars
+        if _ not in windpowerlib_vars + ["latitude", "longitude", "time"]
+    ]
     ds = ds.drop(drop_vars)
 
     # convert to dataframe
@@ -98,7 +116,7 @@ def format_windpowerlib(ds):
 
     # reorder the multiindexing on the rows if needed
     try:
-        df = df.reorder_levels(['time', 'latitude', 'longitude'])
+        df = df.reorder_levels(["time", "latitude", "longitude"])
     except:
         pass
 
@@ -108,15 +126,15 @@ def format_windpowerlib(ds):
     # define a multiindexing on the columns
     midx = pd.MultiIndex(
         levels=[
-            ['wind_speed', 'pressure', 'temperature', 'roughness_length'],
+            ["wind_speed", "pressure", "temperature", "roughness_length"],
             # variable
-            [0, 2, 10, 100]  # height
+            [0, 2, 10, 100],  # height
         ],
         codes=[
             [0, 0, 1, 2, 3],  # indexes from variable list above
-            [2, 3, 0, 1, 0]  # indexes from the height list above
+            [2, 3, 0, 1, 0],  # indexes from the height list above
         ],
-        names=['variable', 'height']  # name of the levels
+        names=["variable", "height"],  # name of the levels
     )
 
     df.columns = midx
@@ -126,7 +144,7 @@ def format_windpowerlib(ds):
     if isinstance(df.index, pd.MultiIndex):
         level = 0
         df.sort_index(inplace=True)
-    return df.tz_localize('UTC', level=level)
+    return df.tz_localize("UTC", level=level)
 
 
 def format_pvlib(ds):
@@ -154,41 +172,45 @@ def format_pvlib(ds):
     """
 
     # compute the norm of the wind speed
-    ds['wind_speed'] = (np.sqrt(ds['u10'] ** 2 + ds['v10'] ** 2)
-                        .assign_attrs(units=ds['u10'].attrs['units'],
-                                      long_name="10 metre wind speed"))
+    ds["wind_speed"] = np.sqrt(ds["u10"] ** 2 + ds["v10"] ** 2).assign_attrs(
+        units=ds["u10"].attrs["units"], long_name="10 metre wind speed"
+    )
 
     # convert temperature to Celsius (from Kelvin)
-    ds['temp_air'] = ds.t2m - 273.15
+    ds["temp_air"] = ds.t2m - 273.15
 
-    ds['dirhi'] = (ds.fdir / 3600.).assign_attrs( units='W/m^2')
-    ds['ghi'] = (ds.ssrd / 3600.).assign_attrs(
-        units='W/m^2',long_name='global horizontal irradiation')
-    ds['dhi'] = (ds.ghi - ds.dirhi).assign_attrs(
-        units='W/m^2', long_name='direct irradiation')
+    ds["dirhi"] = (ds.fdir / 3600.0).assign_attrs(units="W/m^2")
+    ds["ghi"] = (ds.ssrd / 3600.0).assign_attrs(
+        units="W/m^2", long_name="global horizontal irradiation"
+    )
+    ds["dhi"] = (ds.ghi - ds.dirhi).assign_attrs(
+        units="W/m^2", long_name="direct irradiation"
+    )
 
     # drop not needed variables
-    pvlib_vars = ['ghi', 'dhi', 'wind_speed', 'temp_air']
+    pvlib_vars = ["ghi", "dhi", "wind_speed", "temp_air"]
     ds_vars = list(ds.variables)
-    drop_vars = [_ for _ in ds_vars
-                 if _ not in pvlib_vars +
-                 ['latitude', 'longitude', 'time']]
+    drop_vars = [
+        _
+        for _ in ds_vars
+        if _ not in pvlib_vars + ["latitude", "longitude", "time"]
+    ]
     ds = ds.drop(drop_vars)
 
     # reorder the multiindexing on the rows if needed
     df = ds.to_dataframe()
     if isinstance(df.index, pd.MultiIndex):
-        df = df.reorder_levels(['time', 'latitude', 'longitude'])
+        df = df.reorder_levels(["time", "latitude", "longitude"])
 
     # reorder the multiindexing on the rows
-    df = df[['wind_speed', 'temp_air', 'ghi', 'dhi']]
+    df = df[["wind_speed", "temp_air", "ghi", "dhi"]]
     df.dropna(inplace=True)
 
     level = None
     if isinstance(df.index, pd.MultiIndex):
         level = 0
         df.sort_index(inplace=True)
-    return df.tz_localize('UTC', level=level)
+    return df.tz_localize("UTC", level=level)
 
 
 def select_area(ds, lon, lat, g_step=0.25):
@@ -236,7 +258,7 @@ def select_area(ds, lon, lat, g_step=0.25):
         lat_n = lat + g_step
 
     if select_point is True:
-        answer = ds.sel(latitude=lat, longitude=lon, method='nearest')
+        answer = ds.sel(latitude=lat, longitude=lon, method="nearest")
     else:
         answer = ds.where(
             (lat_s < ds.latitude)
@@ -269,7 +291,7 @@ def select_geometry(ds, area):
     lon_vals = []
     lat_vals = []
 
-    df = pd.DataFrame([], columns=['lon', 'lat'])
+    df = pd.DataFrame([], columns=["lon", "lat"])
 
     for i, x in enumerate(ds.longitude):
         for j, y in enumerate(ds.latitude):
@@ -277,24 +299,25 @@ def select_geometry(ds, area):
             lat_vals.append(y.values)
             geometry.append(Point(x, y))
 
-    df['lon'] = lon_vals
-    df['lat'] = lat_vals
+    df["lon"] = lon_vals
+    df["lat"] = lat_vals
 
     # create a geopandas to use the geometry functions
-    crs = {'init': 'epsg:4326'}
+    crs = {"init": "epsg:4326"}
     geo_df = gpd.GeoDataFrame(df, crs=crs, geometry=geometry)
 
     inside_points = geo_df.within(area)
 
-    inside_lon = geo_df.loc[inside_points, 'lon'].values
-    inside_lat = geo_df.loc[inside_points, 'lat'].values
+    inside_lon = geo_df.loc[inside_points, "lon"].values
+    inside_lat = geo_df.loc[inside_points, "lat"].values
 
     # prepare a list where the latitude and longitude of the points inside are
     # formatted as xarray of bools
     logical_list = []
     for lon, lat in zip(inside_lon, inside_lat):
         logical_list.append(
-            np.logical_and((ds.longitude == lon), (ds.latitude == lat)))
+            np.logical_and((ds.longitude == lon), (ds.latitude == lat))
+        )
 
     # bind all conditions form the list
     cond = np.logical_or(*logical_list[:2])
@@ -305,8 +328,9 @@ def select_geometry(ds, area):
     return ds.where(cond)
 
 
-def weather_df_from_era5(era5_netcdf_filename, lib, start=None, end=None,
-                         area=None):
+def weather_df_from_era5(
+    era5_netcdf_filename, lib, start=None, end=None, area=None
+):
     """
     Gets ERA5 weather data from netcdf file and converts it to a pandas
     dataframe as required by the spcified lib.
@@ -345,13 +369,15 @@ def weather_df_from_era5(era5_netcdf_filename, lib, start=None, end=None,
         else:
             ds = select_geometry(ds, area)
 
-    if lib == 'windpowerlib':
+    if lib == "windpowerlib":
         df = format_windpowerlib(ds)
-    elif lib == 'pvlib':
+    elif lib == "pvlib":
         df = format_pvlib(ds)
     else:
-        raise ValueError("Unknown value for `lib`. "
-                         "It must be either 'pvlib' or 'windpowerlib'.")
+        raise ValueError(
+            "Unknown value for `lib`. "
+            "It must be either 'pvlib' or 'windpowerlib'."
+        )
     if start is None:
         start = df.index[0]
     if end is None:

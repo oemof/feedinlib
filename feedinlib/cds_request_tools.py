@@ -10,11 +10,11 @@ logger = logging.getLogger(__name__)
 
 
 def _get_cds_data(
-        dataset_name='reanalysis-era5-single-levels',
-        target_file=None,
-        chunks=None,
-        cds_client=None,
-        **cds_params
+    dataset_name="reanalysis-era5-single-levels",
+    target_file=None,
+    chunks=None,
+    cds_client=None,
+    **cds_params
 ):
     """
     Download data from the Climate Data Store (CDS)
@@ -45,37 +45,56 @@ def _get_cds_data(
 
     # Default request
     request = {
-        'format': 'netcdf',
-        'product_type': 'reanalysis',
-        'time': [
-            '00:00', '01:00', '02:00', '03:00', '04:00', '05:00',
-            '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',
-            '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
-            '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'
+        "format": "netcdf",
+        "product_type": "reanalysis",
+        "time": [
+            "00:00",
+            "01:00",
+            "02:00",
+            "03:00",
+            "04:00",
+            "05:00",
+            "06:00",
+            "07:00",
+            "08:00",
+            "09:00",
+            "10:00",
+            "11:00",
+            "12:00",
+            "13:00",
+            "14:00",
+            "15:00",
+            "16:00",
+            "17:00",
+            "18:00",
+            "19:00",
+            "20:00",
+            "21:00",
+            "22:00",
+            "23:00",
         ],
     }
 
     # Add user provided cds parameters to the request dict
     request.update(cds_params)
 
-    assert {'year', 'month', 'variable'}.issubset(request), \
-        "Need to specify at least 'variable', 'year' and 'month'"
+    assert {"year", "month", "variable"}.issubset(
+        request
+    ), "Need to specify at least 'variable', 'year' and 'month'"
 
     # Send the data request to the server
-    result = cds_client.retrieve(
-        dataset_name,
-        request,
-    )
+    result = cds_client.retrieve(dataset_name, request,)
 
     no_target_file_provided = target_file is None
     # Create a file in a secure way if a target filename was not provided
     if no_target_file_provided is True:
-        fd, target_file = mkstemp(suffix='.nc')
+        fd, target_file = mkstemp(suffix=".nc")
         os.close(fd)
 
     logger.info(
         "Downloading request for {} variables to {}".format(
-            len(request['variable']), target_file)
+            len(request["variable"]), target_file
+        )
     )
 
     # Download the data in the target file
@@ -106,18 +125,16 @@ def _format_cds_request_datespan(start_date, end_date):
 
     """
 
-    answer = {'year': [], 'month': [], 'day': []}
-    fmt = '%Y-%m-%d'
-    specific_fmt = {'year': '%4d', 'month': '%02d', 'day': '%02d'}
+    answer = {"year": [], "month": [], "day": []}
+    fmt = "%Y-%m-%d"
+    specific_fmt = {"year": "%4d", "month": "%02d", "day": "%02d"}
     start_dt = datetime.strptime(start_date, fmt)
     end_dt = datetime.strptime(end_date, fmt)
 
     if end_dt < start_dt:
         logger.warning(
             "Swapping input dates as the end date '{}' is prior to the "
-            "start date '{}'.".format(
-                end_date, start_date
-            )
+            "start date '{}'.".format(end_date, start_date)
         )
         start_dt = end_dt
         end_dt = datetime.strptime(start_date, fmt)
@@ -127,8 +144,9 @@ def _format_cds_request_datespan(start_date, end_date):
 
         # Add string value of the date's year, month and day to the
         # corresponding lists in the dict which will be returned
-        for key, val in zip(['year', 'month', 'day'],
-                            [cur_dt.year, cur_dt.month, cur_dt.day]):
+        for key, val in zip(
+            ["year", "month", "day"], [cur_dt.year, cur_dt.month, cur_dt.day]
+        ):
             val = specific_fmt[key] % val
             if val not in answer[key]:
                 answer[key].append(val)
@@ -136,14 +154,15 @@ def _format_cds_request_datespan(start_date, end_date):
     # If the datespan is over more than a month, then all days are filled and
     # the entire months are returned (for CDS request the days format for a
     # full month is 31 days).
-    if len(answer['month']) > 1:
-        answer['day'] = [str(d) for d in range(1, 32, 1)]
+    if len(answer["month"]) > 1:
+        answer["day"] = [str(d) for d in range(1, 32, 1)]
 
     return answer
 
 
-def _format_cds_request_area(latitude_span=None, longitude_span=None,
-                             grid=None):
+def _format_cds_request_area(
+    latitude_span=None, longitude_span=None, grid=None
+):
     """
     Format the area between two given latitude and longitude spans in order
     to submit a CDS request
@@ -181,8 +200,12 @@ def _format_cds_request_area(latitude_span=None, longitude_span=None,
         grid = [0.25, 0.25]
 
     if latitude_span is not None and longitude_span is not None:
-        area = [latitude_span[0], longitude_span[0],
-                latitude_span[1], longitude_span[1]]
+        area = [
+            latitude_span[0],
+            longitude_span[0],
+            latitude_span[1],
+            longitude_span[1],
+        ]
     elif latitude_span is None and longitude_span is not None:
         area = [90, longitude_span[0], -90, latitude_span[1]]
     elif latitude_span is not None and longitude_span is None:
@@ -192,11 +215,11 @@ def _format_cds_request_area(latitude_span=None, longitude_span=None,
 
     # Format the 'grid' keyword of the CDS request as
     # lat_resolution/lon_resolution
-    answer['grid'] = '%.2f/%.2f' % (grid[0], grid[1])
+    answer["grid"] = "%.2f/%.2f" % (grid[0], grid[1])
 
     # Format the 'area' keyword of the CDS request as N/W/S/E
     if area:
-        answer['area'] = '/'.join(str(e) for e in area)
+        answer["area"] = "/".join(str(e) for e in area)
 
     return answer
 
@@ -239,24 +262,25 @@ def _format_cds_request_position(latitude, longitude, grid=None):
     # and longitude
     grid_point = xr.Dataset(
         {
-            'lat': np.arange(90, -90, -grid[0]),
-            'lon': np.arange(-180, 180., grid[1])
+            "lat": np.arange(90, -90, -grid[0]),
+            "lon": np.arange(-180, 180.0, grid[1]),
         }
-    ).sel(lat=latitude, lon=longitude, method='nearest')
+    ).sel(lat=latitude, lon=longitude, method="nearest")
 
     # Prepare an area which consists of only one grid point
-    lat, lon = [float(grid_point.coords[s]) for s in ('lat', 'lon')]
-    return _format_cds_request_area(latitude_span=[lat, lat],
-                                    longitude_span=[lon, lon], grid=grid)
+    lat, lon = [float(grid_point.coords[s]) for s in ("lat", "lon")]
+    return _format_cds_request_area(
+        latitude_span=[lat, lat], longitude_span=[lon, lon], grid=grid
+    )
 
 
 def get_cds_data_from_datespan_and_position(
-        start_date,
-        end_date,
-        latitude=None,
-        longitude=None,
-        grid=None,
-        **cds_params
+    start_date,
+    end_date,
+    latitude=None,
+    longitude=None,
+    grid=None,
+    **cds_params
 ):
     """
     Format request for data from the Climate Data Store (CDS)
@@ -310,22 +334,25 @@ def get_cds_data_from_datespan_and_position(
     # size
     # if both longitude and latitude are provided as number, select single
     # position
-    if isinstance(longitude, (int, float)) \
-            or isinstance(latitude, (int, float)):
+    if isinstance(longitude, (int, float)) or isinstance(
+        latitude, (int, float)
+    ):
         request_area = _format_cds_request_position(latitude, longitude, grid)
         cds_params.update(request_area)
     # if longitude or latitude is provided as list and the other one is either
     # None (in which case all latitudes or longitudes are selected) or also
     # provided as list, select area
     elif isinstance(longitude, list) or isinstance(latitude, list):
-        if not isinstance(longitude, (int, float)) \
-                and not isinstance(latitude, (int, float)):
-            request_area =_format_cds_request_area(latitude, longitude, grid)
+        if not isinstance(longitude, (int, float)) and not isinstance(
+            latitude, (int, float)
+        ):
+            request_area = _format_cds_request_area(latitude, longitude, grid)
             cds_params.update(request_area)
         else:
             raise ValueError(
                 "It is currently not supported that latitude or longitude is "
-                "provided as a number while the other is provided as a list.")
+                "provided as a number while the other is provided as a list."
+            )
     # in any other case no geographical subset is selected
 
     return _get_cds_data(**cds_params)

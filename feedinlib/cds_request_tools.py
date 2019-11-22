@@ -313,6 +313,7 @@ def get_cds_data_from_datespan_and_position(
     if isinstance(longitude, (int, float)) \
             or isinstance(latitude, (int, float)):
         request_area = _format_cds_request_position(latitude, longitude, grid)
+        cds_params.update(request_area)
     # if longitude or latitude is provided as list and the other one is either
     # None (in which case all latitudes or longitudes are selected) or also
     # provided as list, select area
@@ -320,11 +321,11 @@ def get_cds_data_from_datespan_and_position(
         if not isinstance(longitude, (int, float)) \
                 and not isinstance(latitude, (int, float)):
             request_area =_format_cds_request_area(latitude, longitude, grid)
+            cds_params.update(request_area)
         else:
             raise ValueError(
                 "It is currently not supported that latitude or longitude is "
                 "provided as a number while the other is provided as a list.")
     # in any other case no geographical subset is selected
-    cds_params.update(request_area)
 
     return _get_cds_data(**cds_params)

@@ -30,6 +30,19 @@ wind power feed-in, respectively, have been implemented.
    feedinlib.models.WindpowerlibTurbine
    feedinlib.models.WindpowerlibTurbineCluster
 
+Weather data
+====================
+
+The feedinlib enables download of open_FRED weather data (local reanalysis data for Germany)
+and ERA5 weather data (global reanalysis data for the whole world).
+
+.. autosummary::
+   :toctree: temp/
+
+   feedinlib.db.Weather
+   feedinlib.era5.weather_df_from_era5
+   feedinlib.era5.get_era5_data_from_datespan_and_position
+
 Tools
 ====================
 

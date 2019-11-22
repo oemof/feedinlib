@@ -19,7 +19,9 @@ setup(name='feedinlib',
       zip_safe=False,
       install_requires=['pandas',
                         'pvlib >= 0.6.0',
-                        'windpowerlib >= 0.2.0'],
+                        'windpowerlib >= 0.2.0',
+                        'xarray >= 0.12.0',
+                        'cdsapi >= 0.1.4'],
       extras_require={
           'dev': ['pytest', 'jupyter', 'sphinx_rtd_theme', 'nbformat'],
           'examples': ['jupyter']}

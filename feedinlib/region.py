@@ -171,7 +171,11 @@ class Region:
                 # initialize wind farm and run TurbineClusterModelChain
                 wind_farm = WindPowerPlant(model=WindpowerlibTurbineCluster,
                                            **wind_farm_data)
-                feedin_ts = wind_farm.feedin(weather=weather_period)  # todo scaling?
+                feedin_ts = wind_farm.feedin(
+                    weather=weather_period,
+                    wake_losses_model=kwargs.get(
+                        'wake_losses_model', 'dena_mean'),
+                    smoothing=kwargs.get('smoothing', False))  # todo scaling?
                 feedin_weather_loc = feedin_weather_loc.append(feedin_ts)
             feedin_weather_loc.name = feedin_ts.name
             feedin_df = pd.DataFrame(data=feedin_weather_loc).rename(

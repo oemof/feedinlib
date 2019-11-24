@@ -268,7 +268,8 @@ class Region:
                 # calculate the feed-in scaled by peak_power
                 feedin_scaled = pv_system.feedin(
                     weather=weather_df, location=(lat, lon),
-                    scaling='peak_power')
+                    scaling='peak_power',
+                    losses_model=kwargs.get('pv_losses_model', 'no_loss'))
 
                 # scale the output with the module_distribution and the local
                 # installed capacity

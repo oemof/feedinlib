@@ -229,8 +229,9 @@ class Region:
             # get weather dataframe for location
             if not hasattr(self.weather, '__call__'):
                 weather_df = self.weather.loc[
-                    (self.weather['lat'] == lat) &
-                    (self.weather['lon'] == lon)]
+                    (self.weather.index.get_level_values('lat') == lat) &
+                    (self.weather.index.get_level_values('lon') == lon)
+                ].droplevel(level=[1, 2])
             else:
                 weather_df = self.weather(lat, lon, lib='pvlib', **kwargs)
                 weather_df = weather_df.tz_localize('UTC')

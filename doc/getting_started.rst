@@ -11,14 +11,15 @@ further development, new and improved models and nice features.
 Introduction
 ============
 
-* so far the feedinlib provides interfaces to download open_FRED and ERA5 weather data
-* open_FRED data is local reanalysis data for Germany (and bounding box). further information can be found at...
-* ERA5 provides global reanalysis data. further information can be found at...
-* the weather data can be used to calculate the electrical output of pv or wind power plants.
-* at the moment it provides interfaces to the pvlib and the windpowerlib
-* Basic parameters for many manufacturers are provided with the library so that you can start directly using one of these parameter sets.
-* for further information see function get_power_plant_data
-* the feedinlib is designed in such a way, that the application of different feed-in models with different weather data sets can be done easily
+So far the feedinlib provides interfaces to download *open_FRED* and
+`ERA5 <https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation>`_ weather data.
+*open_FRED* is a local reanalysis weather data set that provides weather data for Germany (and bounding box).
+*ERA5* is a global reanalysis weather data set that provides weather data for the whole world.
+The weather data can be used to calculate the electrical output of PV and wind power plants.
+At the moment the feedinlib provides interfaces to the `pvlib <https://github.com/pvlib/pvlib-python>`_ and the
+`windpowerlib <https://github.com/wind-python/windpowerlib>`_.
+Furthermore, technical parameters for many PV modules and inverters,
+as well as wind turbines, are made available and can be easily used for calculations.
 
 Installation
 ============
@@ -34,18 +35,6 @@ The feedinlib is designed for Python 3 and tested on Python >= 3.5.
 We highly recommend to use virtual environments.
 Please see the `installation page <http://oemof.readthedocs.io/en/stable/installation_and_setup.html>`_ of the oemof documentation for complete instructions on how to install python and a virtual environment on your operating system.
 
-Optional Packages
-~~~~~~~~~~~~~~~~~
-
-can be installed using pip:
-
-::
-
-    pip install ..
-
-
-
-
 
 Examples and basic usage
 =========================
@@ -53,8 +42,10 @@ Examples and basic usage
 The basic usage of the feedinlib is shown in the :ref:`examples_section_label` section.
 The examples are provided as jupyter notebooks that you can download here:
 
+ * :download:`ERA5 weather data example <../example/load_era5_weather_data.ipynb>`
  * :download:`open_FRED weather data example <../example/load_open_fred_weather_data.ipynb>`
- * :download:`Pvlib model example <../example/run_pvlib_model.ipynb>`
+ * :download:`pvlib model example <../example/run_pvlib_model.ipynb>`
+ * :download:`windpowerlib model example <../example/run_windpowerlib_turbine_model.ipynb>`
 
 Furthermore, you have to install the feedinlib with additional packages needed to run the notebooks, e.g. `jupyter`.
 

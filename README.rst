@@ -1,4 +1,5 @@
-The feedinlib is designed to calculate feed-in time series of photovoltaic and wind power plants.
+The feedinlib is a tool to calculate feed-in time series of photovoltaic and wind power plants.
+It therefore provides interfaces between different weather data sets and feed-in models.
 It is part of the oemof group but works as a standalone application.
 
 The feedinlib is ready to use but it definitely has a lot of space for
@@ -7,15 +8,15 @@ further development, new and improved models and nice features.
 Introduction
 ============
 
-* so far the feedinlib provides interfaces to download open_FRED and ERA5 weather data
-* open_FRED data is local reanalysis data for Germany (and bounding box). further information can be found at...
-* ERA5 provides global reanalysis data. further information can be found at...
-* the weather data can be used to calculate the electrical output of pv or wind power plants.
-* at the moment it provides interfaces to the pvlib and the windpowerlib
-* Basic parameters for many manufacturers are provided with the library so that you can start directly using one of these parameter sets.
-* for further information see function get_power_plant_data
-* the feedinlib is designed in such a way, that the application of different feed-in models with different weather data sets can be done easily
-
+So far the feedinlib provides interfaces to download *open_FRED* and
+`ERA5 <https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation>`_ weather data.
+*open_FRED* is a local reanalysis weather data set that provides weather data for Germany (and bounding box).
+*ERA5* is a global reanalysis weather data set that provides weather data for the whole world.
+The weather data can be used to calculate the electrical output of PV and wind power plants.
+At the moment the feedinlib provides interfaces to the `pvlib <https://github.com/pvlib/pvlib-python>`_ and the
+`windpowerlib <https://github.com/wind-python/windpowerlib>`_.
+Furthermore, technical parameters for many PV modules and inverters,
+as well as wind turbines, are made available and can be easily used for calculations.
 
 Documentation
 ==============
@@ -42,18 +43,6 @@ The feedinlib is designed for Python 3 and tested on Python >= 3.5.
 We highly recommend to use virtual environments.
 Please see the `installation page <http://oemof.readthedocs.io/en/stable/installation_and_setup.html>`_ of the oemof documentation for complete instructions on how to install python and a virtual environment on your operating system.
 
-Optional Packages
-~~~~~~~~~~~~~~~~~
-
-can be installed using pip:
-
-::
-
-    pip install ..
-
-
-
-
 
 Examples and basic usage
 =========================
@@ -62,7 +51,8 @@ The basic usage of the feedinlib is shown in the `examples <https://feedinlib.re
 The examples are provided as jupyter notebooks that you can download here:
 
  * `Load open_FRED weather data example <https://raw.githubusercontent.com/oemof/feedinlib/features/design-skeleton/example/load_open_fred_weather_data.ipynb>`_
- * `Pvlib model example (Python script) <https://raw.githubusercontent.com/oemof/feedinlib/features/design-skeleton/example/run_pvlib_model.ipynb>`_
+ * `pvlib model example <https://raw.githubusercontent.com/oemof/feedinlib/features/design-skeleton/example/run_pvlib_model.ipynb>`_
+ * `windpowerlib model example <https://raw.githubusercontent.com/oemof/feedinlib/features/design-skeleton/example/run_windpowerlib_turbine_model.ipynb>`_
 
 Furthermore, you have to install the feedinlib with additional packages needed to run the notebooks, e.g. `jupyter`.
 

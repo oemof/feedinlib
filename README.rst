@@ -50,6 +50,7 @@ Examples and basic usage
 The basic usage of the feedinlib is shown in the `examples <https://feedinlib.readthedocs.io/en/features-design-skeleton/examples.html>`_ section of the documentation.
 The examples are provided as jupyter notebooks that you can download here:
 
+ * `Load ERA5 weather data example <https://raw.githubusercontent.com/oemof/feedinlib/features/design-skeleton/example/load_era5_weather_data.ipynb>`_
  * `Load open_FRED weather data example <https://raw.githubusercontent.com/oemof/feedinlib/features/design-skeleton/example/load_open_fred_weather_data.ipynb>`_
  * `pvlib model example <https://raw.githubusercontent.com/oemof/feedinlib/features/design-skeleton/example/run_pvlib_model.ipynb>`_
  * `windpowerlib model example <https://raw.githubusercontent.com/oemof/feedinlib/features/design-skeleton/example/run_windpowerlib_turbine_model.ipynb>`_

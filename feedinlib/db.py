@@ -8,7 +8,7 @@ import oedialect
 import pandas as pd
 import sqlalchemy as sqla
 
-from feedinlib import openFRED as ofr
+import open_FRED.cli as ofr
 
 
 TRANSLATIONS = {

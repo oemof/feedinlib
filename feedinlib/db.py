@@ -390,7 +390,9 @@ class Weather:
             return Series([p[2] for p in s], index=[p[0] for p in s])
 
         series = {
-            k[0]: sum(to_series(*p, *k[1:]) for p in TRANSLATIONS[lib][k[0]])
+            (k[0] if lib == "pvlib" else k): sum(
+                to_series(*p, *k[1:]) for p in TRANSLATIONS[lib][k[0]]
+            )
             for k in (
                 [
                     ("dhi",),

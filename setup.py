@@ -21,6 +21,7 @@ setup(
     install_requires=[
         "cdsapi >= 0.1.4",
         "numpy >= 1.7.0",
+        "oedialect",
         "open_FRED-cli",
         "pandas >= 0.13.1",
         "pvlib >= 0.6.0",

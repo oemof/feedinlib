@@ -143,7 +143,7 @@ We use the zenodo project to get a DOI for each version.
 `Search zenodo for the right citation of your feedinlib version`_.
 
 .. _Search zenodo for the right citation of your feedinlib version:
-  <https://zenodo.org/record/2554102>
+  https://zenodo.org/record/2554102
 
 
 License

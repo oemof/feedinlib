@@ -123,7 +123,7 @@ group`_ we use the same `developer rules`_.
 .. _pull request: https://guides.github.com/activities/hello-world/
 
 **Generally the following steps are required when changing, adding or
-  removing code:**
+removing code:**
 
 * Add new tests if you have written new functions/classes.
 * Add/change the documentation (new feature, API changes ...).

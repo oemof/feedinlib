@@ -72,9 +72,9 @@ you can download here:
  * `windpowerlib model example`_
 
 Furthermore, you have to install the feedinlib with additional packages
-needed to run the notebooks, e.g. `jupyter`.
+needed to run the notebooks, e.g. ``jupyter``:
 
-::
+  .. code::
 
     pip install feedinlib[examples]
 
@@ -108,11 +108,11 @@ group`_ we use the same `developer rules`_.
 
 * `Fork`_ the feedinlib repository to your own github account.
 * Create a local clone of your fork and  install the cloned repository
-  using pip with -e option:
+  using pip with the ``-e`` option:
 
-.. code:: bash
+  .. code::
 
-  pip install -e /path/to/the/repository
+      pip install -e /path/to/the/repository
 
 * Change, add or remove code.
 * Commit your changes.
@@ -131,12 +131,9 @@ group`_ we use the same `developer rules`_.
 * Check if all tests still work by simply executing pytest in your
   feedinlib directory:
 
-.. role:: bash(code)
-   :language: bash
+  .. code::
 
-.. code:: bash
-
-    pytest
+      pytest
 
 
 Citing the feedinlib

@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# documentation
+doc/temp/*
+
 # C extensions
 *.so
 
@@ -88,3 +91,7 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# weather data
+*.pkl
+*.netcdf

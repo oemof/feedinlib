@@ -33,7 +33,7 @@ site`_ of readthedocs to choose the version of the documentation. Go to
 the `download page`_ to download different versions and formats (pdf,
 html, epub) of the documentation.
 
-.. _readthedocs: https://feedinlib.readthedocs.io/en/features-design-skeleton/
+.. _readthedocs: https://feedinlib.readthedocs.io/en/stable/
 .. _project site: https://readthedocs.org/projects/feedinlib/
 .. _download page: https://readthedocs.org/projects/feedinlib/downloads/
 
@@ -83,11 +83,11 @@ This will open a browser window. Navigate to the directory containing
 the notebook(s) to open it. See the jupyter notebook quick start guide
 for more information on `how to run`_ jupyter notebooks.
 
-.. _examples: https://feedinlib.readthedocs.io/en/features-design-skeleton/examples.html
-.. _Load ERA5 weather data example: https://raw.githubusercontent.com/oemof/feedinlib/features/design-skeleton/example/load_era5_weather_data.ipynb
-.. _Load open_FRED weather data example: https://raw.githubusercontent.com/oemof/feedinlib/features/design-skeleton/example/load_open_fred_weather_data.ipynb
-.. _pvlib model example: https://raw.githubusercontent.com/oemof/feedinlib/features/design-skeleton/example/run_pvlib_model.ipynb
-.. _windpowerlib model example: https://raw.githubusercontent.com/oemof/feedinlib/features/design-skeleton/example/run_windpowerlib_turbine_model.ipynb
+.. _examples: https://feedinlib.readthedocs.io/en/stable/examples.html
+.. _Load ERA5 weather data example: https://raw.githubusercontent.com/oemof/feedinlib/master/example/load_era5_weather_data.ipynb
+.. _Load open_FRED weather data example: https://raw.githubusercontent.com/oemof/feedinlib/master/example/load_open_fred_weather_data.ipynb
+.. _pvlib model example: https://raw.githubusercontent.com/oemof/feedinlib/master/example/run_pvlib_model.ipynb
+.. _windpowerlib model example: https://raw.githubusercontent.com/oemof/feedinlib/master/example/run_windpowerlib_turbine_model.ipynb
 .. _how to run: http://jupyter-notebook-beginner-guide.readthedocs.io/en/latest/execute.html
 
 

@@ -44,9 +44,9 @@ Installation
 If you have a working Python 3 environment, use pip to install the
 latest feedinlib version:
 
-  .. code::
+.. code::
 
-      pip install feedinlib
+    pip install feedinlib
 
 The feedinlib is designed for Python 3 and tested on Python >= 3.5.
 
@@ -74,9 +74,9 @@ you can download here:
 Furthermore, you have to install the feedinlib with additional packages
 needed to run the notebooks, e.g. ``jupyter``:
 
-  .. code::
+.. code::
 
-      pip install feedinlib[examples]
+    pip install feedinlib[examples]
 
 To launch jupyter notebook type ``jupyter notebook`` in the terminal.
 This will open a browser window. Navigate to the directory containing

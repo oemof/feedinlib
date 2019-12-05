@@ -43,48 +43,26 @@ def defaultdb():
 
 
 class Weather:
-    """ Load weather measurements from an openFRED conforming database.
+    """
+    Load weather measurements from an openFRED conforming database.
 
     Note that you need a database storing weather data using the openFRED
     schema in order to use this class. There is one publicly available at
 
         https://openenergy-platform.org
 
-    In order to access it, you need the `oedialect` Python package and the, as
-    of yet unreleased, `openFRED` package. The former has some important up to
-    date fixes which didn't make it into a release yet while the latter isn't
-    even properly packaged yet. This means that you have to install both
-    packages from source. For the `oedialect` that means you have to do
+    Now you can simply instantiate a `Weather` object via e.g.:
 
-    ```
-    git clone https://github.com/OpenEnergyPlatform/oedialect DIALECTSOURCE
-    cd DIALECTSOURCE
-    pip install .
-    ```
-
-    For `openFRED` you can simply download the `openFRED.py` file from
-
-        https://raw.githubusercontent.com/open-fred/cli/master/openFRED.py
-
-    and put in the directory from which you'll run your scripts. Then the file
-    is importable and things should work fine.
-
-
-    Once you did this, you can simply instantiate a `Weather` object via e.g.:
-
-    ```
-    from shapely.geometry import Point
-
-    point = Point(9.7311, 53.3899)
-    weather = Weather(
-        "2003-04-05 06:00",
-        "2003-04-05 07:31",
-        [point],
-        [10],
-        "pvlib",
-        **defaultdb()
-    )
-    ```
+    >>> from shapely.geometry import Point
+    >>> point = Point(9.7311, 53.3899)
+    >>> weather = Weather(
+    ...    "2003-04-05 06:00",
+    ...    "2003-04-05 07:31",
+    ...    [point],
+    ...    [10],
+    ...    "pvlib",
+    ...    **defaultdb()
+    ...)
 
     Instead of the special values `"pvlib"` and `"windpowerlib"` you can
     also supply a list of variables, like e.g. `["P", "T", "Z0"]`, to
@@ -100,7 +78,7 @@ class Weather:
         Load weather data starting from this date.
     stop : Anything `pandas.to_datetime` can convert to a timestamp
         Don't load weather data before this date.
-    locations : list of `shapely.geometry.Point`s
+    locations : list of :shapely:`Point`
         Weather measurements are collected from measurement locations closest
         to the the given points.
     heights : list of numbers
@@ -115,11 +93,12 @@ class Weather:
         variables necessary to calculate a feedin using `"pvlib"` or
         `"windpowerlib"`.
         Defaults to `None` which means no restriction on loaded variables.
-    regions : list of `shapely.geometry.Polygon`s
+    regions : list of :shapely:`Polygon`
          Weather measurements are collected from measurement locations
          contained within the given polygons.
     session : `sqlalchemy.orm.Session`
     db : dict of mapped classes
+
     """
 
     def __init__(

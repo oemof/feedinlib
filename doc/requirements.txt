@@ -1,6 +1,5 @@
 sphinx>=1.4
 ipykernel
 nbsphinx
-nbformat
 psycopg2
 psycopg2-binary

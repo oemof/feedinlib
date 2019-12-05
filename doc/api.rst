@@ -39,7 +39,7 @@ and ERA5 weather data (global reanalysis data for the whole world).
 .. autosummary::
    :toctree: temp/
 
-   feedinlib.db.Weather
+   feedinlib.open_FRED.Weather
    feedinlib.era5.weather_df_from_era5
    feedinlib.era5.get_era5_data_from_datespan_and_position
 

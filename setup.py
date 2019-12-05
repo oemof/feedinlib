@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name="feedinlib",
-    version="0.1.0dev",
+    version="0.1.0rc1",
     description="Creating time series from pv or wind power plants.",
     url="http://github.com/oemof/feedinlib",
     author="oemof developer group",
@@ -21,7 +21,7 @@ setup(
     install_requires=[
         "cdsapi >= 0.1.4",
         "numpy >= 1.7.0",
-        "oedialect",
+        "oedialect >= 0.0.6.dev0",
         "open_FRED-cli",
         "pandas >= 0.13.1",
         "pvlib >= 0.6.0",
@@ -31,8 +31,7 @@ setup(
         "geopandas"
     ],
     extras_require={
-        "dev": ["pytest", "jupyter", "sphinx_rtd_theme", "nbformat",
-                "matplotlib"],
-        "examples": ["jupyter", "matplotlib"],
+        "dev": ["pytest", "jupyter", "sphinx_rtd_theme", "nbformat"],
+        "examples": ["jupyter"],
     },
 )

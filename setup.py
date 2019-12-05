@@ -27,9 +27,12 @@ setup(
         "pvlib >= 0.6.0",
         "windpowerlib >= 0.2.0",
         "xarray >= 0.12.0",
+        "tables",
+        "geopandas"
     ],
     extras_require={
-        "dev": ["pytest", "jupyter", "sphinx_rtd_theme", "nbformat"],
-        "examples": ["jupyter"],
+        "dev": ["pytest", "jupyter", "sphinx_rtd_theme", "nbformat",
+                "matplotlib"],
+        "examples": ["jupyter", "matplotlib"],
     },
 )

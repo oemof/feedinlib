@@ -29,7 +29,7 @@ setup(
         "xarray >= 0.12.0",
     ],
     extras_require={
-        "dev": ["pytest", "jupyter", "sphinx_rtd_theme", "nbformat"],
-        "examples": ["jupyter"],
+        "dev": ["jupyter", "pytest", "shapely", "sphinx_rtd_theme"],
+        "examples": ["jupyter", "shapely"],
     },
 )

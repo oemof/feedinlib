@@ -33,18 +33,15 @@ class Base(ABC):
     model : A subclass or instance of a subclass of :class:`~feedinlib.models.Base`
         The `model` parameter defines the feed-in model used to calculate
         the power plant feed-in.
-
         If a class (or in general, any instance of :class:`type`) is
         provided, it is used to create the model instance encapsulating the
         actual mathematical model used to calculate the feed-in provided by
         this power plant.
-
         In any other case, the provided object is used directly. Note
         though, that a reference to this power plant is saved in the
         provided object, so sharing model instances between two power plant
         objects is not a good idea, as the second power plant will
         overwrite the reference to the first.
-
         The non-class version is only provided for users who need the extra
         flexibility of controlling model instantiation and who know what
         they are doing. In general, you'll want to provide a class for this

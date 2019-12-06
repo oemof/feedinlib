@@ -20,23 +20,23 @@ setup(
     zip_safe=False,
     install_requires=[
         "cdsapi >= 0.1.4",
+        "geopandas",
         "numpy >= 1.7.0",
         "oedialect >= 0.0.6.dev0",
         "open_FRED-cli",
         "pandas >= 0.13.1",
         "pvlib >= 0.6.0",
+        "tables",
         "windpowerlib >= 0.2.0",
         "xarray >= 0.12.0",
-        "tables",
-        "geopandas"
     ],
     extras_require={
         "dev": [
+            "jupyter",
+            "nbformat",
             "punch.py",
             "pytest",
-            "jupyter",
             "sphinx_rtd_theme",
-            "nbformat",
         ],
         "examples": ["jupyter"],
     },

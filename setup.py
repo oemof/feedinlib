@@ -31,7 +31,13 @@ setup(
         "geopandas"
     ],
     extras_require={
-        "dev": ["pytest", "jupyter", "sphinx_rtd_theme", "nbformat"],
+        "dev": [
+            "punch.py",
+            "pytest",
+            "jupyter",
+            "sphinx_rtd_theme",
+            "nbformat",
+        ],
         "examples": ["jupyter"],
     },
 )

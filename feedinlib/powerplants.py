@@ -30,7 +30,7 @@ class Base(ABC):
 
     Parameters
     ----------
-    model : A subclass or instance of subclass of :class:`~.models.Base`
+    model : :class:`~feedinlib.models.Base` subclass or instance
         The `model` parameter defines the feed-in model used to calculate
         the power plant feed-in.
 

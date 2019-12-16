@@ -88,6 +88,14 @@ class Region:
         # first round hub_height and rotor_diameter values
         register['hub_height'] = register['hub_height'].round()
         register['rotor_diameter'] = register['rotor_diameter'].round()
+        try:
+            register['id']
+        except KeyError:
+            register['id'] = register[['turbine_type', 'hub_height',
+                          'rotor_diameter']].applymap(
+                lambda x: x if isinstance(x, str) else int(x)).applymap(
+                str).apply(
+                lambda x: '_'.join(x), axis=1)
         turbine_data = register.groupby(
             ['turbine_type', 'hub_height',
              'rotor_diameter']).size().reset_index().drop(0, axis=1)

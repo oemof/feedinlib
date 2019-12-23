@@ -163,27 +163,34 @@ class Region:
                 # prepare power plants for windpowerlib TurbineClusterModelChain # todo make generic - other models must be usable
                 turbine_types_location = filtered_power_plants.groupby(
                     'id').size().reset_index().drop(0, axis=1)
-                wind_turbine_fleet = pd.DataFrame()
-                for turbine_type in turbine_types_location['id']:
-                    capacity = power_plants.loc[
-                        power_plants['id'] == turbine_type]['capacity'].sum()  # todo check capacity of opsd register
-                    df = pd.DataFrame({
-                            'wind_turbine': [turbines_region[turbine_type]],
-                        'total_capacity': [capacity]})
-                    wind_turbine_fleet = pd.concat([wind_turbine_fleet, df])
-                    wind_turbine_fleet.index = np.arange(0, len(
-                        wind_turbine_fleet))
-                    wind_farm_data = {'name': 'todo',
-                                      'wind_turbine_fleet': wind_turbine_fleet}
 
-                # initialize wind farm and run TurbineClusterModelChain
-                wind_farm = WindPowerPlant(model=WindpowerlibTurbineCluster,
-                                           **wind_farm_data)
-                feedin_ts = wind_farm.feedin(
-                    weather=weather_period,
-                    wake_losses_model=kwargs.get(
-                        'wake_losses_model', 'dena_mean'),
-                    smoothing=kwargs.get('smoothing', False))  # todo scaling?
+                if len(turbine_types_location) < 1:
+                    # this happens if there is only one turbine in the current
+                    # weather location and this turbine is installed during
+                    # the current year
+                    feedin_ts = pd.Series([0.0 for i in weather_period.index],
+                                           index=weather_period.index)
+                else:
+                    wind_turbine_fleet = pd.DataFrame()
+                    for turbine_type in turbine_types_location['id']:
+                        capacity = power_plants.loc[
+                            power_plants['id'] == turbine_type]['capacity'].sum()  # todo check capacity of opsd register
+                        df = pd.DataFrame({
+                                'wind_turbine': [turbines_region[turbine_type]],
+                            'total_capacity': [capacity]})
+                        wind_turbine_fleet = pd.concat([wind_turbine_fleet, df])
+                        wind_turbine_fleet.index = np.arange(0, len(
+                            wind_turbine_fleet))
+                        wind_farm_data = {'name': 'todo',
+                                          'wind_turbine_fleet': wind_turbine_fleet}
+                    # initialize wind farm and run TurbineClusterModelChain
+                    wind_farm = WindPowerPlant(model=WindpowerlibTurbineCluster,
+                                               **wind_farm_data)
+                    feedin_ts = wind_farm.feedin(
+                        weather=weather_period,
+                        wake_losses_model=kwargs.get(
+                            'wake_losses_model', 'dena_mean'),
+                        smoothing=kwargs.get('smoothing', False))  # todo scaling?
                 feedin_weather_loc = feedin_weather_loc.append(feedin_ts)
             feedin_weather_loc.name = feedin_ts.name
             feedin_df = pd.DataFrame(data=feedin_weather_loc).rename(

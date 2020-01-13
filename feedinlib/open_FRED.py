@@ -274,7 +274,7 @@ class Weather:
         instance.variables = variables
         return instance
 
-    def location(self, point=None):
+    def location(self, point):
         """ Get the measurement location closest to the given `point`.
         """
         point = WKTE(point.to_wkt(), srid=4326)

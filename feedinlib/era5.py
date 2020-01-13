@@ -319,7 +319,7 @@ def select_geometry(ds, area):
             np.logical_and((ds.longitude == lon), (ds.latitude == lat))
         )
 
-    # bind all conditions form the list
+    # bind all conditions from the list
     cond = np.logical_or(*logical_list[:2])
     for new_cond in logical_list[2:]:
         cond = np.logical_or(cond, new_cond)

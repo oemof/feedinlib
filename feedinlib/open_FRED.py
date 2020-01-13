@@ -153,6 +153,12 @@ class Weather:
         self.locations = {
             k: to_shape(self.locations[k].point) for k in self.locations
         }
+        self.locations.update(
+            {
+                (p.x, p.y): p
+                for p in chain(self.locations.values(), *self.regions.values())
+            }
+        )
 
         series = sorted(
             session.query(

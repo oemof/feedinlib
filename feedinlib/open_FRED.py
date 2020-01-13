@@ -149,6 +149,11 @@ class Weather:
             l.id
             for l in chain(self.locations.values(), *self.regions.values())
         ]
+
+        self.locations = {
+            k: to_shape(self.locations[k].point) for k in self.locations
+        }
+
         series = sorted(
             session.query(
                 db["Series"], db["Variable"], db["Timespan"], db["Location"]
@@ -373,9 +378,9 @@ class Weather:
         location = (
             self.locations[xy]
             if xy in self.locations
-            else self.location(location)
+            else to_shape(self.location(location).point)
         )
-        point = (to_shape(location.point).x, to_shape(location.point).y)
+        point = (location.x, location.y)
 
         index = (
             [

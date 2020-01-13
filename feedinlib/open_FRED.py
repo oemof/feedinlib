@@ -390,6 +390,11 @@ class Weather:
             self.locations[xy]
             if xy in self.locations
             else to_shape(self.location(location).point)
+            if self.session is not None
+            else min(
+                self.locations.values(),
+                key=lambda point: location.distance(point),
+            )
         )
         point = (location.x, location.y)
 

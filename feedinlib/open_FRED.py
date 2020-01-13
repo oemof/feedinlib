@@ -279,7 +279,7 @@ class Weather:
                 key=lambda variable_height_pair: variable_height_pair[0],
             )
         }
-        locations = {xy: None for xy in df.index.values}
+        locations = {xy: Point(xy[0], xy[1]) for xy in df.index.values}
         series = {
             (xy, *variable_height_pair): df.loc[xy, variable_height_pair]
             for xy in df.index.values

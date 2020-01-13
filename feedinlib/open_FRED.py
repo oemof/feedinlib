@@ -160,6 +160,11 @@ class Weather:
             }
         )
 
+        self.regions = {
+            k: [to_shape[location] for location in self.regions[k]]
+            for k in self.regions
+        }
+
         series = sorted(
             session.query(
                 db["Series"], db["Variable"], db["Timespan"], db["Location"]

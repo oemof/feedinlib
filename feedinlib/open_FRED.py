@@ -4,6 +4,7 @@ from numbers import Number
 from pandas import DataFrame as DF, Series, Timedelta as TD, to_datetime as tdt
 from geoalchemy2.elements import WKTElement as WKTE
 from geoalchemy2.shape import to_shape
+from shapely.geometry import Point
 from sqlalchemy.orm import sessionmaker
 import oedialect
 import pandas as pd
@@ -274,7 +275,7 @@ class Weather:
         instance.variables = variables
         return instance
 
-    def location(self, point):
+    def location(self, point: Point):
         """ Get the measurement location closest to the given `point`.
         """
         point = WKTE(point.to_wkt(), srid=4326)

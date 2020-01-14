@@ -3,10 +3,45 @@
 This module contains tools, mainly the single `deduplicate` function, to remove
 duplicates from data.
 """
+from itertools import filterfalse, tee
 from numbers import Number
-from typing import List, Tuple, Union
+from typing import List, Tuple, TypeVar, Union
 
 from pandas import Timestamp
+
+T = TypeVar("T")
+
+
+def runs(accumulator: List[List[T]], element: T) -> T:
+    (index, (start, stop, value)) = element
+    last = accumulator[-1]
+    if (not last) or ((start, stop) == tuple(last[-1][1][0:2])):
+        last.append(element)
+    else:
+        accumulator.append([element])
+    return accumulator
+
+
+def partition(predicate, iterable):
+    """ Use a predicate to partition entries into false and true ones.
+
+    Taken from:
+
+        https://docs.python.org/dev/library/itertools.html#itertools-recipes
+
+    Examples
+    --------
+    >>> def is_odd(x): return x % 2 != 0
+    ...
+    >>> [list(t) for t in partition(is_odd, range(10))]
+    [[0, 2, 4, 6, 8], [1, 3, 5, 7, 9]]
+    """
+    t1, t2 = tee(iterable)
+    return filterfalse(predicate, t1), filter(predicate, t2)
+
+
+# TODO: Figure out which of the above can be replaced by stuff from the
+#       `more-itertools` package.
 
 
 def deduplicate(

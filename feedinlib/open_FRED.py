@@ -231,7 +231,7 @@ class Weather:
                 ),
             )
         }
-        self.series = deduplicate(self.series)
+        self.series = {k: deduplicate(self.series[k]) for k in self.series}
         self.variables = {
             k: sorted(set(h for _, h in g))
             for k, g in groupby(

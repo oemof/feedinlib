@@ -4,16 +4,16 @@ This module contains tools, mainly the single `deduplicate` function, to remove
 duplicates from data.
 """
 from numbers import Number
-from typing import List, Union
+from typing import List, Tuple, Union
 
 from pandas import Timestamp
 
 
 def deduplicate(
-    timeseries: List((Timestamp, Timestamp, Union[str, Number])),
+    timeseries: List[Tuple[Timestamp, Timestamp, Union[str, Number]]],
     absolute_margin: float = 0.1,
     relative_margin: float = 0.1,
-):
+) -> List[Tuple[Timestamp, Timestamp, Union[str, Number]]]:
     """ Remove duplicates from the supplied `timeseries`.
 
     Currently the deduplication relies on `timemseries` being formatted
@@ -24,7 +24,7 @@ def deduplicate(
 
     Parameters
     ----------
-    timeseries : List((Timestamp, Timestamp, Union[str, Number]))
+    timeseries : List[Tuple[Timestamp, Timestamp, Union[str, Number]]]
         The timeseries to duplicate.
     absolute_margin : float
         The absolute value of the difference between the two values has to be
@@ -36,7 +36,7 @@ def deduplicate(
 
     Returns
     -------
-    timeseries : List((Timestamp, Timestamp, Union[str, Number]))
+    timeseries : List[Tuple[Timestamp, Timestamp, Union[str, Number]]]
         A copy of the input data with duplicate values removed.
 
     Raises

@@ -4,6 +4,7 @@ from numbers import Number
 from pandas import DataFrame as DF, Series, Timedelta as TD, to_datetime as tdt
 from geoalchemy2.elements import WKTElement as WKTE
 from geoalchemy2.shape import to_shape
+from shapely.geometry import Point
 from sqlalchemy.orm import sessionmaker
 import oedialect
 import pandas as pd
@@ -148,6 +149,22 @@ class Weather:
             l.id
             for l in chain(self.locations.values(), *self.regions.values())
         ]
+
+        self.locations = {
+            k: to_shape(self.locations[k].point) for k in self.locations
+        }
+        self.locations.update(
+            {
+                (p.x, p.y): p
+                for p in chain(self.locations.values(), *self.regions.values())
+            }
+        )
+
+        self.regions = {
+            k: [to_shape[location] for location in self.regions[k]]
+            for k in self.regions
+        }
+
         series = sorted(
             session.query(
                 db["Series"], db["Variable"], db["Timespan"], db["Location"]
@@ -262,7 +279,7 @@ class Weather:
                 key=lambda variable_height_pair: variable_height_pair[0],
             )
         }
-        locations = {xy: None for xy in df.index.values}
+        locations = {xy: Point(xy[0], xy[1]) for xy in df.index.values}
         series = {
             (xy, *variable_height_pair): df.loc[xy, variable_height_pair]
             for xy in df.index.values
@@ -274,7 +291,7 @@ class Weather:
         instance.variables = variables
         return instance
 
-    def location(self, point=None):
+    def location(self, point: Point):
         """ Get the measurement location closest to the given `point`.
         """
         point = WKTE(point.to_wkt(), srid=4326)
@@ -372,9 +389,14 @@ class Weather:
         location = (
             self.locations[xy]
             if xy in self.locations
-            else self.location(location)
+            else to_shape(self.location(location).point)
+            if self.session is not None
+            else min(
+                self.locations.values(),
+                key=lambda point: location.distance(point),
+            )
         )
-        point = (to_shape(location.point).x, to_shape(location.point).y)
+        point = (location.x, location.y)
 
         index = (
             [

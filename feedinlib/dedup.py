@@ -44,5 +44,31 @@ def deduplicate(
     ValueError
         If the data contains duplicates outside of the allowed margins.
     """
-
-    return timeseries
+    # TODO: Fix the data. If possible add a constraint preventing this from
+    #       happending again alongside the fix.
+    #       This is just here because there's duplicate data (that we know)
+    #       at the end of 2017. The last timestamp of 2017 is duplicated in
+    #       the first timespan of 2018. And unfortunately it's not exactly
+    #       duplicated. The timestamps are equal, but the values are only
+    #       equal within a certain margin.
+    result = {
+        k: (
+            timeseries[k][:-1]
+            if (timeseries[k][-1][0:2] == self.series[k][-2][0:2])
+            and (
+                (timeseries[k][-1][2] == self.series[k][-2][2])
+                or (
+                    isinstance(timeseries[k][-1][2], Number)
+                    and isinstance(timeseries[k][-2][2], Number)
+                    and (
+                        abs(timeseries[k][-1][2] - self.series[k][-2][2])
+                        <= 0.5
+                    )
+                )
+            )
+            else timeseries[k]
+        )
+        for k in timeseries
+    }
+    # TODO: Collect duplication errors not cought by the code above.
+    return result

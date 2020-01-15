@@ -112,13 +112,16 @@ def format_windpowerlib(ds):
     ds = ds.drop(drop_vars)
 
     # convert to dataframe
-    df = ds.to_dataframe()
+    df = ds.to_dataframe().reset_index()
 
-    # reorder the multiindexing on the rows if needed
-    try:
-        df = df.reorder_levels(["time", "latitude", "longitude"])
-    except:
-        pass
+    # the time stamp given by ERA5 for mean values (probably) corresponds to
+    # the end of the valid time interval; the following sets the time stamp
+    # to the middle of the valid time interval
+    df['time'] = df.time - pd.Timedelta(minutes=60)
+
+    df.set_index(['time', 'latitude', 'longitude'], inplace=True)
+    df.sort_index(inplace=True)
+    df.tz_localize("UTC", level=0)
 
     # reorder the columns of the dataframe
     df = df[windpowerlib_vars]
@@ -140,11 +143,7 @@ def format_windpowerlib(ds):
     df.columns = midx
     df.dropna(inplace=True)
 
-    level = None
-    if isinstance(df.index, pd.MultiIndex):
-        level = 0
-        df.sort_index(inplace=True)
-    return df.tz_localize("UTC", level=level)
+    return df
 
 
 def format_pvlib(ds):
@@ -197,20 +196,22 @@ def format_pvlib(ds):
     ]
     ds = ds.drop(drop_vars)
 
-    # reorder the multiindexing on the rows if needed
-    df = ds.to_dataframe()
-    if isinstance(df.index, pd.MultiIndex):
-        df = df.reorder_levels(["time", "latitude", "longitude"])
+    # convert to dataframe
+    df = ds.to_dataframe().reset_index()
 
-    # reorder the multiindexing on the rows
+    # the time stamp given by ERA5 for mean values (probably) corresponds to
+    # the end of the valid time interval; the following sets the time stamp
+    # to the middle of the valid time interval
+    df['time'] = df.time - pd.Timedelta(minutes=30)
+
+    df.set_index(['time', 'latitude', 'longitude'], inplace=True)
+    df.sort_index(inplace=True)
+    df.tz_localize("UTC", level=0)
+
     df = df[["wind_speed", "temp_air", "ghi", "dhi"]]
     df.dropna(inplace=True)
 
-    level = None
-    if isinstance(df.index, pd.MultiIndex):
-        level = 0
-        df.sort_index(inplace=True)
-    return df.tz_localize("UTC", level=level)
+    return df
 
 
 def select_area(ds, lon, lat, g_step=0.25):

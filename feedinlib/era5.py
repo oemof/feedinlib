@@ -308,6 +308,9 @@ def select_geometry(ds, area):
     geo_df = gpd.GeoDataFrame(df, crs=crs, geometry=geometry)
 
     inside_points = geo_df.within(area)
+    # if no points lie within area, return None
+    if not inside_points.any():
+        return None
 
     inside_lon = geo_df.loc[inside_points, "lon"].values
     inside_lat = geo_df.loc[inside_points, "lat"].values
@@ -372,6 +375,8 @@ def weather_df_from_era5(
             ds = select_area(ds, area[0], area[1])
         else:
             ds = select_geometry(ds, area)
+            if ds is None:
+                return pd.DataFrame()
 
     if lib == "windpowerlib":
         df = format_windpowerlib(ds)

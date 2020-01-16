@@ -121,7 +121,7 @@ def format_windpowerlib(ds):
 
     df.set_index(['time', 'latitude', 'longitude'], inplace=True)
     df.sort_index(inplace=True)
-    df.tz_localize("UTC", level=0)
+    df = df.tz_localize("UTC", level=0)
 
     # reorder the columns of the dataframe
     df = df[windpowerlib_vars]
@@ -206,7 +206,7 @@ def format_pvlib(ds):
 
     df.set_index(['time', 'latitude', 'longitude'], inplace=True)
     df.sort_index(inplace=True)
-    df.tz_localize("UTC", level=0)
+    df = df.tz_localize("UTC", level=0)
 
     df = df[["wind_speed", "temp_air", "ghi", "dhi"]]
     df.dropna(inplace=True)

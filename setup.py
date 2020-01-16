@@ -29,6 +29,7 @@ setup(
         "tables",
         "windpowerlib >= 0.2.0",
         "xarray >= 0.12.0",
+        "tables"
     ],
     extras_require={
         "dev": [

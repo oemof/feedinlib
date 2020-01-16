@@ -48,10 +48,10 @@ def partition(predicate, iterable):
 
 
 def deduplicate(
-    timeseries: List[Tuple[Timestamp, Timestamp, Union[str, Number]]],
+    timeseries: List[TimeseriesEntry],
     absolute_margin: float = 0.1,
     relative_margin: float = 0.1,
-) -> List[Tuple[Timestamp, Timestamp, Union[str, Number]]]:
+) -> List[TimeseriesEntry]:
     """ Remove duplicates from the supplied `timeseries`.
 
     Currently the deduplication relies on `timemseries` being formatted
@@ -62,7 +62,7 @@ def deduplicate(
 
     Parameters
     ----------
-    timeseries : List[Tuple[Timestamp, Timestamp, Union[str, Number]]]
+    timeseries : List[TimeseriesEntry]
         The timeseries to duplicate.
     absolute_margin : float
         The absolute value of the difference between the two values has to be
@@ -74,7 +74,7 @@ def deduplicate(
 
     Returns
     -------
-    timeseries : List[Tuple[Timestamp, Timestamp, Union[str, Number]]]
+    timeseries : List[TimeseriesEntry]
         A copy of the input data with duplicate values removed.
 
     Raises

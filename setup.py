@@ -29,7 +29,7 @@ setup(
         "tables",
         "windpowerlib >= 0.2.0",
         "xarray >= 0.12.0",
-        "tables"
+        "descartes"
     ],
     extras_require={
         "dev": [
@@ -39,6 +39,8 @@ setup(
             "pytest",
             "sphinx_rtd_theme",
         ],
-        "examples": ["jupyter"],
+        "examples": ["jupyter",
+                     "matplotlib",
+                     "descartes"],
     },
 )

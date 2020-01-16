@@ -1,3 +1,6 @@
+.. image:: https://mybinder.org/badge_logo.svg
+ :target: https://mybinder.org/v2/gh/oemof/feedinlib/dev
+
 The feedinlib is a tool to calculate feed-in time series of photovoltaic
 and wind power plants. It therefore provides interfaces between
 different weather data sets and feed-in models. It is part of the oemof

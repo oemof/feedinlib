@@ -156,7 +156,14 @@ class Weather:
         self.locations.update(
             {
                 (p.x, p.y): p
-                for p in chain(self.locations.values(), *self.regions.values())
+                for p in chain(
+                    self.locations.values(),
+                    (
+                        to_shape(location.point)
+                        for region in self.regions.values()
+                        for location in region
+                    ),
+                )
             }
         )
 

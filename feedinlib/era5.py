@@ -379,6 +379,13 @@ def weather_df_from_era5(
             "Unknown value for `lib`. "
             "It must be either 'pvlib' or 'windpowerlib'."
         )
+
+    # drop latitude and longitude from index in case a single location
+    # is given in parameter `area`
+    if area is not None and isinstance(area, list):
+        if np.size(area[0]) == 1 and np.size(area[1]) == 1:
+            df.index = df.index.droplevel(level=[1, 2])
+
     if start is None:
         start = df.index[0]
     if end is None:

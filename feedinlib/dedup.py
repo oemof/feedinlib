@@ -5,14 +5,17 @@ duplicates from data.
 """
 from itertools import filterfalse, tee
 from numbers import Number
-from typing import List, Tuple, TypeVar, Union
+from typing import List, Tuple, Union
 
 from pandas import Timestamp
 
-T = TypeVar("T")
+TimeseriesEntry = Tuple[Timestamp, Timestamp, Union[str, Number]]
 
 
-def runs(accumulator: List[List[T]], element: T) -> T:
+def runs(
+    accumulator: List[List[Tuple[int, TimeseriesEntry]]],
+    element: Tuple[int, TimeseriesEntry],
+) -> List[List[Tuple[int, TimeseriesEntry]]]:
     (index, (start, stop, value)) = element
     last = accumulator[-1]
     if (not last) or ((start, stop) == tuple(last[-1][1][0:2])):

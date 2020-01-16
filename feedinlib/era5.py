@@ -359,7 +359,10 @@ def weather_df_from_era5(
     Returns
     -------
     pd.DataFrame
-        Dataframe with ERA5 weather data in format required by the lib.
+        Dataframe with ERA5 weather data in format required by the lib. In
+        case a single location is provided in parameter `area` index of the
+        dataframe is a datetime index. Otherwise the index is a multiindex
+        with time, latitude and longitude levels.
 
     """
     ds = xr.open_dataset(era5_netcdf_filename)

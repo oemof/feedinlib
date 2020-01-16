@@ -168,7 +168,7 @@ class Weather:
         )
 
         self.regions = {
-            k: [to_shape[location] for location in self.regions[k]]
+            k: [to_shape(location.point) for location in self.regions[k]]
             for k in self.regions
         }
 

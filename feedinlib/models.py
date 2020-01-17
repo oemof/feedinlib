@@ -500,8 +500,8 @@ class Pvlib(PhotovoltaicModelBase):
         self.power_plant = self.instantiate_module(**power_plant_parameters)
 
         mc = PvlibModelChain(self.power_plant, location, **kwargs)
-        mc.complete_irradiance(times=weather.index, weather=weather)
-        mc.run_model()
+        mc.complete_irradiance(weather=weather)
+        mc.run_model(weather=weather)
 
         if self.mode == "ac":
             return mc.ac

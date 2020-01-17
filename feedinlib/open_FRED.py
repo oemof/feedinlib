@@ -1,8 +1,10 @@
 from itertools import chain, groupby
+from numbers import Number
 
 from pandas import DataFrame as DF, Series, Timedelta as TD, to_datetime as tdt
 from geoalchemy2.elements import WKTElement as WKTE
 from geoalchemy2.shape import to_shape
+from shapely.geometry import Point
 from sqlalchemy.orm import sessionmaker
 import oedialect
 import pandas as pd
@@ -147,6 +149,29 @@ class Weather:
             l.id
             for l in chain(self.locations.values(), *self.regions.values())
         ]
+
+        self.locations = {
+            k: to_shape(self.locations[k].point) for k in self.locations
+        }
+        self.locations.update(
+            {
+                (p.x, p.y): p
+                for p in chain(
+                    self.locations.values(),
+                    (
+                        to_shape(location.point)
+                        for region in self.regions.values()
+                        for location in region
+                    ),
+                )
+            }
+        )
+
+        self.regions = {
+            k: [to_shape(location.point) for location in self.regions[k]]
+            for k in self.regions
+        }
+
         series = sorted(
             session.query(
                 db["Series"], db["Variable"], db["Timespan"], db["Location"]
@@ -205,6 +230,33 @@ class Weather:
                 ),
             )
         }
+        # TODO: Fix the data. If possible add a constraint preventing this from
+        #       happending again alongside the fix.
+        #       This is just here because there's duplicate data (that we know)
+        #       at the end of 2017. The last timestamp of 2017 is duplicated in
+        #       the first timespan of 2018. And unfortunately it's not exactly
+        #       duplicated. The timestamps are equal, but the values are only
+        #       equal within a certain margin.
+        self.series = {
+            k: (
+                self.series[k][:-1]
+                if (self.series[k][-1][0:2] == self.series[k][-2][0:2])
+                and (
+                    (self.series[k][-1][2] == self.series[k][-2][2])
+                    or (
+                        isinstance(self.series[k][-1][2], Number)
+                        and isinstance(self.series[k][-2][2], Number)
+                        and (
+                            abs(self.series[k][-1][2] - self.series[k][-2][2])
+                            <= 0.5
+                        )
+                    )
+                )
+                else self.series[k]
+            )
+            for k in self.series
+        }
+        # TODO: Collect duplication errors not cought by the code above.
 
         self.variables = {
             k: sorted(set(h for _, h in g))
@@ -234,7 +286,7 @@ class Weather:
                 key=lambda variable_height_pair: variable_height_pair[0],
             )
         }
-        locations = {xy: None for xy in df.index.values}
+        locations = {xy: Point(xy[0], xy[1]) for xy in df.index.values}
         series = {
             (xy, *variable_height_pair): df.loc[xy, variable_height_pair]
             for xy in df.index.values
@@ -246,7 +298,7 @@ class Weather:
         instance.variables = variables
         return instance
 
-    def location(self, point=None):
+    def location(self, point: Point):
         """ Get the measurement location closest to the given `point`.
         """
         point = WKTE(point.to_wkt(), srid=4326)
@@ -344,9 +396,14 @@ class Weather:
         location = (
             self.locations[xy]
             if xy in self.locations
-            else self.location(location)
+            else to_shape(self.location(location).point)
+            if self.session is not None
+            else min(
+                self.locations.values(),
+                key=lambda point: location.distance(point),
+            )
         )
-        point = (to_shape(location.point).x, to_shape(location.point).y)
+        point = (location.x, location.y)
 
         index = (
             [

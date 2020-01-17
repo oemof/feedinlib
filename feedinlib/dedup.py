@@ -5,7 +5,7 @@ duplicates from data.
 """
 from itertools import filterfalse, tee
 from numbers import Number
-from typing import List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 from pandas import Timestamp
 
@@ -48,9 +48,7 @@ def partition(predicate, iterable):
 
 
 def deduplicate(
-    timeseries: List[TimeseriesEntry],
-    absolute_margin: float = 0.1,
-    relative_margin: float = 0.1,
+    timeseries: List[TimeseriesEntry], margins: Dict[str, float] = {},
 ) -> List[TimeseriesEntry]:
     """ Remove duplicates from the supplied `timeseries`.
 
@@ -64,13 +62,18 @@ def deduplicate(
     ----------
     timeseries : List[TimeseriesEntry]
         The timeseries to duplicate.
-    absolute_margin : float
-        The absolute value of the difference between the two values has to be
-        smaller than or equal to this.
-    relative_margin : float
-        The absolute value of the difference between the two values has to be
-        smaller than or equal to this, when interpreted as a percentage of the
-        maximum of the absolute values of the two compared values.
+    margins : Dict[str, float]
+        The margins of error. Can contain one or both of the strings
+        :code:`"absolute"` and :code:`"relative"` as keys with the numbers
+        stored under these keys having the following meaning:
+
+            - for :code:`absolute` value of the difference between the two
+              values has to be smaller than or equal to this while
+            - for :code:`relative` this difference has to be smaller than or
+              equal to this when interpreted as a fraction of the maximum of
+              the absolute values of the two compared values.
+
+        By default these limits are set to be infinitely big.
 
     Returns
     -------
@@ -89,6 +92,10 @@ def deduplicate(
     #       the first timespan of 2018. And unfortunately it's not exactly
     #       duplicated. The timestamps are equal, but the values are only
     #       equal within a certain margin.
+    margins = {
+        **{"absolute": float("inf"), "relative": float("inf")},
+        **margins,
+    }
     result = (
         timeseries[:-1]
         if (timeseries[k][-1][0:2] == self.series[k][-2][0:2])

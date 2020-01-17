@@ -1,5 +1,5 @@
 from itertools import chain, groupby
-from numbers import Number
+from typing import Dict, List, Tuple, Union
 
 from pandas import DataFrame as DF, Series, Timedelta as TD, to_datetime as tdt
 from geoalchemy2.elements import WKTElement as WKTE
@@ -12,8 +12,15 @@ import sqlalchemy as sqla
 
 import open_FRED.cli as ofr
 
+from .dedup import deduplicate
 
-TRANSLATIONS = {
+#: The type of variable selectors. A selector should always contain the
+#: name of the variable to select and optionally the height to select,
+#: if only a specific one is desired.
+Selector = Union[Tuple[str], Tuple[str, int]]
+
+
+TRANSLATIONS: Dict[str, Dict[str, List[Selector]]] = {
     "windpowerlib": {
         "wind_speed": [("VABS_AV",)],
         "temperature": [("T",)],
@@ -230,34 +237,7 @@ class Weather:
                 ),
             )
         }
-        # TODO: Fix the data. If possible add a constraint preventing this from
-        #       happending again alongside the fix.
-        #       This is just here because there's duplicate data (that we know)
-        #       at the end of 2017. The last timestamp of 2017 is duplicated in
-        #       the first timespan of 2018. And unfortunately it's not exactly
-        #       duplicated. The timestamps are equal, but the values are only
-        #       equal within a certain margin.
-        self.series = {
-            k: (
-                self.series[k][:-1]
-                if (self.series[k][-1][0:2] == self.series[k][-2][0:2])
-                and (
-                    (self.series[k][-1][2] == self.series[k][-2][2])
-                    or (
-                        isinstance(self.series[k][-1][2], Number)
-                        and isinstance(self.series[k][-2][2], Number)
-                        and (
-                            abs(self.series[k][-1][2] - self.series[k][-2][2])
-                            <= 0.5
-                        )
-                    )
-                )
-                else self.series[k]
-            )
-            for k in self.series
-        }
-        # TODO: Collect duplication errors not cought by the code above.
-
+        self.series = {k: deduplicate(self.series[k]) for k in self.series}
         self.variables = {
             k: sorted(set(h for _, h in g))
             for k, g in groupby(

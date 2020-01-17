@@ -1,4 +1,5 @@
 from itertools import chain, groupby
+from typing import Dict, List, Tuple, Union
 
 from pandas import DataFrame as DF, Series, Timedelta as TD, to_datetime as tdt
 from geoalchemy2.elements import WKTElement as WKTE
@@ -13,8 +14,13 @@ import open_FRED.cli as ofr
 
 from .dedup import deduplicate
 
+#: The type of variable selectors. A selector should always contain the
+#: name of the variable to select and optionally the height to select,
+#: if only a specific one is desired.
+Selector = Union[Tuple[str], Tuple[str, int]]
 
-TRANSLATIONS = {
+
+TRANSLATIONS: Dict[str, Dict[str, List[Selector]]] = {
     "windpowerlib": {
         "wind_speed": [("VABS_AV",)],
         "temperature": [("T",)],

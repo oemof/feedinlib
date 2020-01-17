@@ -112,13 +112,16 @@ def format_windpowerlib(ds):
     ds = ds.drop(drop_vars)
 
     # convert to dataframe
-    df = ds.to_dataframe()
+    df = ds.to_dataframe().reset_index()
 
-    # reorder the multiindexing on the rows if needed
-    try:
-        df = df.reorder_levels(["time", "latitude", "longitude"])
-    except:
-        pass
+    # the time stamp given by ERA5 for mean values (probably) corresponds to
+    # the end of the valid time interval; the following sets the time stamp
+    # to the middle of the valid time interval
+    df['time'] = df.time - pd.Timedelta(minutes=60)
+
+    df.set_index(['time', 'latitude', 'longitude'], inplace=True)
+    df.sort_index(inplace=True)
+    df = df.tz_localize("UTC", level=0)
 
     # reorder the columns of the dataframe
     df = df[windpowerlib_vars]
@@ -140,11 +143,7 @@ def format_windpowerlib(ds):
     df.columns = midx
     df.dropna(inplace=True)
 
-    level = None
-    if isinstance(df.index, pd.MultiIndex):
-        level = 0
-        df.sort_index(inplace=True)
-    return df.tz_localize("UTC", level=level)
+    return df
 
 
 def format_pvlib(ds):
@@ -197,20 +196,22 @@ def format_pvlib(ds):
     ]
     ds = ds.drop(drop_vars)
 
-    # reorder the multiindexing on the rows if needed
-    df = ds.to_dataframe()
-    if isinstance(df.index, pd.MultiIndex):
-        df = df.reorder_levels(["time", "latitude", "longitude"])
+    # convert to dataframe
+    df = ds.to_dataframe().reset_index()
 
-    # reorder the multiindexing on the rows
+    # the time stamp given by ERA5 for mean values (probably) corresponds to
+    # the end of the valid time interval; the following sets the time stamp
+    # to the middle of the valid time interval
+    df['time'] = df.time - pd.Timedelta(minutes=30)
+
+    df.set_index(['time', 'latitude', 'longitude'], inplace=True)
+    df.sort_index(inplace=True)
+    df = df.tz_localize("UTC", level=0)
+
     df = df[["wind_speed", "temp_air", "ghi", "dhi"]]
     df.dropna(inplace=True)
 
-    level = None
-    if isinstance(df.index, pd.MultiIndex):
-        level = 0
-        df.sort_index(inplace=True)
-    return df.tz_localize("UTC", level=level)
+    return df
 
 
 def select_area(ds, lon, lat, g_step=0.25):
@@ -307,6 +308,9 @@ def select_geometry(ds, area):
     geo_df = gpd.GeoDataFrame(df, crs=crs, geometry=geometry)
 
     inside_points = geo_df.within(area)
+    # if no points lie within area, return None
+    if not inside_points.any():
+        return None
 
     inside_lon = geo_df.loc[inside_points, "lon"].values
     inside_lat = geo_df.loc[inside_points, "lat"].values
@@ -358,7 +362,10 @@ def weather_df_from_era5(
     Returns
     -------
     pd.DataFrame
-        Dataframe with ERA5 weather data in format required by the lib.
+        Dataframe with ERA5 weather data in format required by the lib. In
+        case a single location is provided in parameter `area` index of the
+        dataframe is a datetime index. Otherwise the index is a multiindex
+        with time, latitude and longitude levels.
 
     """
     ds = xr.open_dataset(era5_netcdf_filename)
@@ -368,6 +375,8 @@ def weather_df_from_era5(
             ds = select_area(ds, area[0], area[1])
         else:
             ds = select_geometry(ds, area)
+            if ds is None:
+                return pd.DataFrame()
 
     if lib == "windpowerlib":
         df = format_windpowerlib(ds)
@@ -378,6 +387,13 @@ def weather_df_from_era5(
             "Unknown value for `lib`. "
             "It must be either 'pvlib' or 'windpowerlib'."
         )
+
+    # drop latitude and longitude from index in case a single location
+    # is given in parameter `area`
+    if area is not None and isinstance(area, list):
+        if np.size(area[0]) == 1 and np.size(area[1]) == 1:
+            df.index = df.index.droplevel(level=[1, 2])
+
     if start is None:
         start = df.index[0]
     if end is None:

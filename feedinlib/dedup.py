@@ -3,6 +3,7 @@
 This module contains tools, mainly the single `deduplicate` function, to remove
 duplicates from data.
 """
+from functools import reduce
 from itertools import filterfalse, tee
 from numbers import Number
 from typing import Dict, List, Tuple, Union
@@ -96,6 +97,11 @@ def deduplicate(
         **{"absolute": float("inf"), "relative": float("inf")},
         **margins,
     }
+    multiples = [
+        run
+        for run in reduce(runs, enumerate(timeseries), [[]])
+        if len(run) > 1
+    ]
     result = (
         timeseries[:-1]
         if (timeseries[k][-1][0:2] == self.series[k][-2][0:2])

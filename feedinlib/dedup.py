@@ -48,6 +48,37 @@ def partition(predicate, iterable):
 #       `more-itertools` package.
 
 
+def compress(
+    multiples: List[Tuple[int, TimeseriesEntry]], margins: Dict[str, float],
+) -> List[Tuple[slice, TimeseriesEntry]]:
+    """ {}
+    """.format(
+        "Compresses equal timestamp runs if the values are inside "
+        "the margin of error."
+    )
+    if not multiples:
+        return multiples
+    result = []
+    index, (start, stop, value) = multiples[0]
+    for ci, (start_, stop_, cv) in multiples[1:]:
+        if not (
+            (value == cv)
+            or (
+                isinstance(value, Number)
+                and isinstance(cv, Number)
+                and (abs(value - cv) <= margins["absolute"])
+                and (
+                    abs(value - cv) / max(abs(v) for v in [value, cv])
+                    <= margins["relative"]
+                )
+            )
+        ):
+            result.append((slice(index, ci + 1), (start, stop, value)))
+            index, value = ci, cv
+    result.append((slice(index, multiples[-1][0] + 1), (start, stop, value)))
+    return result
+
+
 def deduplicate(
     timeseries: List[TimeseriesEntry], margins: Dict[str, float] = {},
 ) -> List[TimeseriesEntry]:
@@ -102,6 +133,7 @@ def deduplicate(
         for run in reduce(runs, enumerate(timeseries), [[]])
         if len(run) > 1
     ]
+    compressed = [compress(m, margins) for m in multiples]
     result = (
         timeseries[:-1]
         if (timeseries[k][-1][0:2] == self.series[k][-2][0:2])

@@ -134,18 +134,9 @@ def deduplicate(
         if len(run) > 1
     ]
     compressed = [compress(m, margins) for m in multiples]
-    result = (
-        timeseries[:-1]
-        if (timeseries[k][-1][0:2] == self.series[k][-2][0:2])
-        and (
-            (timeseries[k][-1][2] == self.series[k][-2][2])
-            or (
-                isinstance(timeseries[k][-1][2], Number)
-                and isinstance(timeseries[k][-2][2], Number)
-                and (abs(timeseries[k][-1][2] - self.series[k][-2][2]) <= 0.5)
-            )
-        )
-        else timeseries[k]
-    )
+    compressed.reverse()
+    result = timeseries.copy()
+    for c in compressed:
+        result[c[0][0]] = (c[0][1],)
     # TODO: Collect duplication errors not cought by the code above.
     return result

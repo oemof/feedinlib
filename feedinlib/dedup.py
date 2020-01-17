@@ -5,6 +5,7 @@ duplicates from data.
 """
 from functools import reduce
 from itertools import filterfalse, tee
+from pprint import pformat
 from numbers import Number
 from typing import Dict, List, Tuple, Union
 
@@ -134,9 +135,15 @@ def deduplicate(
         if len(run) > 1
     ]
     compressed = [compress(m, margins) for m in multiples]
+    errors = [c for c in compressed if len(c) > 1]
+    if errors:
+        raise ValueError(
+            "Found duplicate timestamps while retrieving data:\n{}".format(
+                pformat(errors)
+            )
+        )
     compressed.reverse()
     result = timeseries.copy()
     for c in compressed:
         result[c[0][0]] = (c[0][1],)
-    # TODO: Collect duplication errors not cought by the code above.
     return result

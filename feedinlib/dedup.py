@@ -125,6 +125,11 @@ def deduplicate(
     #       the first timespan of 2018. And unfortunately it's not exactly
     #       duplicated. The timestamps are equal, but the values are only
     #       equal within a certain margin.
+    # TODO: Use [`unique_iter`][0] for unsafe removal, i.e. if both margins
+    #       are infinite. Or find an alternative in [`more-itertools`][1].
+    #       [0]: https://boltons.readthedocs.io/en/latest/iterutils.html#boltons.iterutils.unique_iter
+    #       [1]: https://pypi.org/project/more-itertools/
+
     margins = {
         **{"absolute": float("inf"), "relative": float("inf")},
         **margins,

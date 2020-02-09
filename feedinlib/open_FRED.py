@@ -47,7 +47,7 @@ def defaultdb():
         getattr(defaultdb, "session", None) or sessionmaker(bind=engine)()
     )
     defaultdb.session = session
-    metadata = sqla.MetaData(schema="model_draft", bind=engine, reflect=False)
+    metadata = sqla.MetaData(schema="climate", bind=engine, reflect=False)
     return {"session": session, "db": ofr.mapped_classes(metadata)}
 
 

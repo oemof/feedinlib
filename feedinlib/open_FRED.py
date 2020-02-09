@@ -188,12 +188,12 @@ class Weather:
             .join(db["Series"].location)
             .filter((db["Series"].location_id.in_(location_ids)))
             .filter(
-                None
+                True
                 if variables is None
                 else db["Variable"].name.in_(variables)
             )
             .filter(
-                None
+                True
                 if heights is None
                 else (db["Series"].height.in_(chain([0], heights)))
             )

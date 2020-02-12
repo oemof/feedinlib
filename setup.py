@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name="feedinlib",
-    version="0.1.0rc3",
+    version="0.1.0rc4",
     description="Creating time series from pv or wind power plants.",
     url="http://github.com/oemof/feedinlib",
     author="oemof developer group",

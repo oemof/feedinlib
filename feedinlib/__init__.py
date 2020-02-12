@@ -1,6 +1,6 @@
 __copyright__ = "Copyright oemof developer group"
 __license__ = "GPLv3"
-__version__ = '0.1.0rc3'
+__version__ = '0.1.0rc4'
 
 from feedinlib.powerplants import Photovoltaic, WindPowerPlant
 from feedinlib.models import (

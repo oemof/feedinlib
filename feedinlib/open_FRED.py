@@ -90,6 +90,11 @@ class Weather:
     locations : list of :shapely:`Point`
         Weather measurements are collected from measurement locations closest
         to the the given points.
+    location_ids : list of int
+        Weather measurements are collected from measurement locations having
+        primary keys, i.e. IDs, in this list. Use this e.g. if you know you're
+        using the same location(s) for multiple queries and you don't want
+        the overhead of doing the same nearest point query multiple times.
     heights : list of numbers
         Limit selected timeseries to these heights. If `variables` contains a
         variable which isn't height dependent, i.e. it has only one height,
@@ -115,6 +120,7 @@ class Weather:
         start,
         stop,
         locations,
+        location_ids=[],
         heights=None,
         variables=None,
         regions=None,
@@ -152,10 +158,13 @@ class Weather:
             else {}
         )
 
-        location_ids = [
-            l.id
-            for l in chain(self.locations.values(), *self.regions.values())
-        ]
+        self.location_ids = set(
+            [
+                l.id
+                for l in chain(self.locations.values(), *self.regions.values())
+            ]
+            + location_ids
+        )
 
         self.locations = {
             k: to_shape(self.locations[k].point) for k in self.locations
@@ -186,7 +195,7 @@ class Weather:
             .join(db["Series"].variable)
             .join(db["Series"].timespan)
             .join(db["Series"].location)
-            .filter((db["Series"].location_id.in_(location_ids)))
+            .filter((db["Series"].location_id.in_(self.location_ids)))
             .filter(
                 True
                 if variables is None

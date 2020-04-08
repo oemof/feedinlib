@@ -1,10 +1,12 @@
 from itertools import chain, groupby
+from operator import ge, gt, le, lt
 from typing import Dict, List, Tuple, Union
 
 from pandas import DataFrame as DF, Series, Timedelta as TD, to_datetime as tdt
 from geoalchemy2.elements import WKTElement as WKTE
 from geoalchemy2.shape import to_shape
 from shapely.geometry import Point
+from sqlalchemy import or_
 from sqlalchemy.orm import sessionmaker
 import oedialect
 import pandas as pd
@@ -87,6 +89,10 @@ class Weather:
         Load weather data starting from this date.
     stop : Anything `pandas.to_datetime` can convert to a timestamp
         Don't load weather data before this date.
+    ranges : list of :python:`pandas.Interval`s with :python:`pandas.Timestamp` enpoints
+        List of time intervals for which to load weather data. This will
+        include a :python:`pandas.Timeintervall(start, stop, closed=both)`, if
+        the two arguments are specified.
     locations : list of :shapely:`Point`
         Weather measurements are collected from measurement locations closest
         to the the given points.
@@ -117,9 +123,10 @@ class Weather:
 
     def __init__(
         self,
-        start,
-        stop,
-        locations,
+        start=None,
+        stop=None,
+        ranges=[],
+        locations=[],
         location_ids=[],
         heights=None,
         variables=None,
@@ -188,6 +195,11 @@ class Weather:
             for k in self.regions
         }
 
+        if start and stop:
+            self.ranges = [pd.Interval(tdt(start), tdt(stop), closed="both")]
+        else:
+            self.ranges = []
+        self.ranges = self.ranges + ranges
         series = sorted(
             session.query(
                 db["Series"], db["Variable"], db["Timespan"], db["Location"]
@@ -207,8 +219,17 @@ class Weather:
                 else (db["Series"].height.in_(chain([0], heights)))
             )
             .filter(
-                (db["Timespan"].stop >= tdt(start))
-                & (db["Timespan"].start <= tdt(stop))
+                or_(
+                    (
+                        (le if r.closed_left else lt)(
+                            r.left, db["Timespan"].stop
+                        )
+                        & (ge if r.closed_right else gt)(
+                            r.right, db["Timespan"].start
+                        )
+                    )
+                    for r in ranges
+                )
             )
             .all(),
             key=lambda p: (
@@ -235,7 +256,10 @@ class Weather:
                 for (segment, value) in zip(timespan.segments, series.values)
                 for segment_start in [tdt(segment[0])]
                 for segment_stop in [tdt(segment[1])]
-                if segment_start >= tdt(start) and segment_stop <= tdt(stop)
+                if any(
+                    (segment_start in r) and (segment_stop in r)
+                    for r in self.ranges
+                )
             ]
             for k, g in groupby(
                 series,

@@ -24,10 +24,10 @@ setup(
         "numpy >= 1.7.0",
         "oedialect >= 0.0.6.dev0",
         "open_FRED-cli",
-        "pandas >= 0.13.1",
         "pvlib >= 0.7.0",
         "tables",
         "windpowerlib >= 0.2.0",
+        "pandas >= 0.13.1",
         "xarray >= 0.12.0",
         "descartes"
     ],

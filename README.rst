@@ -86,7 +86,7 @@ This will open a browser window. Navigate to the directory containing
 the notebook(s) to open it. See the jupyter notebook quick start guide
 for more information on `how to run`_ jupyter notebooks.
 
-.. _examples: https://feedinlib.readthedocs.io/en/stable/examples.html
+.. _examples: https://feedinlib.readthedocs.io/en/releases-0.1.0/examples.html
 .. _Load ERA5 weather data example: https://raw.githubusercontent.com/oemof/feedinlib/master/example/load_era5_weather_data.ipynb
 .. _Load open_FRED weather data example: https://raw.githubusercontent.com/oemof/feedinlib/master/example/load_open_fred_weather_data.ipynb
 .. _pvlib model example: https://raw.githubusercontent.com/oemof/feedinlib/master/example/run_pvlib_model.ipynb

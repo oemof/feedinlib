@@ -3,6 +3,16 @@
 """
 Feed-in model classes.
 
+SPDX-FileCopyrightText: Birgit Schachler
+SPDX-FileCopyrightText: Uwe Krien <krien@uni-bremen.de>
+SPDX-FileCopyrightText: Stephan Günther
+SPDX-FileCopyrightText: Stephen Bosch
+SPDX-FileCopyrightText: Lucas Schmeling
+SPDX-FileCopyrightText: Keno Oltmanns
+SPDX-FileCopyrightText: Patrik Schönfeldt
+
+SPDX-License-Identifier: MIT
+
 This module provides abstract classes as blueprints for classes that implement
 feed-in models for weather dependent renewable energy resources. These models
 take in power plant and weather data to calculate power plant feed-in.
@@ -16,6 +26,7 @@ from abc import ABC, abstractmethod
 import warnings
 import pandas as pd
 from copy import deepcopy
+import numpy as np
 
 from windpowerlib import ModelChain as WindpowerlibModelChain
 from windpowerlib import (
@@ -512,6 +523,114 @@ class Pvlib(PhotovoltaicModelBase):
                 "{} is not a valid `mode`. `mode` must "
                 "either be 'ac' or 'dc'.".format(self.mode)
             )
+
+
+class GeometricSolar:
+    r"""
+    Model to determine the feed-in of a solar plant using geometric formulas.
+    """
+
+    @staticmethod
+    def solar_angles(datetime, collector_slope, surface_azimuth, longitude, latitude):
+        """
+        Calculate the radiation on a sloped surface
+        :param data_weather: DataFrame containing direct radiation ('dni') and
+        diffuse radiation ('dhi')
+        :param collector_slope: collector slope in degree
+        :param surface_azimuth: surface azimuth in degree
+        :return: The angle of incidence costheta and the solar zenith angle costhetaz
+        """
+
+        collector_slope = np.deg2rad(collector_slope)
+        longitude = np.deg2rad(longitude)
+        latitude = np.deg2rad(latitude)
+
+        # TODO: check time zone (should be UTC)
+        n = datetime.dayofyear
+        day_angle = (n - 1) * 2 * np.pi / 365
+        equation_of_time = 229.2 * (0.000075 + 0.001868 * np.cos(day_angle) - 0.030277 * np.sin(day_angle)
+                                 - 0.014615 * np.cos(2 * day_angle) - 0.04089 * np.sin(2 * day_angle))
+        true_solar_time = datetime.hour + (datetime.minute + equation_of_time + 4 * longitude) / 60
+        hour_angle = np.deg2rad(15 * (true_solar_time - 12.5))
+        solar_declination_angle = np.deg2rad(23.45) * np.sin(2 * np.pi / 365 * (284 + n))
+        solar_zenith_angle = (
+                np.sin(solar_declination_angle) * np.sin(latitude)
+                + np.cos(solar_declination_angle) * np.cos(latitude) * np.cos(hour_angle))
+        angle_of_incidence = (
+            + np.sin(solar_declination_angle) * np.sin(latitude) * np.cos(collector_slope)
+            - np.sin(solar_declination_angle) * np.cos(latitude) * np.sin(collector_slope) * np.cos(
+                surface_azimuth)
+            + np.cos(solar_declination_angle) * np.cos(latitude) * np.cos(collector_slope) * np.cos(hour_angle)
+            + np.cos(solar_declination_angle) * np.sin(latitude) * np.sin(collector_slope)
+            * np.cos(surface_azimuth) * np.cos(hour_angle)
+            + np.cos(solar_declination_angle) * np.sin(collector_slope) * np.sin(surface_azimuth)
+            * np.sin(hour_angle))
+
+        angle_of_incidence = np.array(angle_of_incidence)
+        angle_of_incidence[angle_of_incidence < 0] = 0
+
+        solar_zenith_angle = np.array(solar_zenith_angle)
+
+        return angle_of_incidence, solar_zenith_angle
+
+    @staticmethod
+    def corrected_radiation_model(data_weather, collector_slope, surface_azimuth, longitude, latitude):
+        """
+        Refines the simplistic clear sky model by taking weather conditions and losses of the PV installation into account
+        :param data_weather: DataFrame containing direct radiation ('dni') and
+        diffuse radiation ('dhi')
+        :param collector_slope:collector slope in degree
+        :param surface_azimuth:surface azimuth in degree
+        :param local_meridian:
+        :param longitude:
+        :param latitude:
+        :return: DataFrame containing the total radiation on the sloped surface
+        """
+
+        # load 'simplistic_clear_sky' irradiation
+        angle_of_incidence, solar_zenith_angle = GeometricSolar.solar_angles(
+            data_weather.index, collector_slope, surface_azimuth,
+            longitude, latitude)
+
+        # Solar constant
+        SOLAR_CONSTANT = 1367
+
+        # ground reflectance (albedo) of grass
+        albedo_RHO = 0.2
+
+        sunset_angle = 6  # degree
+        solar_zenith_angle[solar_zenith_angle < np.cos(np.deg2rad(90 - sunset_angle))] = 1
+
+        # beam radiation correction factor
+        beam_correction_factor = np.array(angle_of_incidence / solar_zenith_angle)
+
+        dni = data_weather['dni']
+        dhi = data_weather['dhi']
+
+        irradiation = dni + dhi
+
+        # direct radiation
+        radiation_directed = dni * beam_correction_factor
+
+        # DIFFUSE RADIATION
+        # horizon brightening diffuse correction term
+        f = np.sqrt(dni / irradiation).fillna(0)
+        # Anisotropy index
+        anisotropy_index = dni / SOLAR_CONSTANT
+
+        collector_slope = np.deg2rad(collector_slope)
+        diffuse_radiation_correction_factor = (1 - anisotropy_index) * ((1 + np.cos(collector_slope)) / 2) \
+                                     * (1 + f * np.sin(
+            collector_slope / 2) ** 3) + anisotropy_index * beam_correction_factor
+
+        # diffuse radiation
+        radiation_diffuse = dhi * diffuse_radiation_correction_factor
+
+        radiation_reflected = (1 - np.cos(collector_slope)) * albedo_RHO / 2
+        radiation_reflected = irradiation * radiation_reflected
+
+        # Total radiation
+        return radiation_directed + radiation_diffuse + radiation_reflected
 
 
 class WindpowerlibTurbine(WindpowerModelBase):

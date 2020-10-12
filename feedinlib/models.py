@@ -9,7 +9,7 @@ SPDX-FileCopyrightText: Stephan Günther
 SPDX-FileCopyrightText: Stephen Bosch
 SPDX-FileCopyrightText: Lucas Schmeling
 SPDX-FileCopyrightText: Keno Oltmanns
-SPDX-FileCopyrightText: Patrik Schönfeldt
+SPDX-FileCopyrightText: Patrik Schönfeldt <patrik.schoenfeldt@dlr.de>
 
 SPDX-License-Identifier: MIT
 
@@ -574,7 +574,7 @@ class GeometricSolar:
         return angle_of_incidence, solar_zenith_angle
 
     @staticmethod
-    def corrected_radiation_model(data_weather, collector_slope, surface_azimuth, longitude, latitude):
+    def geometric_radiation(data_weather, collector_slope, surface_azimuth, longitude, latitude):
         """
         Refines the simplistic clear sky model by taking weather conditions and losses of the PV installation into account
         :param data_weather: DataFrame containing direct radiation ('dni') and

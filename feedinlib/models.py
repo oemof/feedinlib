@@ -530,32 +530,125 @@ class GeometricSolar:
     Model to determine the feed-in of a solar plant using geometric formulas.
     """
 
+    def __init__(self, **attributes):
+        """
+        Parameters
+        ----------
+        slope : numeric
+            collector slope in degree
+        azimuth : numeric
+            collector surface azimuth in degree
+        longitude : numeric
+            location (east–west) of solar plant installation
+        latitude : numeric
+            location (north-south) of solar plant installation
+        peak_power : numeric
+            nominal peak power of the installation
+        """
+
+        self.slope = attributes.get("slope")
+        self.azimuth = attributes.get("azimuth")
+        self.longitude = attributes.get("longitude")
+        self.latitude = attributes.get("latitude")
+        self.pv_system_peak_power = attributes.get("peak_power")
+
+        self.PV_ISTC = 1000  # Radiation under standard test condition
+        self.PV_TSTC = 25  # Temperature under standard test condition
+        self.PV_NOCT = 45  # Normal operation cell temperature
+        self.PV_TEMP_COEFFICIENT = 0.004  # Temperature coefficient
+        self.PV_LOSS = 0.20  # Percental loss due to lines, inverter, dirt etc.
+
+    def feedin(self, weather):
+        """
+        Parameters
+        ----------
+        weather : :pandas:`pandas.DataFrame<dataframe>`
+            containing direct radiation ('dni') and diffuse radiation ('dhi')
+
+        Returns
+        -------
+        :pandas:`pandas.Series<series>`
+            Series with PV system feed-in in the unit the peak power was given.
+
+        """
+
+        radiation_surface = GeometricSolar.geometric_radiation(weather,
+                                                               self.slope,
+                                                               self.azimuth,
+                                                               self.longitude,
+                                                               self.latitude)
+
+        temperature_cell = weather['temp_air'] + radiation_surface * (
+                (self.PV_NOCT - 20) / 800)
+
+        feedin = (self.pv_system_peak_power * radiation_surface /
+                self.PV_ISTC * (1 - self.PV_TEMP_COEFFICIENT * (
+                        temperature_cell - self.PV_TSTC)))
+
+        feedin[feedin < 0] = 0
+
+        return feedin * (1 - self.PV_LOSS)
+
     @staticmethod
-    def solar_angles(datetime, collector_slope, surface_azimuth, longitude, latitude):
+    def solar_angles(datetime,
+                     collector_slope, surface_azimuth,
+                     longitude, latitude):
         """
         Calculate the radiation on a sloped surface
-        :param data_weather: DataFrame containing direct radiation ('dni') and
-        diffuse radiation ('dhi')
-        :param collector_slope: collector slope in degree
-        :param surface_azimuth: surface azimuth in degree
-        :return: The angle of incidence costheta and the solar zenith angle costhetaz
+
+        Parameters
+        ----------
+        datetime : :pandas:`pandas.DatetimeIndex<datetimeindex>`
+            containing direct radiation ('dni') and diffuse radiation ('dhi')
+        collector_slope : numeric
+            collector slope in degree
+        surface_azimuth : numeric
+            collector surface azimuth in degree
+        longitude : numeric
+            location (east–west) of solar plant installation
+        latitude : numeric
+            location (north–south) of solar plant installation
+
+        Returns
+        -------
+        two numpy arrays
+            containing the angle of incidence,
+            and the solar zenith angle, respectively.
+
+
+        [DB13] Duffie, John A.; Beckman, William A.:
+            Solar Engineering of Thermal Processes (2013),
+            DOI: 10.1002/9781118671603
         """
 
         collector_slope = np.deg2rad(collector_slope)
         longitude = np.deg2rad(longitude)
         latitude = np.deg2rad(latitude)
 
-        # TODO: check time zone (should be UTC)
-        n = datetime.dayofyear
-        day_angle = (n - 1) * 2 * np.pi / 365
-        equation_of_time = 229.2 * (0.000075 + 0.001868 * np.cos(day_angle) - 0.030277 * np.sin(day_angle)
-                                 - 0.014615 * np.cos(2 * day_angle) - 0.04089 * np.sin(2 * day_angle))
+        # convert time zone (to be UTC)
+        # east_corrected1 = east_corrected.tz_convert(tz='Europe/Berlin')
+        datetime = datetime.tz_convert(tz='UTC')
+
+        # DB13, Eq. 1.4.2 but using angles in Rad.
+        day_angle = 2 * np.pi * (datetime.dayofyear - 1) / 365
+
+        # DB13, Eq. 1.5.3
+        equation_of_time = 229.2 * (0.000075
+                                    + 0.001868 * np.cos(day_angle)
+                                    - 0.030277 * np.sin(day_angle)
+                                    - 0.014615 * np.cos(2 * day_angle)
+                                    - 0.04089 * np.sin(2 * day_angle))
+
         true_solar_time = datetime.hour + (datetime.minute + equation_of_time + 4 * longitude) / 60
         hour_angle = np.deg2rad(15 * (true_solar_time - 12.5))
         solar_declination_angle = np.deg2rad(23.45) * np.sin(2 * np.pi / 365 * (284 + n))
+
+        # DB13, Eq. 1.6.1a
         solar_zenith_angle = (
                 np.sin(solar_declination_angle) * np.sin(latitude)
                 + np.cos(solar_declination_angle) * np.cos(latitude) * np.cos(hour_angle))
+
+        # DB13, Eq. 1.6.2
         angle_of_incidence = (
             + np.sin(solar_declination_angle) * np.sin(latitude) * np.cos(collector_slope)
             - np.sin(solar_declination_angle) * np.cos(latitude) * np.sin(collector_slope) * np.cos(
@@ -566,6 +659,7 @@ class GeometricSolar:
             + np.cos(solar_declination_angle) * np.sin(collector_slope) * np.sin(surface_azimuth)
             * np.sin(hour_angle))
 
+        # We do not allow backside illumination.
         angle_of_incidence = np.array(angle_of_incidence)
         angle_of_incidence[angle_of_incidence < 0] = 0
 
@@ -576,15 +670,22 @@ class GeometricSolar:
     @staticmethod
     def geometric_radiation(data_weather, collector_slope, surface_azimuth, longitude, latitude):
         """
-        Refines the simplistic clear sky model by taking weather conditions and losses of the PV installation into account
-        :param data_weather: DataFrame containing direct radiation ('dni') and
+        Refines the simplistic clear sky model by taking weather conditions
+        and losses of the PV installation into account
+
+        Parameters
+        ----------
+        data_weather: DataFrame containing direct radiation ('dni') and
         diffuse radiation ('dhi')
-        :param collector_slope:collector slope in degree
-        :param surface_azimuth:surface azimuth in degree
-        :param local_meridian:
-        :param longitude:
-        :param latitude:
-        :return: DataFrame containing the total radiation on the sloped surface
+        collector_slope:collector slope in degree
+        surface_azimuth:surface azimuth in degree
+        longitude:
+        latitude:
+
+        Returns
+        -------
+        :pandas:`pandas.DataFrame<dataframe>`
+        containing the total radiation on the sloped surface
         """
 
         # load 'simplistic_clear_sky' irradiation

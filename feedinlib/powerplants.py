@@ -295,41 +295,6 @@ class Photovoltaic(Base):
         return self.model.pv_system_peak_power
 
 
-class SimpleSolar(Base):
-    def __init__(self, model=GeometricSolar, **attributes):
-        super().__init__(model=model, **attributes)
-
-        self.PV_ISTC = 1000  # Radiation under standard test condition
-        self.PV_TSTC = 25  # Temperature under standard test condition
-        self.PV_NOCT = 45  # Normal operation cell temperature
-        self.PV_TEMP_COEFFICIENT = 0.004  # Temperature coefficient
-        self.PV_LOSS = 0.20  # Percental loss due to lines, inverter, dirt etc.
-
-    def feedin(self, weather, scaling=None, **kwargs):
-        slope = kwargs.get("slope")
-        azimuth = kwargs.get("slope")
-        longitude = kwargs.get("slope")
-        latitude = kwargs.get("slope")
-        peak_power = kwargs.get("peak_power")
-
-        radiation_surface = super().model.geometric_radiation(weather,
-                                                              slope,
-                                                              azimuth,
-                                                              longitude,
-                                                              latitude)
-
-        temperature_cell = weather['temp_air'] + radiation_surface * (
-                (self.PV_NOCT - 20) / 800)
-
-        feedin = peak_power * radiation_surface / self.PV_ISTC * (
-                1 - self.PV_TEMP_COEFFICIENT * (
-                temperature_cell - self.PV_TSTC))
-
-        feedin[feedin < 0] = 0
-
-        return feedin * (1 - self.PV_LOSS)
-
-
 class WindPowerPlant(Base):
     """
     Class to define a standard set of wind power plant attributes.

@@ -23,7 +23,6 @@ setup(
         "geopandas",
         "numpy >= 1.7.0",
         "oedialect >= 0.0.6.dev0",
-        "open_FRED-cli",
         "pvlib >= 0.7.0",
         "tables",
         "windpowerlib >= 0.2.0",
@@ -38,6 +37,9 @@ setup(
             "punch.py",
             "pytest",
             "sphinx_rtd_theme",
+        ],
+        "data-sources": [
+            "open_FRED-cli",
         ],
         "examples": ["jupyter",
                      "matplotlib",

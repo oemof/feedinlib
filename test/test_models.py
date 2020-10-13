@@ -46,7 +46,7 @@ class Fixtures:
         """
         return {'module_name': 'Yingli_YL210__2008__E__',
                 'inverter_name':
-                    'ABB__MICRO_0_25_I_OUTD_US_208_208V__CEC_2014_',
+                    'ABB__MICRO_0_25_I_OUTD_US_208__208V_',
                 'azimuth': 180,
                 'tilt': 30,
                 'albedo': 0.2}
@@ -121,7 +121,7 @@ class TestPowerplants(Fixtures):
         test_module = Photovoltaic(**pvlib_pv_system)
         feedin = test_module.feedin(weather=pvlib_weather,
                                     model=Pvlib, location=(52, 13))
-        assert 143.28844 == pytest.approx(feedin.values[0], 1e-5)
+        assert 143.39361 == pytest.approx(feedin.values[0], 1e-5)
 
     def test_powerplant_requirements_2(self, pvlib_pv_system, pvlib_weather):
         """
@@ -142,10 +142,10 @@ class TestPowerplants(Fixtures):
         test_module = Photovoltaic(**pvlib_pv_system)
         feedin = test_module.feedin(
             weather=pvlib_weather, location=(52, 13), scaling='peak_power')
-        assert 0.67462 == pytest.approx(feedin.values[0], 1e-5)
+        assert 0.67511 == pytest.approx(feedin.values[0], 1e-5)
         feedin = test_module.feedin(
             weather=pvlib_weather, location=(52, 13), scaling='area')
-        assert 84.28732 == pytest.approx(feedin.values[0], 1e-5)
+        assert 84.34918 == pytest.approx(feedin.values[0], 1e-5)
 
     def test_wind_feedin_scaling(
             self, windpowerlib_turbine, windpowerlib_weather):
@@ -193,7 +193,7 @@ class TestPvlib(Fixtures):
         test_module = Photovoltaic(**pvlib_pv_system)
         feedin = test_module.feedin(weather=pvlib_weather,
                                     location=(52, 13))
-        assert 143.28844 == pytest.approx(feedin.values[0], 1e-5)
+        assert 143.39361 == pytest.approx(feedin.values[0], 1e-5)
         assert test_copy == pvlib_pv_system
 
     def test_pvlib_feedin_with_surface_type(
@@ -206,7 +206,7 @@ class TestPvlib(Fixtures):
         pvlib_pv_system['surface_type'] = 'grass'
         test_module = Photovoltaic(**pvlib_pv_system)
         feedin = test_module.feedin(weather=pvlib_weather, location=(52, 13))
-        assert 143.28844 == pytest.approx(feedin.values[0], 1e-5)
+        assert 143.39361 == pytest.approx(feedin.values[0], 1e-5)
 
     def test_pvlib_feedin_with_optional_pp_parameter(
             self, pvlib_pv_system, pvlib_weather):

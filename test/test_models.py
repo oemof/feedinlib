@@ -142,7 +142,7 @@ class TestPowerplants(Fixtures):
         test_module = Photovoltaic(**pvlib_pv_system)
         feedin = test_module.feedin(
             weather=pvlib_weather, location=(52, 13), scaling='peak_power')
-        assert 0.67462 == pytest.approx(feedin.values[0], 1e-5)
+        assert 0.67511 == pytest.approx(feedin.values[0], 1e-5)
         feedin = test_module.feedin(
             weather=pvlib_weather, location=(52, 13), scaling='area')
         assert 84.28732 == pytest.approx(feedin.values[0], 1e-5)

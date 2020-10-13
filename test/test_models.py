@@ -121,7 +121,7 @@ class TestPowerplants(Fixtures):
         test_module = Photovoltaic(**pvlib_pv_system)
         feedin = test_module.feedin(weather=pvlib_weather,
                                     model=Pvlib, location=(52, 13))
-        assert 143.28844 == pytest.approx(feedin.values[0], 1e-5)
+        assert 143.39361 == pytest.approx(feedin.values[0], 1e-5)
 
     def test_powerplant_requirements_2(self, pvlib_pv_system, pvlib_weather):
         """
@@ -174,7 +174,7 @@ class TestPvlib(Fixtures):
         test_module = Photovoltaic(**pvlib_pv_system)
         feedin = test_module.feedin(weather=pvlib_weather,
                                     location=(52, 13))
-        assert 143.28844 == pytest.approx(feedin.values[0], 1e-5)
+        assert 143.39361 == pytest.approx(feedin.values[0], 1e-5)
         assert test_copy == pvlib_pv_system
 
     def test_pvlib_feedin_with_surface_type(
@@ -187,7 +187,7 @@ class TestPvlib(Fixtures):
         pvlib_pv_system['surface_type'] = 'grass'
         test_module = Photovoltaic(**pvlib_pv_system)
         feedin = test_module.feedin(weather=pvlib_weather, location=(52, 13))
-        assert 143.28844 == pytest.approx(feedin.values[0], 1e-5)
+        assert 143.39361 == pytest.approx(feedin.values[0], 1e-5)
 
     def test_pvlib_feedin_with_optional_pp_parameter(
             self, pvlib_pv_system, pvlib_weather):

@@ -121,7 +121,7 @@ class TestPowerplants(Fixtures):
         test_module = Photovoltaic(**pvlib_pv_system)
         feedin = test_module.feedin(weather=pvlib_weather,
                                     model=Pvlib, location=(52, 13))
-        assert 145.06433 == pytest.approx(feedin.values[0], 1e-5)
+        assert 143.28844 == pytest.approx(feedin.values[0], 1e-5)
 
     def test_powerplant_requirements_2(self, pvlib_pv_system, pvlib_weather):
         """
@@ -142,10 +142,10 @@ class TestPowerplants(Fixtures):
         test_module = Photovoltaic(**pvlib_pv_system)
         feedin = test_module.feedin(
             weather=pvlib_weather, location=(52, 13), scaling='peak_power')
-        assert 0.68298 == pytest.approx(feedin.values[0], 1e-5)
+        assert 0.67462 == pytest.approx(feedin.values[0], 1e-5)
         feedin = test_module.feedin(
             weather=pvlib_weather, location=(52, 13), scaling='area')
-        assert 85.33196 == pytest.approx(feedin.values[0], 1e-5)
+        assert 84.28732 == pytest.approx(feedin.values[0], 1e-5)
 
     def test_wind_feedin_scaling(
             self, windpowerlib_turbine, windpowerlib_weather):
@@ -174,7 +174,7 @@ class TestPvlib(Fixtures):
         test_module = Photovoltaic(**pvlib_pv_system)
         feedin = test_module.feedin(weather=pvlib_weather,
                                     location=(52, 13))
-        assert 145.06433 == pytest.approx(feedin.values[0], 1e-5)
+        assert 143.28844 == pytest.approx(feedin.values[0], 1e-5)
         assert test_copy == pvlib_pv_system
 
     def test_pvlib_feedin_with_surface_type(
@@ -187,7 +187,7 @@ class TestPvlib(Fixtures):
         pvlib_pv_system['surface_type'] = 'grass'
         test_module = Photovoltaic(**pvlib_pv_system)
         feedin = test_module.feedin(weather=pvlib_weather, location=(52, 13))
-        assert 145.06433 == pytest.approx(feedin.values[0], 1e-5)
+        assert 143.28844 == pytest.approx(feedin.values[0], 1e-5)
 
     def test_pvlib_feedin_with_optional_pp_parameter(
             self, pvlib_pv_system, pvlib_weather):
@@ -216,7 +216,7 @@ class TestPvlib(Fixtures):
         # power output is in this case limited by the inverter, which is why
         # power output with 2 strings is not twice as high as power output of
         # one string
-        assert 301.72785 == pytest.approx(feedin.values[0], 1e-5)
+        assert 298.27921 == pytest.approx(feedin.values[0], 1e-5)
 
     def test_pvlib_missing_powerplant_parameter(self, pvlib_pv_system):
         """

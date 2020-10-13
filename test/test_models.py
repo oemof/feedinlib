@@ -145,7 +145,7 @@ class TestPowerplants(Fixtures):
         assert 0.67511 == pytest.approx(feedin.values[0], 1e-5)
         feedin = test_module.feedin(
             weather=pvlib_weather, location=(52, 13), scaling='area')
-        assert 84.28732 == pytest.approx(feedin.values[0], 1e-5)
+        assert 84.34918 == pytest.approx(feedin.values[0], 1e-5)
 
     def test_wind_feedin_scaling(
             self, windpowerlib_turbine, windpowerlib_weather):

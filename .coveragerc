@@ -1,4 +1,4 @@
 [run]
-omit = tests/*
+omit = test/*
+       open_FRED.py
 source = feedinlib
-

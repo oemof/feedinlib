@@ -12,7 +12,7 @@ install:
 
 # command to run tests
 script:
-  - coverage run --rcfile=.coveragerc --source demandlib -m py.test
+  - coverage run --rcfile=.coveragerc --source feedinlib -m py.test
   - coverage report
 
 after_success:

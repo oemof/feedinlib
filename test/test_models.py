@@ -164,15 +164,33 @@ class TestGeometricSolar():
     """
 
     def test_geometric_angles(self):
-        angle_of_incidence, solar_zenith_angle = GeometricSolar.solar_angles(
+
+        incidence_a, solar_zenith_a = GeometricSolar.solar_angles(
             datetime=pd.date_range('3/20/2017 09:00',
                                    periods=12, freq='0.5H', tz='UTC'),
             tilt=0,
             surface_azimuth=0,
             longitude=0,
             latitude=0)
-        # for surface_azimuth=0, both angles are the same
-        assert angle_of_incidence == pytest.approx(solar_zenith_angle)
+        # For surface_azimuth=0, both angles are the same (by day).
+        assert incidence_a == pytest.approx(solar_zenith_a)
+
+        incidence_b, solar_zenith_b = GeometricSolar.solar_angles(
+            datetime=pd.date_range('3/20/2017 09:00',
+                                   periods=12, freq='0.5H', tz='UTC'),
+            tilt=180,
+            surface_azimuth=0,
+            longitude=180,
+            latitude=0)
+        # Zenith angles at other side of the world are inverted.
+        assert solar_zenith_a == pytest.approx(
+            -solar_zenith_b, 1e-5)
+
+        # Blocking by the horizon is not considered here.
+        # Thus, incidence for a collector facing down at
+        # the opposite side of the world are the same.
+        assert incidence_a == pytest.approx(
+            incidence_b, 1e-5)
 
 
 class TestPvlib(Fixtures):

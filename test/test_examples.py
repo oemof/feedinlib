@@ -29,6 +29,8 @@ class TestExamples:
 
         return nb, errors
 
+    @pytest.mark.skip(reason="Should examples be part of the package"
+                             "in the first place?.")
     def test_load_era5_ipynb(self):
         parent_dirname = os.path.dirname(os.path.dirname(__file__))
         nb, errors = self._notebook_run(

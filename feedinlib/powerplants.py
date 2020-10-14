@@ -21,7 +21,7 @@ the `model` attribute.
 
 from abc import ABC, abstractmethod
 
-from feedinlib.models import GeometricSolar, Pvlib, WindpowerlibTurbine
+from .models import GeometricSolar, Pvlib, WindpowerlibTurbine
 
 
 class Base(ABC):

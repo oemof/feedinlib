@@ -5,7 +5,7 @@ from copy import deepcopy
 
 from feedinlib import WindPowerPlant, Photovoltaic
 from feedinlib.models import (WindpowerlibTurbine, Pvlib, GeometricSolar,
-    WindpowerlibTurbineCluster)
+                              WindpowerlibTurbineCluster)
 from windpowerlib import WindTurbine as WindpowerlibWindTurbine
 
 
@@ -173,8 +173,6 @@ class TestGeometricSolar():
             latitude=0)
         # for surface_azimuth=0, both angles are the same
         assert angle_of_incidence == pytest.approx(solar_zenith_angle)
-
-
 
 
 class TestPvlib(Fixtures):

@@ -21,7 +21,8 @@ the `model` attribute.
 
 from abc import ABC, abstractmethod
 
-from . import Pvlib, WindpowerlibTurbine
+from feedinlib.models.pvlib import Pvlib
+from feedinlib.models.windpowerlib import WindpowerlibTurbine
 
 
 class Base(ABC):

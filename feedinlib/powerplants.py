@@ -292,7 +292,7 @@ class Photovoltaic(Base):
         calculated.
 
         """
-        return self.model.pv_system_peak_power
+        return self.model.nominal_peak_power
 
 
 class WindPowerPlant(Base):

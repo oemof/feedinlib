@@ -21,7 +21,7 @@ the `model` attribute.
 
 from abc import ABC, abstractmethod
 
-from .models import GeometricSolar, Pvlib, WindpowerlibTurbine
+from . import Pvlib, WindpowerlibTurbine
 
 
 class Base(ABC):

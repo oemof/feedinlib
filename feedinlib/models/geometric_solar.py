@@ -198,7 +198,8 @@ class GeometricSolar:
         albedo_RHO = 0.2
 
         sunset_angle = 6  # degree
-        solar_zenith_angle[solar_zenith_angle < np.cos(np.deg2rad(90 - sunset_angle))] = 1
+        angle_of_incidence[solar_zenith_angle < np.cos(
+            np.deg2rad(90 - sunset_angle))] = 0
 
         # beam radiation correction factor
         beam_correction_factor = np.array(angle_of_incidence / solar_zenith_angle)

@@ -6,6 +6,7 @@ from copy import deepcopy
 from feedinlib import WindPowerPlant, Photovoltaic
 from feedinlib.models import (WindpowerlibTurbine, Pvlib, GeometricSolar,
                               WindpowerlibTurbineCluster)
+from feedinlib.models.geometric_solar import solar_angles
 from windpowerlib import WindTurbine as WindpowerlibWindTurbine
 
 
@@ -158,14 +159,14 @@ class TestPowerplants(Fixtures):
         assert 833050.32551 / 3e6 == pytest.approx(feedin.values[0], 1e-5)
 
 
-class TestGeometricSolar():
+class TestGeometricSolar:
     """
-    Class to test GeometricSolar model.
+    Class to test GeometricSolar model and functions it depends on.
     """
 
     def test_geometric_angles(self):
 
-        incidence_a, solar_zenith_a = GeometricSolar.solar_angles(
+        incidence_a, solar_zenith_a = solar_angles(
             datetime=pd.date_range('3/20/2017 09:00',
                                    periods=12, freq='0.5H', tz='UTC'),
             tilt=0,
@@ -175,7 +176,7 @@ class TestGeometricSolar():
         # For surface_azimuth=0, both angles are the same (by day).
         assert incidence_a == pytest.approx(solar_zenith_a)
 
-        incidence_b, solar_zenith_b = GeometricSolar.solar_angles(
+        incidence_b, solar_zenith_b = solar_angles(
             datetime=pd.date_range('3/20/2017 09:00',
                                    periods=12, freq='0.5H', tz='UTC'),
             tilt=180,

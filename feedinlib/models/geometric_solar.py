@@ -12,16 +12,21 @@ SPDX-License-Identifier: MIT
 This module holds implementations of solar feed-in models based on geometry.
 I.e. it calculates the angles solar radiation hits a collector.
 
-=========================== ======================= =========
-symbol                      explanation             attribute
-=========================== ======================= =========
-:math:`t`                   time (absolute,         :py:obj:`datetime`
-                            including date)
-:math:`\beta`               slope of collector      :py:obj:`tilt`
-:math:`\gamma`              direction, the          :py:obj:`surface_azimuth`
-                            collector faces
-:math:`\phi`                location (N-S)          :py:obj:`longitude`
-:math:`L_{loc}`             location (O-W)          :py:obj:`latitude`
+======================= ======================= =========
+symbol                  explanation             attribute
+======================= ======================= =========
+:math:`t`               time (absolute,         :py:obj:`datetime`
+                        including date)
+:math:`\beta`           slope of collector      :py:obj:`tilt`
+:math:`\gamma`          direction, the          :py:obj:`surface_azimuth`
+                        collector faces
+:math:`\phi`            location (N-S)          :py:obj:`longitude`
+:math:`L_{loc}`         location (O-W)          :py:obj:`latitude`
+:math:`\theta`          angle of incidence      :py:obj:`angle_of_incidence`
+:math:`\theta_{z}`      angle of incidence      :py:obj:`solar_zenith_angle`
+                        at a horizontal plane
+:math:`R_{b}`           fraction of direct      :py:obj:`beam_corr_factor`
+                        radiation that
 
 
 [DB13] Duffie, John A.; Beckman, William A.:
@@ -37,7 +42,7 @@ SOLAR_CONSTANT = 1367  # in W/m²
 
 def solar_angles(datetime,
                  tilt, surface_azimuth,
-                 longitude, latitude):
+                 latitude, longitude):
     """
     Calculate the radiation on a sloped surface
 
@@ -50,10 +55,10 @@ def solar_angles(datetime,
         collector tilt in degree
     surface_azimuth : numeric
         collector surface azimuth in degree
-    longitude : numeric
-        location (east–west) of solar plant installation
     latitude : numeric
         location (north–south) of solar plant installation
+    longitude : numeric
+        location (east–west) of solar plant installation
 
     Returns
     -------
@@ -117,8 +122,9 @@ def solar_angles(datetime,
 
 def geometric_radiation(data_weather,
                         collector_slope, surface_azimuth,
-                        longitude, latitude,
-                        albedo=0.2):
+                        latitude, longitude,
+                        albedo=0.2,
+                        sunset_angle=6):
     """
     Refines the simplistic clear sky model by taking weather conditions
     and losses of the PV installation into account
@@ -130,55 +136,63 @@ def geometric_radiation(data_weather,
         collector tilt in degree
     surface_azimuth : numeric
         collector surface azimuth in degree
-    longitude : numeric
-        location (east–west) of solar plant installation
     latitude : numeric
         location (north–south) of solar plant installation
+    longitude : numeric
+        location (east–west) of solar plant installation
     albedo : numeric (default: 0.2)
-        ground reflectance of sourounding area
+        ground reflectance of surrounding area
+    sunset_angle : numeric (default: 6)
+        When sun approaches horizon to this angle (in degree),
+        we disallow direct radiation.
 
     Returns
     -------
     :pandas:`pandas.DataFrame<dataframe>`
     containing the total radiation on the sloped surface
     """
-
     angle_of_incidence, solar_zenith_angle = solar_angles(
         data_weather.index, collector_slope, surface_azimuth,
-        longitude, latitude)
+        latitude, longitude)
 
-    sunset_angle = 6  # degree
     angle_of_incidence[solar_zenith_angle < np.cos(
         np.deg2rad(90 - sunset_angle))] = 0
 
+    # DHI should be always present
+    irradiation_diffuse_horizontal = data_weather['dhi']
+    if 'ghi' in data_weather:
+        irradiation_global_horizontal = data_weather['ghi']
+        irradiation_direct_horizontal = (irradiation_global_horizontal
+                                         - irradiation_diffuse_horizontal)
+        irradiation_direct_normal = irradiation_direct_horizontal/np.cos(
+            angle_of_incidence)
+    else:
+        irradiation_direct_normal = data_weather['dni']
+        irradiation_direct_horizontal = np.cos(
+            angle_of_incidence) * irradiation_direct_normal
+
     # beam radiation correction factor
-    beam_correction_factor = np.array(angle_of_incidence
-                                      / solar_zenith_angle)
+    beam_corr_factor = np.array(angle_of_incidence / solar_zenith_angle)
 
-    dni = data_weather['dni']
-    dhi = data_weather['dhi']
-
-    irradiation = dni + dhi
+    irradiation = irradiation_direct_normal + irradiation_diffuse_horizontal
 
     # direct radiation
-    radiation_directed = dni * beam_correction_factor
-
-    print(radiation_directed)
+    radiation_directed = irradiation_direct_horizontal * beam_corr_factor
 
     # DIFFUSE RADIATION
     # horizon brightening diffuse correction term
-    f = np.sqrt(dni / irradiation).fillna(0)
+    f = np.sqrt(irradiation_direct_normal / irradiation).fillna(0)
     # Anisotropy index
-    anisotropy_index = dni / SOLAR_CONSTANT
+    anisotropy_index = irradiation_direct_normal / SOLAR_CONSTANT
 
     collector_slope = np.deg2rad(collector_slope)
     diffuse_radiation_correction_factor = (1 - anisotropy_index) * (
             (1 + np.cos(collector_slope)) / 2) * (1 + f * np.sin(
                 collector_slope / 2) ** 3) + (anisotropy_index
-                                              * beam_correction_factor)
+                                              * beam_corr_factor)
 
     # diffuse radiation
-    radiation_diffuse = dhi * diffuse_radiation_correction_factor
+    radiation_diffuse = irradiation_diffuse_horizontal * diffuse_radiation_correction_factor
 
     radiation_reflected = (1 - np.cos(collector_slope)) * albedo / 2
     radiation_reflected = irradiation * radiation_reflected
@@ -201,10 +215,10 @@ class GeometricSolar:
         azimuth : numeric
             direction, collector surface faces (in Degree)
             (e.g. Equathor: 0, East: -180, West: +180)
-        longitude : numeric
-            location (east–west) of solar plant installation
         latitude : numeric
             location (north-south) of solar plant installation
+        longitude : numeric
+            location (east–west) of solar plant installation
         albedo : numeric, default 0.2
         nominal_peak_power : numeric, default : 1
             nominal peak power of the installation
@@ -221,8 +235,8 @@ class GeometricSolar:
 
         self.tilt = attributes.get("tilt")
         self.azimuth = attributes.get("azimuth")
-        self.longitude = attributes.get("longitude")
         self.latitude = attributes.get("latitude")
+        self.longitude = attributes.get("longitude")
         self.albedo = attributes.get("albedo", 0.2)
         self.nominal_peak_power = attributes.get("nominal_peak_power", 1)
 
@@ -250,8 +264,8 @@ class GeometricSolar:
         radiation_surface = geometric_radiation(weather,
                                                 self.tilt,
                                                 self.azimuth,
-                                                self.longitude,
-                                                self.latitude)
+                                                self.latitude,
+                                                self.longitude)
 
         temperature_cell = weather['temp_air'] + radiation_surface/800 * (
                 (self.temperature_NCO - 20))
@@ -264,8 +278,13 @@ class GeometricSolar:
 
         return feedin * self.system_efficiency
 
+    def geometric_radiation(self, weather_data):
+        return geometric_radiation(weather_data,
+                                   self.tilt, self.azimuth,
+                                   self.latitude, self.longitude,
+                                   self.albedo)
+
     def solar_angles(self, datetime):
         return solar_angles(datetime,
                             self.tilt, self.azimuth,
-                            self.longitude, self.latitude)
-
+                            self.latitude, self.longitude)

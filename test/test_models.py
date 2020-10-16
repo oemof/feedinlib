@@ -166,15 +166,15 @@ class TestGeometricSolar:
 
     def test_geometric_angles(self):
 
-        plant1 = GeometricSolar(tilt=30, azimuth=0, longitude=0, latitude=0,
+        plant1 = GeometricSolar(tilt=0, azimuth=0, longitude=0, latitude=0,
                                 system_efficiency=1)
         incidence_a, solar_zenith_a = plant1.solar_angles(
             datetime=pd.date_range('3/20/2017 09:00',
                                    periods=12, freq='0.5H', tz='UTC'))
-        # For surface_azimuth=0, both angles are the same (by day).
+        # For tilt=0, both angles are the same (by day).
         assert incidence_a == pytest.approx(solar_zenith_a)
 
-        plant2 = GeometricSolar(tilt=30, azimuth=0, longitude=0, latitude=0,
+        plant2 = GeometricSolar(tilt=180, azimuth=0, longitude=180, latitude=0,
                                 system_efficiency=1)
         incidence_b, solar_zenith_b = plant2.solar_angles(
             datetime=pd.date_range('3/20/2017 09:00',

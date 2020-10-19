@@ -165,7 +165,7 @@ class TestGeometricSolar:
     """
 
     def test_geometric_angles(self):
-        # example 161 from DB13, but not using solar time
+        # c.f. example 1.6.1 from DB13
         incidence_0, _ = solar_angles(
             datetime=pd.date_range('1970-02-13 10:30', periods=1, tz='UTC'),
             surface_azimuth=15,
@@ -191,11 +191,53 @@ class TestGeometricSolar:
         assert solar_zenith_a == pytest.approx(
             -solar_zenith_b, 1e-5)
 
-        # Blocking by the horizon is not considered here.
+        # Blocking by the horizon is not considered for angle calculation.
         # Thus, incidence for a collector facing down at
         # the opposite side of the world are the same.
         assert incidence_a == pytest.approx(
             incidence_b, 1e-5)
+
+        # For calculation of radiation, direct radiation is blocked at night.
+        # So if there is neither reflection (albedo) nor diffuse radiation,
+        # total radiation should be 0.
+        plant3 = GeometricSolar(tilt=60, azimuth=0, latitude=40, longitude=0,
+                                system_efficiency=0.9, albedo=0,
+                                nominal_peak_power=300)
+
+        data_weather_night = pd.DataFrame(data={'wind_speed': [0],
+                                                'temp_air': [25],
+                                                'dni': [100],
+                                                'dhi': [0]},
+                                          index=pd.date_range(
+                                              '1970-01-01 00:00:00',
+                                              periods=1,
+                                              freq="h", tz='UTC'))
+
+        assert(plant3.geometric_radiation(data_weather_night)[0]
+               == pytest.approx(0, 1e-5))
+        assert(plant3.feedin(data_weather_night)[0]
+               == pytest.approx(0, 1e-5))
+
+        # c.f. example 1.16.1 from DB13
+        plant4 = GeometricSolar(tilt=60, azimuth=0, latitude=40, longitude=0,
+                                system_efficiency=0.9, albedo=0.6,
+                                nominal_peak_power=300)
+
+        data_weather_test = pd.DataFrame(data={'wind_speed': [0],
+                                               'temp_air': [25],
+                                               'dni': [67.8],
+                                               'dhi': [221.1]},
+                                         index=pd.date_range(
+                                             '1970-02-20 09:43:44',
+                                             periods=1,
+                                             freq="h", tz='UTC'))
+
+        assert (plant4.geometric_radiation(data_weather_test)[0]
+                == pytest.approx(345.424687, 1e-5))
+
+        # extra test for feedin
+        assert (plant4.feedin(data_weather_test)[0]
+                == pytest.approx(82.08281, 1e-5))
 
 
 class TestPvlib(Fixtures):

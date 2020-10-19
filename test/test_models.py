@@ -237,7 +237,7 @@ class TestGeometricSolar:
 
         # extra test for feedin
         assert (plant4.feedin(data_weather_test)[0]
-                == pytest.approx(82.08281, 1e-5))
+                == pytest.approx(89.23768, 1e-5))
 
 
 class TestPvlib(Fixtures):

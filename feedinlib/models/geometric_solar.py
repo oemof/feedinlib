@@ -27,6 +27,8 @@ symbol                  explanation             attribute
                         at a horizontal plane
 :math:`R_{b}`           fraction of direct      :py:obj:`beam_corr_factor`
                         radiation that
+:math:`\delta`          angular position of     :py:obj:`declination_angle`
+                        the sun at solar noon
 
 
 [DB13] Duffie, John A.; Beckman, William A.:
@@ -69,6 +71,7 @@ def solar_angles(datetime,
     """
 
     tilt = np.deg2rad(tilt)
+    surface_azimuth = np.deg2rad(surface_azimuth)
     latitude = np.deg2rad(latitude)
 
     # convert time zone (to UTC)
@@ -88,27 +91,26 @@ def solar_angles(datetime,
     true_solar_time = (datetime.hour + (datetime.minute
                                         + equation_of_time) / 60
                        - longitude / 3)
-    hour_angle = np.deg2rad(15 * (true_solar_time - 12.0))
-    solar_declination_angle = np.deg2rad(23.45) * np.sin(
+    hour_angle = np.deg2rad(15 * (true_solar_time - 12))
+    declination_angle = np.deg2rad(23.45) * np.sin(
         2 * np.pi / 365 * (284 + day_of_year))
 
     # DB13, Eq. 1.6.5
     solar_zenith_angle = (
-            np.sin(solar_declination_angle) * np.sin(latitude)
-            + np.cos(solar_declination_angle) * np.cos(latitude)
+            np.sin(declination_angle) * np.sin(latitude)
+            + np.cos(declination_angle) * np.cos(latitude)
             * np.cos(hour_angle))
 
     # DB13, Eq. 1.6.2
     angle_of_incidence = (
-            + np.sin(solar_declination_angle) * np.sin(latitude)
-            * np.cos(tilt)
-            - np.sin(solar_declination_angle) * np.cos(latitude)
+            + np.sin(declination_angle) * np.sin(latitude) * np.cos(tilt)
+            - np.sin(declination_angle) * np.cos(latitude)
             * np.sin(tilt) * np.cos(surface_azimuth)
-            + np.cos(solar_declination_angle) * np.cos(latitude)
+            + np.cos(declination_angle) * np.cos(latitude)
             * np.cos(tilt) * np.cos(hour_angle)
-            + np.cos(solar_declination_angle) * np.sin(latitude)
+            + np.cos(declination_angle) * np.sin(latitude)
             * np.sin(tilt) * np.cos(surface_azimuth) * np.cos(hour_angle)
-            + np.cos(solar_declination_angle) * np.sin(tilt)
+            + np.cos(declination_angle) * np.sin(tilt)
             * np.sin(surface_azimuth) * np.sin(hour_angle))
 
     # We do not allow backside illumination.
@@ -162,6 +164,10 @@ def geometric_radiation(data_weather,
     irradiation_diffuse_horizontal = data_weather['dhi']
     if 'ghi' in data_weather:
         irradiation_global_horizontal = data_weather['ghi']
+        msg = ("Global irradiation includes diffuse radiation."
+               + "Thus, it has to be bigger.")
+        assert (irradiation_global_horizontal
+                >= irradiation_diffuse_horizontal).all(), msg
         irradiation_direct_horizontal = (irradiation_global_horizontal
                                          - irradiation_diffuse_horizontal)
         irradiation_direct_normal = irradiation_direct_horizontal/np.cos(

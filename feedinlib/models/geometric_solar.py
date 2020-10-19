@@ -88,7 +88,7 @@ def solar_angles(datetime,
                                 - 0.014615 * np.cos(2 * day_angle)
                                 - 0.04089 * np.sin(2 * day_angle))
 
-    true_solar_time = (datetime.hour + (datetime.minute
+    true_solar_time = (datetime.hour + (datetime.minute + datetime.second / 60
                                         + equation_of_time) / 60
                        - longitude / 3)
     hour_angle = np.deg2rad(15 * (true_solar_time - 12))
@@ -161,42 +161,40 @@ def geometric_radiation(data_weather,
         np.deg2rad(90 - sunset_angle))] = 0
 
     # DHI should be always present
-    irradiation_diffuse_horizontal = data_weather['dhi']
+    irradiation_diffuse = data_weather['dhi']
     if 'ghi' in data_weather:
         irradiation_global_horizontal = data_weather['ghi']
         msg = ("Global irradiation includes diffuse radiation."
                + "Thus, it has to be bigger.")
         assert (irradiation_global_horizontal
-                >= irradiation_diffuse_horizontal).all(), msg
+                >= irradiation_diffuse).all(), msg
         irradiation_direct_horizontal = (irradiation_global_horizontal
-                                         - irradiation_diffuse_horizontal)
-        irradiation_direct_normal = irradiation_direct_horizontal/np.cos(
+                                         - irradiation_diffuse)
+        irradiation_beam = irradiation_direct_horizontal/np.cos(
             angle_of_incidence)
     else:
-        irradiation_direct_normal = data_weather['dni']
-        irradiation_direct_horizontal = np.cos(
-            angle_of_incidence) * irradiation_direct_normal
+        irradiation_beam = data_weather['dni']
 
     # beam radiation correction factor
     beam_corr_factor = np.array(angle_of_incidence / solar_zenith_angle)
 
-    irradiation = irradiation_direct_normal + irradiation_diffuse_horizontal
+    irradiation = irradiation_beam + irradiation_diffuse
 
     # direct radiation
-    radiation_directed = irradiation_direct_horizontal * beam_corr_factor
+    radiation_directed = irradiation_beam * beam_corr_factor
 
     # DIFFUSE RADIATION
 
     # Anisotropy index, DB13, Eq. 2.16.3
-    anisotropy_index = irradiation_direct_normal / SOLAR_CONSTANT
+    anisotropy_index = irradiation_beam / SOLAR_CONSTANT
 
     # DB13, Eq. 2.16.6
     # horizon brightening diffuse correction term
-    f = np.sqrt(irradiation_direct_normal / irradiation).fillna(0)
+    f = np.sqrt(irradiation_beam / irradiation).fillna(0)
 
     # DB13, Eq. 2.16.5
     collector_slope = np.deg2rad(collector_slope)
-    radiation_diffuse = irradiation_diffuse_horizontal * ((
+    radiation_diffuse = irradiation_diffuse * ((
             1 - anisotropy_index) * (
         (1 + np.cos(collector_slope)) / 2) * (1 + f * np.sin(
             collector_slope / 2) ** 3) + (anisotropy_index * beam_corr_factor))
@@ -273,7 +271,8 @@ class GeometricSolar:
                                                 self.tilt,
                                                 self.azimuth,
                                                 self.latitude,
-                                                self.longitude)
+                                                self.longitude,
+                                                self.albedo)
 
         temperature_cell = weather['temp_air'] + radiation_surface/800 * (
                 (self.temperature_NCO - 20))

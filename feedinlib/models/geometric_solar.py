@@ -186,24 +186,26 @@ def geometric_radiation(data_weather,
     radiation_directed = irradiation_direct_horizontal * beam_corr_factor
 
     # DIFFUSE RADIATION
-    # horizon brightening diffuse correction term
-    f = np.sqrt(irradiation_direct_normal / irradiation).fillna(0)
-    # Anisotropy index
+
+    # Anisotropy index, DB13, Eq. 2.16.3
     anisotropy_index = irradiation_direct_normal / SOLAR_CONSTANT
 
+    # DB13, Eq. 2.16.6
+    # horizon brightening diffuse correction term
+    f = np.sqrt(irradiation_direct_normal / irradiation).fillna(0)
+
+    # DB13, Eq. 2.16.5
     collector_slope = np.deg2rad(collector_slope)
-    diffuse_radiation_correction_factor = (1 - anisotropy_index) * (
-            (1 + np.cos(collector_slope)) / 2) * (1 + f * np.sin(
-                collector_slope / 2) ** 3) + (anisotropy_index
-                                              * beam_corr_factor)
+    radiation_diffuse = irradiation_diffuse_horizontal * ((
+            1 - anisotropy_index) * (
+        (1 + np.cos(collector_slope)) / 2) * (1 + f * np.sin(
+            collector_slope / 2) ** 3) + (anisotropy_index * beam_corr_factor))
 
-    # diffuse radiation
-    radiation_diffuse = irradiation_diffuse_horizontal * diffuse_radiation_correction_factor
+    # Reflected radiation, last term in DB13, Eq. 2.16.7
+    radiation_reflected = irradiation * albedo * (
+            1 - np.cos(collector_slope)) / 2
 
-    radiation_reflected = (1 - np.cos(collector_slope)) * albedo / 2
-    radiation_reflected = irradiation * radiation_reflected
-
-    # Total radiation
+    # Total radiation, DB13, Eq. 2.16.7
     return radiation_directed + radiation_diffuse + radiation_reflected
 
 

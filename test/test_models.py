@@ -165,6 +165,14 @@ class TestGeometricSolar:
     """
 
     def test_geometric_angles(self):
+        # example 161 from DB13, but not using solar time
+        incidence_0, _ = solar_angles(
+            datetime=pd.date_range('1970-02-13 10:30', periods=1, tz='UTC'),
+            surface_azimuth=15,
+            tilt=45,
+            latitude=43,
+            longitude=0)
+        assert incidence_0 == pytest.approx(0.7838)
 
         plant1 = GeometricSolar(tilt=0, azimuth=0, longitude=0, latitude=0,
                                 system_efficiency=1)

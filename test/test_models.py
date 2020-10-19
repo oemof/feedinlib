@@ -172,7 +172,7 @@ class TestGeometricSolar:
             tilt=45,
             latitude=43,
             longitude=0)
-        assert incidence_0 == pytest.approx(0.7838)
+        assert incidence_0 == pytest.approx(0.7838, 1e-4)
 
         plant1 = GeometricSolar(tilt=0, azimuth=0, longitude=0, latitude=0,
                                 system_efficiency=1)

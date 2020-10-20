@@ -251,6 +251,16 @@ class TestGeometricSolar(Fixtures):
         with pytest.raises(ValueError):
             assert plant4.feedin(weather=erroneous_weather)
 
+    def test_pvlib_feedin(self, pvlib_weather):
+        test_module = GeometricSolar(tilt=60, azimuth=0,
+                                     latitude=52, longitude=13,
+                                     system_efficiency=0.9, albedo=0.6,
+                                     nominal_peak_power=210)
+        feedin = test_module.feedin(weather=pvlib_weather,
+                                    location=(52, 0))
+
+        assert 214.225104 == pytest.approx(feedin.values[0], 1e-5)
+
 
 class TestPvlib(Fixtures):
     """

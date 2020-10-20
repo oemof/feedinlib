@@ -166,8 +166,9 @@ def geometric_radiation(data_weather,
         irradiation_global_horizontal = data_weather['ghi']
         msg = ("Global irradiation includes diffuse radiation."
                + "Thus, it has to be bigger.")
-        assert (irradiation_global_horizontal
-                >= irradiation_diffuse).all(), msg
+        if not (irradiation_global_horizontal
+                >= irradiation_diffuse).all():
+            raise ValueError(msg)
         irradiation_direct_horizontal = (irradiation_global_horizontal
                                          - irradiation_diffuse)
         irradiation_beam = irradiation_direct_horizontal/np.cos(
@@ -253,7 +254,7 @@ class GeometricSolar:
             "temperature_coefficient", 0.004)
         self.system_efficiency = attributes.get("system_efficiency", 0.80)
 
-    def feedin(self, weather):
+    def feedin(self, weather, location=None):
         """
         Parameters
         ----------
@@ -266,15 +267,26 @@ class GeometricSolar:
             Series with PV system feed-in in the unit the peak power was given.
 
         """
+        if location is None:
+            latitude = self.latitude
+            longitude = self.longitude
+        else:
+            latitude = location[0]
+            longitude = location[1]
 
         radiation_surface = geometric_radiation(weather,
                                                 self.tilt,
                                                 self.azimuth,
-                                                self.latitude,
-                                                self.longitude,
+                                                latitude,
+                                                longitude,
                                                 self.albedo)
 
-        temperature_cell = weather['temp_air'] + radiation_surface/800 * (
+        if 'temperature' in weather:
+            temperature_celsius = weather['temperature'] - 271.35
+        else:
+            temperature_celsius = weather['temp_air']
+
+        temperature_cell = temperature_celsius + radiation_surface/800 * (
                 (self.temperature_NCO - 20))
 
         feedin = (self.nominal_peak_power * radiation_surface /

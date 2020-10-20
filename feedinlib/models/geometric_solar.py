@@ -282,7 +282,7 @@ class GeometricSolar:
                                                 self.albedo)
 
         if 'temperature' in weather:
-            temperature_celsius = weather['temperature'] - 271.35
+            temperature_celsius = weather['temperature'] - 273.15
         else:
             temperature_celsius = weather['temp_air']
 

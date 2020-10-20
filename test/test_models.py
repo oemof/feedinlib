@@ -159,7 +159,7 @@ class TestPowerplants(Fixtures):
         assert 833050.32551 / 3e6 == pytest.approx(feedin.values[0], 1e-5)
 
 
-class TestGeometricSolar:
+class TestGeometricSolar(Fixtures):
     """
     Class to test GeometricSolar model and functions it depends on.
     """
@@ -238,6 +238,18 @@ class TestGeometricSolar:
         # extra test for feedin
         assert (plant4.feedin(data_weather_test)[0]
                 == pytest.approx(89.23768, 1e-5))
+
+        erroneous_weather = pd.DataFrame(data={'wind_speed': [5.0],
+                                               'temp_air': [10.0],
+                                               'dhi': [500],
+                                               'ghi': [300]},
+                                         index=pd.date_range('1/1/1970 12:00',
+                                                             periods=1,
+                                                             freq='H',
+                                                             tz='UTC'))
+
+        with pytest.raises(ValueError):
+            assert plant4.feedin(weather=erroneous_weather)
 
 
 class TestPvlib(Fixtures):

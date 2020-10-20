@@ -239,6 +239,20 @@ class TestGeometricSolar(Fixtures):
         assert (plant4.feedin(data_weather_test)[0]
                 == pytest.approx(89.23768, 1e-5))
 
+        # check giving same weather with temperature in Kelvin
+        data_weather_kelvin = pd.DataFrame(data={'wind_speed': [0],
+                                                 'temperature': [25+273.15],
+                                                 'dni': [67.8],
+                                                 'dhi': [221.1]},
+                                           index=pd.date_range(
+                                               '1970-02-20 09:43:44',
+                                               periods=1,
+                                               freq="h", tz='UTC'))
+
+        assert (plant4.feedin(data_weather_test)[0]
+                == plant4.feedin(data_weather_kelvin)[0])
+
+        # check if problematic data (dhi > ghi) is detected
         erroneous_weather = pd.DataFrame(data={'wind_speed': [5.0],
                                                'temp_air': [10.0],
                                                'dhi': [500],

@@ -134,6 +134,8 @@ def geometric_radiation(data_weather,
     Parameters
     ----------
     data_weather : :pandas:`pandas.DataFrame<dataframe>`
+        Has to contain time stamps (including time zone) as index,
+        and irradiation data ("dhi" and one of "ghi"/"dni")
     collector_slope : numeric
         collector tilt in degree
     surface_azimuth : numeric
@@ -152,6 +154,13 @@ def geometric_radiation(data_weather,
     -------
     :pandas:`pandas.DataFrame<dataframe>`
     containing the total radiation on the sloped surface
+
+    Internally, beam irradiation (bi, direct radiation to a horizontal surface)
+    is used. However, typically, either direct normal irradiation (dni)
+    or global horizontal irradiation (ghi) is given. So we use
+    .. math:: \mathrm{ghi} = \mathrm{bi} + \mathrm{dhi}
+                           = \mathrm{dni} * \cos(\theta) + \mathrm{dhi}
+    to calculate the beam irradiation.
     """
     angle_of_incidence, solar_zenith_angle = solar_angles(
         data_weather.index, collector_slope, surface_azimuth,
@@ -174,7 +183,7 @@ def geometric_radiation(data_weather,
         irradiation_beam = irradiation_direct_horizontal/np.cos(
             angle_of_incidence)
     else:
-        irradiation_beam = data_weather['dni']
+        irradiation_beam = data_weather['dni'] * np.cos(angle_of_incidence)
 
     # beam radiation correction factor
     beam_corr_factor = np.array(angle_of_incidence / solar_zenith_angle)

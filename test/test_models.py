@@ -197,6 +197,7 @@ class TestGeometricSolar(Fixtures):
         assert incidence_a == pytest.approx(
             incidence_b, 1e-5)
 
+    def test_geometric_radiation(self):
         # For calculation of radiation, direct radiation is blocked at night.
         # So if there is neither reflection (albedo) nor diffuse radiation,
         # total radiation should be 0.
@@ -233,11 +234,11 @@ class TestGeometricSolar(Fixtures):
                                              freq="h", tz='UTC'))
 
         assert (plant4.geometric_radiation(data_weather_test)[0]
-                == pytest.approx(345.424687, 1e-5))
+                == pytest.approx(302.86103, 1e-5))
 
         # extra test for feedin
         assert (plant4.feedin(data_weather_test)[0]
-                == pytest.approx(89.23768, 1e-5))
+                == pytest.approx(78.67677, 1e-5))
 
         # check giving same weather with temperature in Kelvin
         data_weather_kelvin = pd.DataFrame(data={'wind_speed': [0],

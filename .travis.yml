@@ -8,7 +8,7 @@ matrix:
 
 install:
   - pip install -U pip
-  - pip install .[dev]
+  - pip install .[dev] --use-deprecated legacy-resolver
   - pip install coveralls pytest-cov
 
 # command to run tests

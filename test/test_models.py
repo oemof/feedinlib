@@ -4,8 +4,9 @@ import pandas as pd
 from copy import deepcopy
 
 from feedinlib import WindPowerPlant, Photovoltaic
-from feedinlib.models import WindpowerlibTurbine, Pvlib, \
-    WindpowerlibTurbineCluster
+from feedinlib.models import (WindpowerlibTurbine, Pvlib, GeometricSolar,
+                              WindpowerlibTurbineCluster)
+from feedinlib.models.geometric_solar import solar_angles
 from windpowerlib import WindTurbine as WindpowerlibWindTurbine
 
 
@@ -156,6 +157,124 @@ class TestPowerplants(Fixtures):
         feedin = test_turbine.feedin(weather=windpowerlib_weather,
                                      scaling='nominal_power')
         assert 833050.32551 / 3e6 == pytest.approx(feedin.values[0], 1e-5)
+
+
+class TestGeometricSolar(Fixtures):
+    """
+    Class to test GeometricSolar model and functions it depends on.
+    """
+
+    def test_geometric_angles(self):
+        # c.f. example 1.6.1 from DB13
+        incidence_0, _ = solar_angles(
+            datetime=pd.date_range('1970-02-13 10:30', periods=1, tz='UTC'),
+            surface_azimuth=15,
+            tilt=45,
+            latitude=43,
+            longitude=0)
+        assert incidence_0 == pytest.approx(0.7838, 1e-4)
+
+        plant1 = GeometricSolar(tilt=0, azimuth=0, longitude=0, latitude=0,
+                                system_efficiency=1)
+        incidence_a, solar_zenith_a = plant1.solar_angles(
+            datetime=pd.date_range('3/20/2017 09:00',
+                                   periods=12, freq='0.5H', tz='UTC'))
+        # For tilt=0, both angles are the same (by day).
+        assert incidence_a == pytest.approx(solar_zenith_a)
+
+        plant2 = GeometricSolar(tilt=180, azimuth=0, longitude=180, latitude=0,
+                                system_efficiency=1)
+        incidence_b, solar_zenith_b = plant2.solar_angles(
+            datetime=pd.date_range('3/20/2017 09:00',
+                                   periods=12, freq='0.5H', tz='UTC'))
+        # Zenith angles at other side of the world are inverted.
+        assert solar_zenith_a == pytest.approx(
+            -solar_zenith_b, 1e-5)
+
+        # Blocking by the horizon is not considered for angle calculation.
+        # Thus, incidence for a collector facing down at
+        # the opposite side of the world are the same.
+        assert incidence_a == pytest.approx(
+            incidence_b, 1e-5)
+
+    def test_geometric_radiation(self):
+        # For calculation of radiation, direct radiation is blocked at night.
+        # So if there is neither reflection (albedo) nor diffuse radiation,
+        # total radiation should be 0.
+        plant3 = GeometricSolar(tilt=60, azimuth=0, latitude=40, longitude=0,
+                                system_efficiency=0.9, albedo=0,
+                                nominal_peak_power=300)
+
+        data_weather_night = pd.DataFrame(data={'wind_speed': [0],
+                                                'temp_air': [25],
+                                                'dni': [100],
+                                                'dhi': [0]},
+                                          index=pd.date_range(
+                                              '1970-01-01 00:00:00',
+                                              periods=1,
+                                              freq="h", tz='UTC'))
+
+        assert(plant3.geometric_radiation(data_weather_night)[0]
+               == pytest.approx(0, 1e-5))
+        assert(plant3.feedin(data_weather_night)[0]
+               == pytest.approx(0, 1e-5))
+
+        # c.f. example 1.16.1 from DB13
+        plant4 = GeometricSolar(tilt=60, azimuth=0, latitude=40, longitude=0,
+                                system_efficiency=0.9, albedo=0.6,
+                                nominal_peak_power=300)
+
+        data_weather_test = pd.DataFrame(data={'wind_speed': [0],
+                                               'temp_air': [25],
+                                               'dni': [67.8],
+                                               'dhi': [221.1]},
+                                         index=pd.date_range(
+                                             '1970-02-20 09:43:44',
+                                             periods=1,
+                                             freq="h", tz='UTC'))
+
+        assert (plant4.geometric_radiation(data_weather_test)[0]
+                == pytest.approx(302.86103, 1e-5))
+
+        # extra test for feedin
+        assert (plant4.feedin(data_weather_test)[0]
+                == pytest.approx(78.67677, 1e-5))
+
+        # check giving same weather with temperature in Kelvin
+        data_weather_kelvin = pd.DataFrame(data={'wind_speed': [0],
+                                                 'temperature': [25+273.15],
+                                                 'dni': [67.8],
+                                                 'dhi': [221.1]},
+                                           index=pd.date_range(
+                                               '1970-02-20 09:43:44',
+                                               periods=1,
+                                               freq="h", tz='UTC'))
+
+        assert (plant4.feedin(data_weather_test)[0]
+                == plant4.feedin(data_weather_kelvin)[0])
+
+        # check if problematic data (dhi > ghi) is detected
+        erroneous_weather = pd.DataFrame(data={'wind_speed': [5.0],
+                                               'temp_air': [10.0],
+                                               'dhi': [500],
+                                               'ghi': [300]},
+                                         index=pd.date_range('1/1/1970 12:00',
+                                                             periods=1,
+                                                             freq='H',
+                                                             tz='UTC'))
+
+        with pytest.raises(ValueError):
+            assert plant4.feedin(weather=erroneous_weather)
+
+    def test_pvlib_feedin(self, pvlib_weather):
+        test_module = GeometricSolar(tilt=60, azimuth=0,
+                                     latitude=52, longitude=13,
+                                     system_efficiency=0.9, albedo=0.6,
+                                     nominal_peak_power=210)
+        feedin = test_module.feedin(weather=pvlib_weather,
+                                    location=(52, 0))
+
+        assert 214.225104 == pytest.approx(feedin.values[0], 1e-5)
 
 
 class TestPvlib(Fixtures):

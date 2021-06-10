@@ -103,7 +103,7 @@ class Pvlib(PhotovoltaicModelBase):
         .. [3] `Sandia module database documentation <https://prod-ng.sandia.gov/techlib-noauth/access-control.cgi/2004/043535.pdf>`_
         .. [4] `CEC inverter database documentation <https://prod-ng.sandia.gov/techlib-noauth/access-control.cgi/2007/075036.pdf>`_
 
-        """
+        """  # noqa: E501
         # ToDo Maybe add method to assign suitable inverter if none is
         # specified
         required = [

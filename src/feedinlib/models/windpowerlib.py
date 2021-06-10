@@ -56,7 +56,7 @@ class WindpowerlibTurbine(WindpowerModelBase):
     :class:`~.models.Base`
     :class:`~.models.WindpowerModelBase`
 
-    """
+    """  # noqa: E501
 
     def __init__(self, **kwargs):
         """ """
@@ -106,7 +106,7 @@ class WindpowerlibTurbine(WindpowerModelBase):
         ----------
         .. [3] `oedb wind turbine library <https://openenergy-platform.org/dataedit/view/supply/wind_turbine_library>`_
 
-        """
+        """  # noqa: E501
         required = [
             "hub_height",
             ["power_curve", "power_coefficient_curve", "turbine_type"],
@@ -259,7 +259,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
     .. [1] `windpowerlib on github <https://github.com/wind-python/windpowerlib>`_
     .. [2] `windpowerlib documentation <https://windpowerlib.readthedocs.io>`_
 
-    """
+    """  # noqa: E501
 
     def __init__(self, **kwargs):
         """ """
@@ -328,7 +328,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
             :windpowerlib:`windpowerlib.WindFarm <windpowerlib.wind_farm.\
             WindFarm>`).
 
-        """
+        """  # noqa: E501
         required = ["wind_turbine_fleet", "wind_farms"]
         if super().power_plant_requires is not None:
             required.extend(super().power_plant_requires)
@@ -549,7 +549,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         :pandas:`pandas.Series<series>`
             Power plant feed-in time series in Watt.
 
-        """
+        """  # noqa: E501
         # wind farm calculation
         if "wind_turbine_fleet" in power_plant_parameters.keys():
             self.power_plant = self.instantiate_windfarm(

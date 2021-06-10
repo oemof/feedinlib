@@ -287,7 +287,7 @@ def select_geometry(ds, area):
     xarray.Dataset
         Dataset containing selection for specified location or area.
 
-    """
+    """  # noqa: E501
     geometry = []
     lon_vals = []
     lat_vals = []
@@ -367,7 +367,7 @@ def weather_df_from_era5(
         dataframe is a datetime index. Otherwise the index is a multiindex
         with time, latitude and longitude levels.
 
-    """
+    """  # noqa: E501
     ds = xr.open_dataset(era5_netcdf_filename)
 
     if area is not None:

@@ -16,7 +16,7 @@ def _get_cds_data(
     target_file=None,
     chunks=None,
     cds_client=None,
-    **cds_params
+    **cds_params,
 ):
     """
     Download data from the Climate Data Store (CDS)
@@ -85,7 +85,10 @@ def _get_cds_data(
     ), "Need to specify at least 'variable', 'year' and 'month'"
 
     # Send the data request to the server
-    result = cds_client.retrieve(dataset_name, request,)
+    result = cds_client.retrieve(
+        dataset_name,
+        request,
+    )
 
     no_target_file_provided = target_file is None
     # Create a file in a secure way if a target filename was not provided
@@ -193,7 +196,7 @@ def _format_cds_request_area(
     :return: a dict containing the grid and, if `latitude_span` and/or
         `longitude_span` were specified, the area formatted for a CDS request
 
-    """
+    """  # noqa: E501
 
     answer = {}
 
@@ -254,7 +257,7 @@ def _format_cds_request_position(latitude, longitude, grid=None):
     :return: a dict containing the grid and the area formatted for a CDS
         request
 
-    """
+    """  # noqa: E501
 
     # Default value of the grid
     if grid is None:
@@ -282,7 +285,7 @@ def get_cds_data_from_datespan_and_position(
     latitude=None,
     longitude=None,
     grid=None,
-    **cds_params
+    **cds_params,
 ):
     """
     Format request for data from the Climate Data Store (CDS)

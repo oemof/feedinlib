@@ -38,10 +38,12 @@ def exec_in_env():
             except subprocess.CalledProcessError:
                 check_call(["virtualenv", env_path])
         print("Installing `jinja2` into bootstrap environment...")
-        check_call([join(bin_path, "pip"), "install", "jinja2", "tox", "matrix"])
+        check_call(
+            [join(bin_path, "pip"), "install", "jinja2", "tox", "matrix"]
+        )
     python_executable = join(bin_path, "python")
     if not os.path.exists(python_executable):
-        python_executable += '.exe'
+        python_executable += ".exe"
 
     print("Re-executing with: {0}".format(python_executable))
     print("+ exec", python_executable, __file__, "--no-env")
@@ -58,17 +60,21 @@ def main():
         loader=jinja2.FileSystemLoader(join(base_path, "ci", "templates")),
         trim_blocks=True,
         lstrip_blocks=True,
-        keep_trailing_newline=True
+        keep_trailing_newline=True,
     )
 
     tox_environments = {}
-    for (alias, conf) in matrix.from_file(join(base_path, "setup.cfg")).items():
+    for (alias, conf) in matrix.from_file(
+        join(base_path, "setup.cfg")
+    ).items():
         deps = conf["dependencies"]
         tox_environments[alias] = {
             "deps": deps.split(),
         }
         if "coverage_flags" in conf:
-            cover = {"false": False, "true": True}[conf["coverage_flags"].lower()]
+            cover = {"false": False, "true": True}[
+                conf["coverage_flags"].lower()
+            ]
             tox_environments[alias].update(cover=cover)
         if "environment_variables" in conf:
             env_vars = conf["environment_variables"]
@@ -76,7 +82,11 @@ def main():
 
     for name in os.listdir(join("ci", "templates")):
         with open(join(base_path, name), "w") as fh:
-            fh.write(jinja.get_template(name).render(tox_environments=tox_environments))
+            fh.write(
+                jinja.get_template(name).render(
+                    tox_environments=tox_environments
+                )
+            )
         print("Wrote {}".format(name))
     print("DONE.")
 

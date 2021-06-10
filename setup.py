@@ -78,7 +78,7 @@ setup(
         "oedialect >= 0.0.6.dev0",
         "pvlib >= 0.7.0",
         "tables",
-        "windpowerlib >= 0.2.0",
+        "windpowerlib > 0.2.0",
         "pandas >= 1.0",
         "xarray >= 0.12.0",
         "descartes"

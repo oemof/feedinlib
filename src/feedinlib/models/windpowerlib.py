@@ -25,9 +25,9 @@ from windpowerlib import WindFarm as WindpowerlibWindFarm
 from windpowerlib import WindTurbine as WindpowerlibWindTurbine
 from windpowerlib import WindTurbineCluster as WindpowerlibWindTurbineCluster
 
-# from feedinlib import WindPowerPlant
-
 from .base import WindpowerModelBase
+
+# from feedinlib import WindPowerPlant
 
 
 class WindpowerlibTurbine(WindpowerModelBase):

@@ -506,7 +506,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         --------
         :windpowerlib:`windpowerlib.WindTurbineCluster <windpowerlib.wind_turbine_cluster.WindTurbineCluster>`
 
-        """
+        """  # noqa: E501
         wind_farm_list = []
         for wind_farm in kwargs.pop("wind_farms"):
             if not isinstance(wind_farm, WindpowerlibWindFarm):

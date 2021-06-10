@@ -47,9 +47,9 @@ Overview
     :alt: Supported implementations
     :target: https://pypi.org/project/feedinlib
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/oemof/feedinlib/v0.0.0.svg
+.. |commits-since| image:: https://img.shields.io/github/commits-since/oemof/feedinlib/v0.0.12.svg
     :alt: Commits since latest release
-    :target: https://github.com/oemof/feedinlib/compare/v0.0.0...master
+    :target: https://github.com/oemof/feedinlib/compare/v0.0.12...master
 
 
 

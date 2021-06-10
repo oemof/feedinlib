@@ -12,7 +12,7 @@ Introduction
 ============
 
 So far the feedinlib provides interfaces to download *open_FRED* and
-`ERA5 <https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation>`_ weather data.
+`ERA5 <https://confluence.ecmwf.int/display/CKB/ERA5%3A+data+documentation>`_ weather data.
 *open_FRED* is a local reanalysis weather data set that provides weather data for Germany (and bounding box).
 *ERA5* is a global reanalysis weather data set that provides weather data for the whole world.
 The weather data can be used to calculate the electrical output of PV and wind power plants.
@@ -30,10 +30,9 @@ If you have a working Python 3 environment, use pip to install the latest feedin
 
     pip install feedinlib
 
-The feedinlib is designed for Python 3 and tested on Python >= 3.5.
+The feedinlib is designed for Python 3 and tested on Python >= 3.6.
 
 We highly recommend to use virtual environments.
-Please see the `installation page <http://oemof.readthedocs.io/en/stable/installation_and_setup.html>`_ of the oemof documentation for complete instructions on how to install python and a virtual environment on your operating system.
 
 
 Examples and basic usage
@@ -67,7 +66,7 @@ do not hesitate to contact us via github.
 As the feedinlib started with contributors from the
 `oemof developer group <https://github.com/orgs/oemof/teams/oemof-developer-group>`_
 we use the same
-`developer rules <http://oemof.readthedocs.io/en/stable/developing_oemof.html>`_.
+`developer rules <https://oemof.readthedocs.io/en/latest/contributing.html>`_.
 
 **How to create a pull request:**
 

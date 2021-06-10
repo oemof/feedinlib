@@ -22,14 +22,15 @@ def read(*names, **kwargs):
 
 
 setup(
-    name='feedinlib',
-    version='0.0.0',
+    name="feedinlib",
+    version="0.1.0rc4",
     license='MIT',
     description='Connect weather data interfaces with interfaces of wind and pv power models.',
     long_description='%s\n%s' % (
         re.compile('^.. start-badges.*^.. end-badges', re.M | re.S).sub('', read('README.rst')),
         re.sub(':[a-z]+:`~?(.*?)`', r'``\1``', read('CHANGELOG.rst'))
     ),
+    long_description_content_type="text/x-rst",
     author='oemof developer group',
     author_email='contact@oemof.org',
     url='https://github.com/oemof/feedinlib',
@@ -71,16 +72,30 @@ setup(
     ],
     python_requires='>=3.6',
     install_requires=[
-        # eg: 'aspectlib==1.1.1', 'six>=1.7',
+        "cdsapi >= 0.1.4",
+        "geopandas",
+        "numpy >= 1.17.0",
+        "oedialect >= 0.0.6.dev0",
+        "pvlib >= 0.7.0",
+        "tables",
+        "windpowerlib >= 0.2.0",
+        "pandas >= 1.0",
+        "xarray >= 0.12.0",
+        "descartes"
     ],
     extras_require={
-        # eg:
-        #   'rst': ['docutils>=0.11'],
-        #   ':python_version=="2.6"': ['argparse'],
-    },
-    entry_points={
-        'console_scripts': [
-            'feedinlib = feedinlib.cli:main',
-        ]
+        "dev": [
+            "jupyter",
+            "nbformat",
+            "punch.py",
+            "pytest",
+            "sphinx_rtd_theme",
+        ],
+        "data-sources": [
+            "open_FRED-cli",
+        ],
+        "examples": ["jupyter",
+                     "matplotlib",
+                     "descartes"],
     },
 )

@@ -1,16 +1,21 @@
-from itertools import chain, groupby
-from typing import Dict, List, Tuple, Union
-
-from pandas import DataFrame as DF, Series, Timedelta as TD, to_datetime as tdt
-from geoalchemy2.elements import WKTElement as WKTE
-from geoalchemy2.shape import to_shape
-from shapely.geometry import Point
-from sqlalchemy.orm import sessionmaker
-import oedialect
-import pandas as pd
-import sqlalchemy as sqla
+from itertools import chain
+from itertools import groupby
+from typing import Dict
+from typing import List
+from typing import Tuple
+from typing import Union
 
 import open_FRED.cli as ofr
+import pandas as pd
+import sqlalchemy as sqla
+from geoalchemy2.elements import WKTElement as WKTE
+from geoalchemy2.shape import to_shape
+from pandas import DataFrame as DF
+from pandas import Series
+from pandas import Timedelta as TD
+from pandas import to_datetime as tdt
+from shapely.geometry import Point
+from sqlalchemy.orm import sessionmaker
 
 from .dedup import deduplicate
 
@@ -147,7 +152,7 @@ class Weather:
         }[variables if variables in ["pvlib", "windpowerlib"] else None]
 
         self.locations = (
-            {(l.x, l.y): self.location(l) for l in locations}
+            {(lo.x, lo.y): self.location(lo) for lo in locations}
             if locations is not None
             else {}
         )
@@ -160,8 +165,8 @@ class Weather:
 
         self.location_ids = set(
             [
-                l.id
-                for l in chain(self.locations.values(), *self.regions.values())
+                d.id
+                for d in chain(self.locations.values(), *self.regions.values())
             ]
             + location_ids
         )
@@ -332,7 +337,7 @@ class Weather:
             quotechar="'",
         )
         df.columns.set_levels(
-            [df.columns.levels[0], [float(l) for l in df.columns.levels[1]]],
+            [df.columns.levels[0], [float(c) for c in df.columns.levels[1]]],
             inplace=True,
         )
         df = df.applymap(lambda s: pd.read_json(s, typ="series"))

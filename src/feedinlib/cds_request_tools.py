@@ -1,10 +1,12 @@
-import os
-from datetime import datetime, timedelta
-from tempfile import mkstemp
 import logging
+import os
+from datetime import datetime
+from datetime import timedelta
+from tempfile import mkstemp
+
+import cdsapi
 import numpy as np
 import xarray as xr
-import cdsapi
 
 logger = logging.getLogger(__name__)
 

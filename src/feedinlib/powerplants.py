@@ -19,7 +19,8 @@ Computing the actual feed-in provided by a power plant is done by the models
 the `model` attribute.
 """
 
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
 
 from feedinlib.models.pvlib import Pvlib
 from feedinlib.models.windpowerlib import WindpowerlibTurbine
@@ -131,7 +132,7 @@ class Base(ABC):
         # check if all arguments required by the feed-in model are given
         keys = kwargs.keys()
         for k in model.requires:
-            if not k in keys:
+            if k not in keys:
                 raise AttributeError(
                     "The specified model '{model}' requires model "
                     "parameter '{k}' but it's not provided as an "

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""
+r"""
 Geometric solar feed-in model class.
 
 SPDX-FileCopyrightText: Lucas Schmeling
@@ -127,7 +127,7 @@ def geometric_radiation(data_weather,
                         latitude, longitude,
                         albedo=0.2,
                         sunset_angle=6):
-    """
+    r"""
     Refines the simplistic clear sky model by taking weather conditions
     and losses of the PV installation into account
 
@@ -223,7 +223,7 @@ class GeometricSolar:
     """
 
     def __init__(self, **attributes):
-        """
+        r"""
         Parameters
         ----------
         tilt : numeric
@@ -264,11 +264,12 @@ class GeometricSolar:
         self.system_efficiency = attributes.get("system_efficiency", 0.80)
 
     def feedin(self, weather, location=None):
-        """
+        r"""
         Parameters
         ----------
         weather : :pandas:`pandas.DataFrame<dataframe>`
             containing direct radiation ('dni') and diffuse radiation ('dhi')
+        location
 
         Returns
         -------

@@ -1,8 +1,9 @@
-from feedinlib import Photovoltaic, WindPowerPlant
-from feedinlib.models import WindpowerlibTurbineCluster
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
 
+from feedinlib import Photovoltaic
+from feedinlib import WindPowerPlant
+from feedinlib.models import WindpowerlibTurbineCluster
 
 # ######## set up weather dataframes (temporary) #########
 
@@ -110,15 +111,15 @@ v90 = WindPowerPlant(**vestasV90)
 # the wind turbines can either be provided in the form of a dictionary
 farm1 = {'wind_turbine_fleet': [{'wind_turbine': enerconE126,
                                 'number_of_turbines': 6},
-                               {'wind_turbine': vestasV90,
-                                'total_capacity': 6e6}]}
+                                {'wind_turbine': vestasV90,
+                                 'total_capacity': 6e6}]}
 windfarm1 = WindPowerPlant(**farm1, model=WindpowerlibTurbineCluster)
 
 # or you can provide the wind turbines WindPowerPlant objects
 farm2 = {'wind_turbine_fleet': [{'wind_turbine': e126,
                                 'number_of_turbines': 2},
-                               {'wind_turbine': v90,
-                                'total_capacity': 6e6}]}
+                                {'wind_turbine': v90,
+                                 'total_capacity': 6e6}]}
 windfarm2 = WindPowerPlant(**farm2, model=WindpowerlibTurbineCluster)
 
 # wind turbine clusters need a list of wind farms (specified as dictionaries)

@@ -14,11 +14,12 @@ This module holds an implementations of a photovoltaic feed-in model
 using the python library pvlib.
 """
 
+from pvlib.location import Location as PvlibLocation
 from pvlib.modelchain import ModelChain as PvlibModelChain
 from pvlib.pvsystem import PVSystem as PvlibPVSystem
-from pvlib.location import Location as PvlibLocation
 
-from .base import (PhotovoltaicModelBase, get_power_plant_data)
+from .base import PhotovoltaicModelBase
+from .base import get_power_plant_data
 
 
 class Pvlib(PhotovoltaicModelBase):

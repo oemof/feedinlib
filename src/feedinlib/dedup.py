@@ -4,10 +4,14 @@ This module contains tools, mainly the single `deduplicate` function, to remove
 duplicates from data.
 """
 from functools import reduce
-from itertools import filterfalse, tee
-from pprint import pformat
+from itertools import filterfalse
+from itertools import tee
 from numbers import Number
-from typing import Dict, List, Tuple, Union
+from pprint import pformat
+from typing import Dict
+from typing import List
+from typing import Tuple
+from typing import Union
 
 from pandas import Timestamp
 

@@ -14,15 +14,13 @@ This module holds implementations of feed-in models using the python library
 windpowerlib to calculate wind power feed-in.
 """
 
-import pandas as pd
 from copy import deepcopy
 
+import pandas as pd
 from windpowerlib import ModelChain as WindpowerlibModelChain
-from windpowerlib import (
-    TurbineClusterModelChain as WindpowerlibClusterModelChain,
-)
-from windpowerlib import WindTurbine as WindpowerlibWindTurbine
+from windpowerlib import TurbineClusterModelChain as WindpowerlibClusterModelChain
 from windpowerlib import WindFarm as WindpowerlibWindFarm
+from windpowerlib import WindTurbine as WindpowerlibWindTurbine
 from windpowerlib import WindTurbineCluster as WindpowerlibWindTurbineCluster
 
 import feedinlib.powerplants

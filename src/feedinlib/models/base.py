@@ -15,7 +15,12 @@ feed-in models for weather dependent renewable energy resources. These models
 take in power plant and weather data to calculate power plant feed-in.
 """
 
-from abc import ABC, abstractmethod
+import warnings
+from abc import ABC
+from abc import abstractmethod
+
+import pvlib.pvsystem
+from windpowerlib import get_turbine_types
 
 
 class Base(ABC):
@@ -173,6 +178,7 @@ class PhotovoltaicModelBase(Base):
 
         """
 
+
 class WindpowerModelBase(Base):
     """
     Expands model base class :class:`~.models.Base` by wind power specific
@@ -192,10 +198,6 @@ class WindpowerModelBase(Base):
         that is e.g. used to scale the feed-in by installed capacity.
 
         """
-
-import warnings
-from windpowerlib import get_turbine_types
-import pvlib.pvsystem
 
 
 def get_power_plant_data(dataset, **kwargs):
@@ -253,4 +255,3 @@ def get_power_plant_data(dataset, **kwargs):
     else:
         warnings.warn("Unknown dataset {}.".format(dataset))
         return None
-

@@ -67,6 +67,9 @@ class Weather:
 
     Now you can simply instantiate a `Weather` object via e.g.:
 
+    Examples
+    --------
+
     >>> from shapely.geometry import Point
     >>> point = Point(9.7311, 53.3899)
     >>> weather = Weather(
@@ -76,7 +79,8 @@ class Weather:
     ...    [10],
     ...    "pvlib",
     ...    **defaultdb()
-    ...)
+    ... )
+
 
     Instead of the special values `"pvlib"` and `"windpowerlib"` you can
     also supply a list of variables, like e.g. `["P", "T", "Z0"]`, to

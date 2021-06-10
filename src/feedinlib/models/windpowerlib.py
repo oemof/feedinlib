@@ -18,7 +18,9 @@ from copy import deepcopy
 
 import pandas as pd
 from windpowerlib import ModelChain as WindpowerlibModelChain
-from windpowerlib import TurbineClusterModelChain as WindpowerlibClusterModelChain
+from windpowerlib import (
+    TurbineClusterModelChain as WindpowerlibClusterModelChain,
+)
 from windpowerlib import WindFarm as WindpowerlibWindFarm
 from windpowerlib import WindTurbine as WindpowerlibWindTurbine
 from windpowerlib import WindTurbineCluster as WindpowerlibWindTurbineCluster
@@ -57,8 +59,7 @@ class WindpowerlibTurbine(WindpowerModelBase):
     """
 
     def __init__(self, **kwargs):
-        """
-        """
+        """ """
         super().__init__(**kwargs)
         self.power_plant = None
 
@@ -261,8 +262,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
     """
 
     def __init__(self, **kwargs):
-        """
-        """
+        """ """
         super().__init__(**kwargs)
         self.power_plant = None
 

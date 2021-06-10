@@ -1,161 +1,103 @@
-.. image:: https://mybinder.org/badge_logo.svg
- :target: https://mybinder.org/v2/gh/oemof/feedinlib/dev
- 
-.. image:: https://coveralls.io/repos/github/oemof/feedinlib/badge.svg?branch=dev
- :target: https://coveralls.io/github/oemof/feedinlib?branch=dev
+========
+Overview
+========
+
+.. start-badges
+
+.. list-table::
+    :stub-columns: 1
+
+    * - docs
+      - |docs|
+    * - tests
+      - | |appveyor| |requires|
+        | |coveralls|
+    * - package
+      - | |version| |wheel| |supported-versions| |supported-implementations|
+        | |commits-since|
+.. |docs| image:: https://readthedocs.org/projects/feedinlib/badge/?style=flat
+    :target: https://feedinlib.readthedocs.io/
+    :alt: Documentation Status
+
+.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/oemof/feedinlib?branch=master&svg=true
+    :alt: AppVeyor Build Status
+    :target: https://ci.appveyor.com/project/oemof/feedinlib
+
+.. |requires| image:: https://requires.io/github/oemof/feedinlib/requirements.svg?branch=master
+    :alt: Requirements Status
+    :target: https://requires.io/github/oemof/feedinlib/requirements/?branch=master
+
+.. |coveralls| image:: https://coveralls.io/repos/oemof/feedinlib/badge.svg?branch=master&service=github
+    :alt: Coverage Status
+    :target: https://coveralls.io/r/oemof/feedinlib
+
+.. |version| image:: https://img.shields.io/pypi/v/feedinlib.svg
+    :alt: PyPI Package latest release
+    :target: https://pypi.org/project/feedinlib
+
+.. |wheel| image:: https://img.shields.io/pypi/wheel/feedinlib.svg
+    :alt: PyPI Wheel
+    :target: https://pypi.org/project/feedinlib
+
+.. |supported-versions| image:: https://img.shields.io/pypi/pyversions/feedinlib.svg
+    :alt: Supported versions
+    :target: https://pypi.org/project/feedinlib
+
+.. |supported-implementations| image:: https://img.shields.io/pypi/implementation/feedinlib.svg
+    :alt: Supported implementations
+    :target: https://pypi.org/project/feedinlib
+
+.. |commits-since| image:: https://img.shields.io/github/commits-since/oemof/feedinlib/v0.0.0.svg
+    :alt: Commits since latest release
+    :target: https://github.com/oemof/feedinlib/compare/v0.0.0...master
 
 
-The feedinlib is a tool to calculate feed-in time series of photovoltaic
-and wind power plants. It therefore provides interfaces between
-different weather data sets and feed-in models. It is part of the oemof
-group but works as a standalone application.
 
-The feedinlib is ready to use but it definitely has a lot of space for
-further development, new and improved models and nice features.
+.. end-badges
 
+Connect weather data interfaces with interfaces of wind and pv power models.
 
-Introduction
+* Free software: MIT license
+
+Installation
 ============
 
-So far the feedinlib provides interfaces to download *open_FRED* and
-`ERA5`_ weather data. *open_FRED* is a local reanalysis weather data set
-that provides weather data for Germany (and bounding box). *ERA5* is a
-global reanalysis weather data set that provides weather data for the
-whole world. The weather data can be used to calculate the electrical
-output of PV and wind power plants. At the moment the feedinlib provides
-interfaces to the `pvlib`_ and the `windpowerlib`_. Furthermore,
-technical parameters for many PV modules and inverters, as well as wind
-turbines, are made available and can be easily used for calculations.
+::
 
-.. _ERA5: https://confluence.ecmwf.int/display/CKB/ERA5+data+documentation
-.. _pvlib: https://github.com/pvlib/pvlib-python
-.. _windpowerlib: https://github.com/wind-python/windpowerlib
+    pip install feedinlib
+
+You can also install the in-development version with::
+
+    pip install https://github.com/oemof/feedinlib/archive/master.zip
 
 
 Documentation
 =============
 
-Full documentation can be found at `readthedocs`_. Use the `project
-site`_ of readthedocs to choose the version of the documentation. Go to
-the `download page`_ to download different versions and formats (pdf,
-html, epub) of the documentation.
 
-.. _readthedocs: https://feedinlib.readthedocs.io/en/stable/
-.. _project site: https://readthedocs.org/projects/feedinlib/
-.. _download page: https://readthedocs.org/projects/feedinlib/downloads/
+https://feedinlib.readthedocs.io/
 
 
-Installation
-============
+Development
+===========
 
-If you have a working Python 3 environment, use pip to install the
-latest feedinlib version:
+To run all the tests run::
 
-.. code::
+    tox
 
-    pip install feedinlib
+Note, to combine the coverage data from all the tox environments run:
 
-The feedinlib is designed for Python 3 and tested on Python >= 3.5.
+.. list-table::
+    :widths: 10 90
+    :stub-columns: 1
 
-We highly recommend to use virtual environments. Please see the
-`installation page`_ of the oemof documentation for complete
-instructions on how to install python and a virtual environment on your
-operating system.
+    - - Windows
+      - ::
 
-.. _installation page:
-  http://oemof.readthedocs.io/en/stable/installation_and_setup.html
+            set PYTEST_ADDOPTS=--cov-append
+            tox
 
+    - - Other
+      - ::
 
-Examples and basic usage
-========================
-
-The basic usage of the feedinlib is shown in the `examples`_ section of
-the documentation. The examples are provided as jupyter notebooks that
-you can download here:
-
- * `Load ERA5 weather data example`_
- * `Load open_FRED weather data example`_
- * `pvlib model example`_
- * `windpowerlib model example`_
-
-Furthermore, you have to install the feedinlib with additional packages
-needed to run the notebooks, e.g. ``jupyter``:
-
-.. code::
-
-    pip install feedinlib[examples]
-
-To launch jupyter notebook type ``jupyter notebook`` in the terminal.
-This will open a browser window. Navigate to the directory containing
-the notebook(s) to open it. See the jupyter notebook quick start guide
-for more information on `how to run`_ jupyter notebooks.
-
-.. _examples: https://feedinlib.readthedocs.io/en/releases-0.1.0/examples.html
-.. _Load ERA5 weather data example: https://raw.githubusercontent.com/oemof/feedinlib/master/example/load_era5_weather_data.ipynb
-.. _Load open_FRED weather data example: https://raw.githubusercontent.com/oemof/feedinlib/master/example/load_open_fred_weather_data.ipynb
-.. _pvlib model example: https://raw.githubusercontent.com/oemof/feedinlib/master/example/run_pvlib_model.ipynb
-.. _windpowerlib model example: https://raw.githubusercontent.com/oemof/feedinlib/master/example/run_windpowerlib_turbine_model.ipynb
-.. _how to run: http://jupyter-notebook-beginner-guide.readthedocs.io/en/latest/execute.html
-
-
-Contributing
-============
-
-We are warmly welcoming all who want to contribute to the feedinlib. If
-you are interested do not hesitate to contact us via github.
-
-As the feedinlib started with contributors from the `oemof developer
-group`_ we use the same `developer rules`_.
-
-.. _oemof developer group: https://github.com/orgs/oemof/teams/oemof-developer-group
-.. _developer rules: http://oemof.readthedocs.io/en/stable/developing_oemof.html>
-
-
-**How to create a pull request:**
-
-* `Fork`_ the feedinlib repository to your own github account.
-* Create a local clone of your fork and  install the cloned repository
-  using pip with the ``-e`` option:
-
-  .. code::
-
-      pip install -e /path/to/the/repository
-
-* Change, add or remove code.
-* Commit your changes.
-* Create a `pull request`_ and describe what you will do and why.
-* Wait for approval.
-
-.. _Fork: https://help.github.com/articles/fork-a-repo
-.. _pull request: https://guides.github.com/activities/hello-world/
-
-**Generally the following steps are required when changing, adding or
-removing code:**
-
-* Add new tests if you have written new functions/classes.
-* Add/change the documentation (new feature, API changes ...).
-* Add a whatsnew entry and your name to Contributors.
-* Check if all tests still work by simply executing pytest in your
-  feedinlib directory:
-
-  .. code::
-
-      pytest
-
-
-Citing the feedinlib
-====================
-
-We use the zenodo project to get a DOI for each version.
-`Search zenodo for the right citation of your feedinlib version`_.
-
-.. _Search zenodo for the right citation of your feedinlib version:
-  https://zenodo.org/record/2554102
-
-
-License
-=======
-
-MIT License
-
-Copyright (C) 2017 oemof developer group
+            PYTEST_ADDOPTS=--cov-append tox

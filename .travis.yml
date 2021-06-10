@@ -1,0 +1,21 @@
+language: python
+
+matrix:
+  include:
+    - python: 3.6
+    - python: 3.7
+    - python: 3.8
+
+install:
+  - pip install -U pip
+  - pip install .[dev] --use-deprecated legacy-resolver
+  - pip install coveralls pytest-cov
+
+# command to run tests
+script:
+  - coverage run --rcfile=.coveragerc --source feedinlib -m py.test
+  - coverage report
+
+after_success:
+  - coveralls
+

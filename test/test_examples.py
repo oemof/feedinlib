@@ -2,6 +2,7 @@ import os
 import subprocess
 import tempfile
 import nbformat
+import pytest
 
 
 class TestExamples:
@@ -28,6 +29,8 @@ class TestExamples:
 
         return nb, errors
 
+    @pytest.mark.skip(reason="Should examples be part of the package"
+                             "in the first place?.")
     def test_load_era5_ipynb(self):
         parent_dirname = os.path.dirname(os.path.dirname(__file__))
         nb, errors = self._notebook_run(
@@ -35,6 +38,8 @@ class TestExamples:
                          'load_era5_weather_data.ipynb'))
         assert errors == []
 
+    @pytest.mark.skip(reason="Requires open_FRED,"
+                             "which depends on oemof <0.4.")
     def test_pvlib_ipynb(self):
         parent_dirname = os.path.dirname(os.path.dirname(__file__))
         nb, errors = self._notebook_run(
@@ -42,6 +47,8 @@ class TestExamples:
                          'run_pvlib_model.ipynb'))
         assert errors == []
 
+    @pytest.mark.skip(reason="Requires open_FRED,"
+                             "which depends on oemof <0.4.")
     def test_windpowerlib_turbine_ipynb(self):
         parent_dirname = os.path.dirname(os.path.dirname(__file__))
         nb, errors = self._notebook_run(

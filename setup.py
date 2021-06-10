@@ -21,13 +21,12 @@ setup(
     install_requires=[
         "cdsapi >= 0.1.4",
         "geopandas",
-        "numpy >= 1.7.0",
+        "numpy >= 1.17.0",
         "oedialect >= 0.0.6.dev0",
-        "open_FRED-cli",
-        "pandas >= 0.13.1",
         "pvlib >= 0.7.0",
         "tables",
         "windpowerlib >= 0.2.0",
+        "pandas >= 1.0",
         "xarray >= 0.12.0",
         "descartes"
     ],
@@ -38,6 +37,9 @@ setup(
             "punch.py",
             "pytest",
             "sphinx_rtd_theme",
+        ],
+        "data-sources": [
+            "open_FRED-cli",
         ],
         "examples": ["jupyter",
                      "matplotlib",

@@ -23,7 +23,7 @@ from abc import ABC
 from abc import abstractmethod
 
 from .models.pvlib import Pvlib
-from .models.windpowerlib import WindpowerlibWindTurbine
+from .models.windpowerlib import WindpowerlibTurbine
 
 
 class Base(ABC):
@@ -326,7 +326,7 @@ class WindPowerPlant(Base):
 
     """
 
-    def __init__(self, model=WindpowerlibWindTurbine, **attributes):
+    def __init__(self, model=WindpowerlibTurbine, **attributes):
         """
         """
         super().__init__(model=model, **attributes)

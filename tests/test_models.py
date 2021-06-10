@@ -505,6 +505,8 @@ class TestWindpowerlibCluster(Fixtures):
             windpowerlib_farm["wind_turbine_fleet"],
         )
 
+    @pytest.mark.skip(reason="We have to fix the circular import to use a"
+                             "feedinlib WindPowerPlant object in clusters.")
     def test_windpowerlib_windfarm_feedin_2(
         self, windpowerlib_farm_3, windpowerlib_weather
     ):

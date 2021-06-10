@@ -25,7 +25,7 @@ from windpowerlib import WindFarm as WindpowerlibWindFarm
 from windpowerlib import WindTurbine as WindpowerlibWindTurbine
 from windpowerlib import WindTurbineCluster as WindpowerlibWindTurbineCluster
 
-import feedinlib.powerplants
+# from feedinlib import WindPowerPlant
 
 from .base import WindpowerModelBase
 
@@ -449,11 +449,11 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
             for ix, row in wind_turbine_fleet.iterrows():
                 turbine = row["wind_turbine"]
                 if not isinstance(turbine, WindpowerlibWindTurbine):
-                    if isinstance(
-                        turbine, feedinlib.powerplants.WindPowerPlant
-                    ):
-                        turbine_data = turbine.parameters
-                    elif isinstance(turbine, dict):
+                    # if isinstance(
+                    #     turbine, WindPowerPlant
+                    # ):
+                    #     turbine_data = turbine.parameters
+                    if isinstance(turbine, dict):
                         turbine_data = turbine
                     else:
                         raise TypeError(

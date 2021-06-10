@@ -99,6 +99,7 @@ setup(
             "punch.py",
             "pytest",
             "sphinx_rtd_theme",
+            "open_FRED-cli"
         ],
         "data-sources": [
             "open_FRED-cli",

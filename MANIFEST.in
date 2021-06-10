@@ -17,5 +17,11 @@ include CONTRIBUTING.rst
 include LICENSE
 include README.rst
 
+recursive-include docs *.ipynb
+recursive-include examples *.csv
+recursive-include examples *.geojson
+recursive-include examples *.ipynb
+recursive-include examples *.nc
+recursive-include examples *.py
 
 global-exclude *.py[cod] __pycache__/* *.so *.dylib

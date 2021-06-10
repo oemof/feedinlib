@@ -22,8 +22,8 @@ the `model` attribute.
 from abc import ABC
 from abc import abstractmethod
 
-from feedinlib.models.pvlib import Pvlib
-from feedinlib.models.windpowerlib import WindpowerlibTurbine
+from .models.pvlib import Pvlib
+from .models.windpowerlib import WindpowerlibWindTurbine
 
 
 class Base(ABC):
@@ -326,7 +326,7 @@ class WindPowerPlant(Base):
 
     """
 
-    def __init__(self, model=WindpowerlibTurbine, **attributes):
+    def __init__(self, model=WindpowerlibWindTurbine, **attributes):
         """
         """
         super().__init__(model=model, **attributes)

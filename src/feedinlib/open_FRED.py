@@ -104,7 +104,7 @@ class Weather:
         primary keys, i.e. IDs, in this list. Use this e.g. if you know you're
         using the same location(s) for multiple queries and you don't want
         the overhead of doing the same nearest point query multiple times.
-    heights : list of numbers
+    heights : list of numeric
         Limit selected timeseries to these heights. If `variables` contains a
         variable which isn't height dependent, i.e. it has only one height,
         namely `0`, the corresponding timeseries is always

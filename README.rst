@@ -20,8 +20,8 @@ Overview
 .. |workflow_checks| image:: https://github.com/oemof/feedinlib/workflows/tox%20checks/badge.svg?branch=revision/add-tox-github-workflows-src-directory-ci
     :target: https://github.com/oemof/feedinlib/actions?query=workflow%3A%22tox+checks%22
 
-.. |packaging| image:: https://github.com/reegis/deflex/workflows/packaging/badge.svg?branch=master
-    :target: https://github.com/reegis/deflex/actions?query=workflow%3Apackaging
+.. |packaging| image:: https://github.com/oemof/feedinlib/workflows/packaging/badge.svg?branch=revision/add-tox-github-workflows-src-directory-ci
+    :target: https://github.com/oemof/feedinlib/actions?query=workflow%3Apackaging
 
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/oemof/feedinlib?branch=master&svg=true
     :alt: AppVeyor Build Status

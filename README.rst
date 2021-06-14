@@ -7,17 +7,21 @@ Overview
 .. list-table::
     :stub-columns: 1
 
-    * - docs
-      - |docs|
-    * - tests
-      - | |appveyor| |requires|
-        | |coveralls|
-    * - package
-      - | |version| |wheel| |supported-versions| |supported-implementations|
-        | |commits-since|
+|workflow_pytests| |workflow_checks| |docs| |appveyor| |requires| |coveralls| |packaging|
+|version| |wheel| |supported-versions| |supported-implementations| |commits-since|
+
 .. |docs| image:: https://readthedocs.org/projects/feedinlib/badge/?style=flat
     :target: https://feedinlib.readthedocs.io/
     :alt: Documentation Status
+
+.. |workflow_pytests| image:: https://github.com/oemof/feedinlib/workflows/tox%20pytests/badge.svg?branch=revision/add-tox-github-workflows-src-directory-ci
+    :target: https://github.com/oemof/feedinlib/actions?query=workflow%3A%22tox+pytests%22
+
+.. |workflow_checks| image:: https://github.com/oemof/feedinlib/workflows/tox%20checks/badge.svg?branch=revision/add-tox-github-workflows-src-directory-ci
+    :target: https://github.com/oemof/feedinlib/actions?query=workflow%3A%22tox+checks%22
+
+.. |packaging| image:: https://github.com/reegis/deflex/workflows/packaging/badge.svg?branch=master
+    :target: https://github.com/reegis/deflex/actions?query=workflow%3Apackaging
 
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/oemof/feedinlib?branch=master&svg=true
     :alt: AppVeyor Build Status

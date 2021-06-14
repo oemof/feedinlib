@@ -91,6 +91,7 @@ setup(
         "pandas >= 1.0",
         "xarray >= 0.12.0",
         "descartes",
+        "SQLAlchemy == 1.3.0"
     ],
     extras_require={
         "dev": [

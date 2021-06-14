@@ -17,6 +17,8 @@ from pandas import to_datetime as tdt
 from shapely.geometry import Point
 from sqlalchemy.orm import sessionmaker
 
+import oedialect  # noqa: F401
+
 from .dedup import deduplicate
 
 #: The type of variable selectors. A selector should always contain the

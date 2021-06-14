@@ -5,6 +5,7 @@ from typing import List
 from typing import Tuple
 from typing import Union
 
+import oedialect  # noqa: F401
 import open_FRED.cli as ofr
 import pandas as pd
 import sqlalchemy as sqla
@@ -16,8 +17,6 @@ from pandas import Timedelta as TD
 from pandas import to_datetime as tdt
 from shapely.geometry import Point
 from sqlalchemy.orm import sessionmaker
-
-import oedialect  # noqa: F401
 
 from .dedup import deduplicate
 
@@ -75,11 +74,11 @@ class Weather:
     >>> from shapely.geometry import Point
     >>> point = Point(9.7311, 53.3899)
     >>> weather = Weather(
-    ...    "2003-04-05 06:00",
-    ...    "2003-04-05 07:31",
-    ...    [point],
-    ...    [10],
-    ...    "pvlib",
+    ...    start="2007-04-05 06:00",
+    ...    stop="2007-04-05 07:31",
+    ...    locations=[point],
+    ...    heights=[10],
+    ...    variables="pvlib",
     ...    **defaultdb()
     ... )
 
@@ -131,7 +130,7 @@ class Weather:
         start,
         stop,
         locations,
-        location_ids=[],
+        location_ids=None,
         heights=None,
         variables=None,
         regions=None,
@@ -168,7 +167,8 @@ class Weather:
             if regions is not None
             else {}
         )
-
+        if location_ids is None:
+            location_ids = []
         self.location_ids = set(
             [
                 d.id

@@ -17,6 +17,8 @@ include CONTRIBUTING.rst
 include LICENSE
 include README.rst
 
+exclude docs/temp/*.rst
+
 recursive-include docs *.ipynb
 recursive-include examples *.csv
 recursive-include examples *.geojson

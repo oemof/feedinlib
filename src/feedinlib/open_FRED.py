@@ -157,7 +157,7 @@ class Weather:
         }[variables if variables in ["pvlib", "windpowerlib"] else None]
 
         self.locations = (
-            {(lo.x, lo.y): self.location(lo) for lo in locations}
+            {(p.x, p.y): self.location(p) for p in locations}
             if locations is not None
             else {}
         )

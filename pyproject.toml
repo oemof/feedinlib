@@ -16,3 +16,4 @@ exclude = '''
   | dist
 )/
 '''
+skip_magic_trailing_comma = true

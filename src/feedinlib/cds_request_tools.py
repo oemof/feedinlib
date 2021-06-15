@@ -85,10 +85,7 @@ def _get_cds_data(
     ), "Need to specify at least 'variable', 'year' and 'month'"
 
     # Send the data request to the server
-    result = cds_client.retrieve(
-        dataset_name,
-        request,
-    )
+    result = cds_client.retrieve(dataset_name, request)
 
     no_target_file_provided = target_file is None
     # Create a file in a secure way if a target filename was not provided

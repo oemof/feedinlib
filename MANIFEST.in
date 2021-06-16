@@ -1,0 +1,29 @@
+graft docs
+graft src
+graft ci
+graft tests
+
+include .bumpversion.cfg
+include .cookiecutterrc
+include .coveragerc
+include .editorconfig
+include tox.ini
+include .appveyor.yml
+include .readthedocs.yml
+include .pre-commit-config.yaml
+include AUTHORS.rst
+include CHANGELOG.rst
+include CONTRIBUTING.rst
+include LICENSE
+include README.rst
+
+exclude docs/temp/*.rst
+
+recursive-include docs *.ipynb
+recursive-include examples *.csv
+recursive-include examples *.geojson
+recursive-include examples *.ipynb
+recursive-include examples *.nc
+recursive-include examples *.py
+
+global-exclude *.py[cod] __pycache__/* *.so *.dylib

@@ -1,97 +1,75 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
 *.py[cod]
-*$py.class
-
-# documentation
-doc/temp/*
+__pycache__
 
 # C extensions
 *.so
 
-# Distribution / packaging
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
+# Packages
 *.egg
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
+*.egg-info
+dist
+build
+eggs
+.eggs
+parts
+bin
+var
+sdist
+wheelhouse
+develop-eggs
+.installed.cfg
+lib
+lib64
+venv*/
+pyvenv*/
+pip-wheel-metadata/
 
 # Installer logs
 pip-log.txt
-pip-delete-this-directory.txt
 
 # Unit test / coverage reports
-htmlcov/
-.tox/
 .coverage
+.tox
 .coverage.*
-.cache
+.pytest_cache/
 nosetests.xml
 coverage.xml
-*,cover
-.hypothesis/
+htmlcov
 
 # Translations
 *.mo
-*.pot
 
-# Django stuff:
-*.log
-local_settings.py
+# Buildout
+.mr.developer.cfg
 
-# Flask stuff:
-instance/
-.webassets-cache
+# IDE project files
+.project
+.pydevproject
+.idea
+.vscode
+*.iml
+*.komodoproject
 
-# Scrapy stuff:
-.scrapy
+# Complexity
+output/*.html
+output/*/index.html
 
-# Sphinx documentation
-doc/_build/
+# Sphinx
+docs/_build
 
-# PyBuilder
-target/
-
-# IPython Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# celery beat schedule file
-celerybeat-schedule
-
-# dotenv
+.DS_Store
+*~
+.*.sw[po]
+.build
+.ve
 .env
+.cache
+.pytest
+.benchmarks
+.bootstrap
+.appveyor.token
+*.bak
+docs/temp/*
 
-# virtualenv
-venv/
-ENV/
-
-# IDEs
-.spyderproject
-.idea/
-
-# Rope project settings
-.ropeproject
-
-# weather data
-*.pkl
-*.netcdf
+# Mypy Cache
+.mypy_cache/

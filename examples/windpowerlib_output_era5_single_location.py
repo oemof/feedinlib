@@ -33,7 +33,7 @@ points_df = gpd.GeoDataFrame({"geometry": points})
 # It is also possible to open a Shapefile (.shp) with geopandas. It is also
 # no problem to convert a .shp-file to a .geojson file using geopandas or a
 # GUI such as qgis.
-region_shape = gpd.read_file("germany_simple.geojson")
+region_shape = gpd.read_file("../example/germany_simple.geojson")
 
 # plot weather data points on map
 base = region_shape.plot(color="white", edgecolor="black", ax=ax[0])

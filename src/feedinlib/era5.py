@@ -304,7 +304,7 @@ def select_geometry(ds, area):
     df["lat"] = lat_vals
 
     # create a geopandas to use the geometry functions
-    crs = {"init": "epsg:4326"}
+    crs = "epsg:4326"
     geo_df = gpd.GeoDataFrame(df, crs=crs, geometry=geometry)
 
     inside_points = geo_df.within(area)

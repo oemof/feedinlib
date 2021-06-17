@@ -63,10 +63,6 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
-        # uncomment if you test on these interpreters:
-        # 'Programming Language :: Python :: Implementation :: IronPython',
-        # 'Programming Language :: Python :: Implementation :: Jython',
-        # 'Programming Language :: Python :: Implementation :: Stackless',
         "Topic :: Utilities",
     ],
     project_urls={
@@ -84,14 +80,11 @@ setup(
         "cdsapi >= 0.1.4",
         "geopandas",
         "numpy >= 1.17.0",
-        "oedialect >= 0.0.6.dev0",
         "pvlib >= 0.7.0",
         "tables",
         "windpowerlib > 0.2.0",
         "pandas >= 1.0",
         "xarray >= 0.12.0",
-        "descartes",
-        "SQLAlchemy < 1.4.0, >=1.3.0"
     ],
     extras_require={
         "dev": [
@@ -100,11 +93,19 @@ setup(
             "punch.py",
             "pytest",
             "sphinx_rtd_theme",
-            "open_FRED-cli"
-        ],
-        "data-sources": [
             "open_FRED-cli",
         ],
-        "examples": ["jupyter", "matplotlib", "descartes"],
+        "openfred": [
+            "open_FRED-cli",
+            "SQLAlchemy < 1.4.0, >=1.3.0",
+            "oedialect >= 0.0.6.dev0",
+        ],
+        "examples": [
+            "jupyter",
+            "matplotlib",
+            "descartes",
+            "requests",
+            "shapely",
+        ],
     },
 )

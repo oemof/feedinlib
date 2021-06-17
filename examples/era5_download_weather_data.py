@@ -36,33 +36,7 @@ import os.path
 from feedinlib import era5
 
 
-def download_era5(**kwargs):
-    if kwargs.get("target_file") is None:
-        target_file = (
-            ("era5_{variable}_{latitude}_{longitude}_{start_date}_{end_date}_"
-             "{chunks}")
-            .format(**kwargs)
-            .replace(".", "-")
-            .replace(", ", "_")
-            .replace("_None", "")
-        )
-    else:
-        target_file = kwargs.get("target_file")
-
-    if kwargs.get("path") is not None:
-        target_file = os.path.join(kwargs.get("path"), target_file)
-
-    if not os.path.isfile(target_file) or kwargs.get("overwrite", False):
-        era5.get_era5_data_from_datespan_and_position(
-            variable=kwargs.get("variable"),
-            start_date=kwargs.get("start_date"),
-            end_date=kwargs.get("end_date"),
-            latitude=kwargs.get("latitude"),
-            longitude=kwargs.get("longitude"),
-            target_file=target_file,
-            chunks=kwargs.get("chunks"),
-        )
-
+example_data = os.path.join(os.path.dirname(__file__), "example_data")
 
 # Download a single coordinate for the year 2019 with all variables
 single_coord = {
@@ -71,8 +45,11 @@ single_coord = {
     "start_date": "2019-01-01",
     "end_date": "2019-12-31",
     "variable": "feedinlib",
+    "target_file": os.path.join(
+        example_data, "era5_feedinlib_54-16_9-08_2019-01-01_2019-12-31.nc"
+    ),
 }
-download_era5(**single_coord)
+era5.get_era5_data_from_datespan_and_position(**single_coord)
 
 # Download a single coordinate for the year 2019 with windpowerlib variables
 single_coord = {
@@ -81,26 +58,29 @@ single_coord = {
     "start_date": "2019-01-01",
     "end_date": "2019-12-31",
     "variable": "windpowerlib",
+    "target_file": os.path.join(
+        example_data, "era5_windpowerlib_54-43_7-68_2019-01-01_2019-12-31.nc"
+    ),
 }
-download_era5(**single_coord)
+era5.get_era5_data_from_datespan_and_position(**single_coord)
 
 # When wanting to download weather data for a region you have to provide a
-# bounding box with latitude and longitude as lists.
-bb_coord = {
-    "latitude": [52.3, 52.7],  # [latitude south, latitude north]
-    "longitude": [13.1, 13.6],  # [longitude west, longitude east]
+# bounding box (e.g. of Berlin) with latitude and longitude as lists.
+bb_berlin_coord = {
+    "latitude": [52.3, 52.8],  # [latitude south, latitude north]
+    "longitude": [13.1, 13.7],  # [longitude west, longitude east]
     "start_date": "2017-01-01",
     "end_date": "2017-12-31",
-    "variable": "pvlib",
-    "target_file": "ERA5_berlin_feedinlib_example_2017.nc",
+    "variable": "feedinlib",
+    "target_file": os.path.join(example_data, "era5_feedinlib_berlin_2017.nc"),
 }
-download_era5(**bb_coord)
+era5.get_era5_data_from_datespan_and_position(**bb_berlin_coord)
 
 # Download all coordinates of the world for one year
 world = {
     "variable": "feedinlib",
     "start_date": "2017-01-01",
     "end_date": "2017-12-31",
-    "target_file": "ERA5_world_feedinlib_2017.nc",
+    "target_file": os.path.join(example_data, "era5_world_feedinlib_2017.nc"),
 }
-download_era5(**world)
+era5.get_era5_data_from_datespan_and_position(**world)

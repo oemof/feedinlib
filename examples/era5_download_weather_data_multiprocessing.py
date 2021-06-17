@@ -39,34 +39,20 @@ from feedinlib import era5
 
 
 def download_era5(parameters):
-    # Create a filename if no filename is given.
-    if parameters.get("target_file") is None:
-        file_pattern = (
-            "era5_{variable}_{latitude}_{longitude}_{start_date}_{end_date}.nc"
-        )
-        target_file = (
-            file_pattern.format(**parameters)
-            .replace(".", "-")
-            .replace(", ", "_")
-            .replace("_None", "")
-        )
-    else:
-        target_file = parameters.get("target_file")
-
-    # Download the file if it does not exist or overwrite is True
-    if not os.path.isfile(target_file) or parameters.get("overwrite", False):
-        era5.get_era5_data_from_datespan_and_position(
-            variable=parameters.get("variable"),
-            start_date=parameters.get("start_date"),
-            end_date=parameters.get("end_date"),
-            latitude=parameters.get("latitude"),
-            longitude=parameters.get("longitude"),
-            target_file=target_file,
-            chunks=parameters.get("chunks"),
-        )
+    era5.get_era5_data_from_datespan_and_position(
+        variable=parameters.get("variable"),
+        start_date=parameters.get("start_date"),
+        end_date=parameters.get("end_date"),
+        latitude=parameters.get("latitude"),
+        longitude=parameters.get("longitude"),
+        target_file=parameters.get("target_file"),
+        chunks=parameters.get("chunks"),
+    )
 
 
 # Define the locations:
+example_data = os.path.join(os.path.dirname(__file__), "example_data")
+
 locations = [
     {
         "latitude": 54.16,
@@ -74,13 +60,20 @@ locations = [
         "start_date": "2019-01-01",
         "end_date": "2019-12-31",
         "variable": "feedinlib",
+        "target_file": os.path.join(
+            example_data, "era5_feedinlib_54-16_9-08_2019-01-01_2019-12-31.nc"
+        ),
     },
     {
         "latitude": 54.43,
         "longitude": 7.68,
         "start_date": "2019-01-01",
         "end_date": "2019-12-31",
-        "variable": "feedinlib",
+        "variable": "windpowerlib",
+        "target_file": os.path.join(
+            example_data,
+            "era5_windpowerlib_54-43_7-68_2019-01-01_2019-12-31.nc",
+        ),
     },
 ]
 

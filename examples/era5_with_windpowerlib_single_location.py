@@ -28,9 +28,9 @@ files = {
 
 files = {k: os.path.join(data_path, v) for k, v in files.items()}
 
-for file in files:
+for key, file in files.items():
     if not os.path.isfile(file):
-        req = requests.get("https://osf.io/59bqn/download")
+        req = requests.get("https://osf.io/{0}/download".format(key))
         with open(file, "wb") as fout:
             fout.write(req.content)
 

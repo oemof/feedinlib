@@ -7,6 +7,7 @@ import requests
 from shapely.geometry import GeometryCollection
 from shapely.geometry import Polygon
 from shapely.geometry import shape
+from shapely.geometry import Point
 
 from feedinlib.era5 import weather_df_from_era5
 from feedinlib.era5 import extract_coordinates_from_era5
@@ -156,7 +157,7 @@ class TestEra5MultiLocation:
         coords_round = [round(p, 2) for c in coords for p in c]
         assert coords_round == [52.55, 13.35]
 
-    def test_with_single_point(self):
+    def test_with_matching_single_point(self):
         points = extract_coordinates_from_era5(self.era5_netcdf_file)
         area = points[0]
         weather = weather_df_from_era5(
@@ -166,6 +167,40 @@ class TestEra5MultiLocation:
         )
         coords = weather.groupby(level=[1, 2]).mean().index
         assert len(coords) == 1
+
+    def test_with_nearest_single_point(self):
+        area = Point(12, 52)
+        weather = weather_df_from_era5(
+            era5_netcdf_filename=self.era5_netcdf_file,
+            lib="windpowerlib",
+            area=area,
+            drop_coord_levels=True
+        )
+        assert not isinstance(weather.index, pd.MultiIndex)
+        assert weather.index.name == (52.3, 13.1)
+
+    def test_with_nearest_single_point_list(self):
+        area = [12, 52]
+        weather = weather_df_from_era5(
+            era5_netcdf_filename=self.era5_netcdf_file,
+            lib="windpowerlib",
+            area=area,
+            drop_coord_levels=True
+        )
+        assert not isinstance(weather.index, pd.MultiIndex)
+        assert weather.index.name == (52.3, 13.1)
+
+    def test_with_single_coordinate(self):
+        # points = extract_coordinates_from_era5(self.era5_netcdf_file)
+        area = [3, 5]
+        weather = weather_df_from_era5(
+            era5_netcdf_filename=self.era5_netcdf_file,
+            lib="windpowerlib",
+            area=area,
+        )
+        coords = weather.groupby(level=[1, 2]).mean().index
+        assert len(coords) == 1
+        print(coords)
 
     def test_level_drop_for_multi_coordinates(self):
         msg = "You cannot drop the coordinate levels if there are more than"

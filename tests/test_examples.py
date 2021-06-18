@@ -6,7 +6,7 @@ import nbformat
 import pytest
 
 
-class TestExamples:
+class TestNotebookExamples:
 
     def _notebook_run(self, path):
         """

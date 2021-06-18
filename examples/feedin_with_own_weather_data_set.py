@@ -2,17 +2,35 @@ import os
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import requests
 
 from feedinlib import Photovoltaic
 from feedinlib import WindPowerPlant
-from feedinlib.models import WindpowerlibTurbineCluster
 
 
 def run_example():
+    data_path = os.path.join(os.path.dirname(__file__), "example_data")
+    os.makedirs(data_path, exist_ok=True)
+
+    # Download example files if they do not exist.
+    files = {
+        "etkfg": "weather.csv",
+    }
+
+    files = {k: os.path.join(data_path, v) for k, v in files.items()}
+
+    for key, file in files.items():
+        if not os.path.isfile(file):
+            req = requests.get("https://osf.io/{0}/download".format(key))
+            with open(file, "wb") as fout:
+                fout.write(req.content)
+
     # ######## set up weather dataframes (temporary) #########
 
     # set up weather dataframe for windpowerlib
-    filename = os.path.join(os.path.dirname(__file__), "weather.csv")
+    filename = os.path.join(
+        os.path.dirname(__file__), "example_data/weather.csv"
+    )
     weather_df_wind = pd.read_csv(
         filename,
         index_col=0,
@@ -56,20 +74,19 @@ def run_example():
     # ######## Pvlib model #########
 
     # specify pv system
-    yingli210 = {
-        "module_name": "Yingli_YL210__2008__E__",
-        "inverter_name": "ABB__PVI_3_0_OUTD_S_US_Z__277V__277V__CEC_2018_",
+    system_data = {
+        "module_name": "Advent_Solar_Ventura_210___2008_",
+        "inverter_name": "ABB__MICRO_0_25_I_OUTD_US_208__208V_",
         "azimuth": 180,
         "tilt": 30,
         "albedo": 0.2,
-        "modules_per_string": 4,
     }
 
     # instantiate feedinlib Photovoltaic object
-    yingli_module = Photovoltaic(**yingli210)
+    pv_module = Photovoltaic(**system_data)
 
     # calculate feedin
-    feedin = yingli_module.feedin(
+    feedin = pv_module.feedin(
         weather=weather_df_pv[["wind_speed", "temp_air", "dhi", "ghi"]],
         location=(52, 13),
         scaling="peak_power",
@@ -85,20 +102,20 @@ def run_example():
     # ######## WindpowerlibTurbine model #########
 
     # specify wind turbine
-    enercon_e126 = {
+    enercon_e82 = {
         "turbine_type": "E-82/3000",  # turbine name as in register
         "hub_height": 135,  # in m
     }
 
     # instantiate feedinlib WindPowerPlant object (single turbine)
-    e126 = WindPowerPlant(**enercon_e126)
+    e82 = WindPowerPlant(**enercon_e82)
 
     # calculate feedin
-    feedin = e126.feedin(weather=weather_df_wind, location=(52, 13))
-    feedin_scaled = e126.feedin(
+    feedin = e82.feedin(weather=weather_df_wind, location=(52, 13))
+    feedin_scaled = e82.feedin(
         weather=weather_df_wind,
         location=(52, 13),
-        scaling="capacity",
+        scaling="nominal_power",
         scaling_value=5e6,
     )
 
@@ -106,64 +123,6 @@ def run_example():
         legend=True, label="scaled to 5 MW", title="Wind turbine feedin"
     )
     feedin.fillna(0).plot(legend=True, label="single turbine")
-    plt.xlabel("Time")
-    plt.ylabel("Power in W")
-    plt.show()
-
-    # ######## WindpowerlibTurbineCluster model #########
-
-    # specify (and instantiate) wind turbines
-    enercon_e126 = {
-        "turbine_type": "E-82/3000",  # turbine name as in register
-        "hub_height": 135,  # in m
-    }
-    e126 = WindPowerPlant(**enercon_e126)
-
-    vestas_v90 = {
-        "turbine_type": "V90/2000",  # turbine name as in register
-        "hub_height": 120,  # in m
-    }
-    v90 = WindPowerPlant(**vestas_v90)
-
-    # instantiate feedinlib WindPowerPlant object with
-    # WindpowerlibTurbineCluster model
-
-    # wind farms need a wind turbine fleet specifying the turbine types in the
-    # farm and their number or total installed capacity
-    # the wind turbines can either be provided in the form of a dictionary
-    farm1 = {
-        "wind_turbine_fleet": [
-            {"wind_turbine": enercon_e126, "number_of_turbines": 6},
-            {"wind_turbine": vestas_v90, "total_capacity": 6e6},
-        ]
-    }
-    windfarm1 = WindPowerPlant(**farm1, model=WindpowerlibTurbineCluster)
-
-    # or you can provide the wind turbines WindPowerPlant objects
-    farm2 = {
-        "wind_turbine_fleet": [
-            {"wind_turbine": e126, "number_of_turbines": 2},
-            {"wind_turbine": v90, "total_capacity": 6e6},
-        ]
-    }
-    windfarm2 = WindPowerPlant(**farm2, model=WindpowerlibTurbineCluster)
-
-    # wind turbine clusters need a list of wind farms (specified as
-    # dictionaries) in that cluster
-    cluster = {"wind_farms": [farm1, farm2]}
-    windcluster = WindPowerPlant(**cluster, model=WindpowerlibTurbineCluster)
-
-    # calculate feedin
-    feedin1 = windfarm1.feedin(weather=weather_df_wind, location=(52, 13))
-    feedin2 = windfarm2.feedin(weather=weather_df_wind, location=(52, 13))
-    feedin3 = windcluster.feedin(weather=weather_df_wind, location=(52, 13))
-
-    feedin3.fillna(0).plot(legend=True, label="Wind cluster")
-    feedin1.fillna(0).plot(legend=True, label="Windfarm 1")
-    feedin2.fillna(0).plot(
-        legend=True, label="Windfarm 2", title="Wind cluster feedin"
-    )
-
     plt.xlabel("Time")
     plt.ylabel("Power in W")
     plt.show()

@@ -322,7 +322,12 @@ def select_geometry(ds, area):
     crs = {"init": "epsg:4326"}
     geo_df = gpd.GeoDataFrame(df, crs=crs, geometry=geometry)
 
-    inside_points = geo_df.within(area)
+    if isinstance(area, Point):
+        d = geo_df.apply(lambda row: area.distance(row.geometry), axis=1)
+        inside_points = (d == d.min())
+    else:
+        inside_points = geo_df.within(area)
+
     # if no points lie within area, return None
     if not inside_points.any():
         return None
@@ -337,7 +342,6 @@ def select_geometry(ds, area):
         logical_list.append(
             np.logical_and((ds.longitude == lon), (ds.latitude == lat))
         )
-
     # bind all conditions from the list
     if len(logical_list[:2]) > 1:
         cond = np.logical_or(*logical_list[:2])

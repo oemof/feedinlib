@@ -100,7 +100,9 @@ setup(
             "punch.py",
             "pytest",
             "sphinx_rtd_theme",
-            "open_FRED-cli"
+            "open_FRED-cli",
+            "shapely",
+            "requests"
         ],
         "data-sources": [
             "open_FRED-cli",

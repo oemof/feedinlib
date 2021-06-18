@@ -117,9 +117,9 @@ def format_windpowerlib(ds):
     # the time stamp given by ERA5 for mean values (probably) corresponds to
     # the end of the valid time interval; the following sets the time stamp
     # to the middle of the valid time interval
-    df['time'] = df.time - pd.Timedelta(minutes=60)
+    df["time"] = df.time - pd.Timedelta(minutes=60)
 
-    df.set_index(['time', 'latitude', 'longitude'], inplace=True)
+    df.set_index(["time", "latitude", "longitude"], inplace=True)
     df.sort_index(inplace=True)
     df = df.tz_localize("UTC", level=0)
 
@@ -202,9 +202,9 @@ def format_pvlib(ds):
     # the time stamp given by ERA5 for mean values (probably) corresponds to
     # the end of the valid time interval; the following sets the time stamp
     # to the middle of the valid time interval
-    df['time'] = df.time - pd.Timedelta(minutes=30)
+    df["time"] = df.time - pd.Timedelta(minutes=30)
 
-    df.set_index(['time', 'latitude', 'longitude'], inplace=True)
+    df.set_index(["time", "latitude", "longitude"], inplace=True)
     df.sort_index(inplace=True)
     df = df.tz_localize("UTC", level=0)
 
@@ -373,7 +373,7 @@ def weather_df_from_era5(
     end : None or anything `pandas.to_datetime` can convert to a timestamp
         Get weather data upto this date. Defaults to None in which
         case the end date is set to the last time step in the dataset.
-    area : shapely compatible geometry object (i.e. Polygon,  Multipolygon, etc...) or list(float) or list(tuple)
+    area : shapely.geometry object (i.e. Polygon,  Multipolygon, etc...) or list(float) or list(tuple)
         Area specifies for which geographic area to return weather data. Area
         can either be a single location or an area.
         In case you want data for a single location provide a list in the
@@ -381,6 +381,9 @@ def weather_df_from_era5(
         If you want data for an area you can provide a shape of this area or
         specify a rectangular area giving a list of the
         form [(lon west, lon east), (lat south, lat north)].
+    lib : str
+        Format the weather data for a specific library. Possible values are
+        `windpowerlib` and `pvlib`.
     drop_coord_levels : bool
         Decide whether the index levels of the coordinates will be dropped. A
         ValueError is raised if there are more than one coordinates.

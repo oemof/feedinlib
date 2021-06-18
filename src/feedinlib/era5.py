@@ -406,6 +406,9 @@ def weather_df_from_era5(
             "It must be either 'pvlib' or 'windpowerlib'."
         )
 
+    if len(df) == 0:
+        return pd.DataFrame()
+
     # drop latitude and longitude from index in case a single location
     # is given in parameter `area`
     if area is not None and isinstance(area, list):

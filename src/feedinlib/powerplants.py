@@ -371,7 +371,7 @@ class WindPowerPlant(Base):
         if scaling:
             feedin_scaling = {
                 "nominal_power": lambda feedin: feedin
-                / float(self.nominal_power)
+                / float(self.nominal_power) * kwargs.get("scaling_value", 1)
             }
             return feedin_scaling[scaling](feedin)
         return feedin

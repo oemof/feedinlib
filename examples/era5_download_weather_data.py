@@ -65,7 +65,7 @@ single_coord = {
 era5.get_era5_data_from_datespan_and_position(**single_coord)
 
 # When wanting to download weather data for a region you have to provide a
-# bounding box (e.g. of Berlin) with latitude and longitude as lists.
+# bounding box with latitude and longitude as lists.
 bb_berlin_coord = {
     "latitude": [52.3, 52.8],  # [latitude south, latitude north]
     "longitude": [13.1, 13.7],  # [longitude west, longitude east]

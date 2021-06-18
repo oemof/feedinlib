@@ -271,6 +271,21 @@ def select_area(ds, lon, lat, g_step=0.25):
     return answer
 
 
+def extract_coordinates_from_era5(era5_netcdf_filename):
+    """
+    Extract all coordinates from a er5 netCDf-file and return them as a
+    geopandas.Series
+    """
+    ds = xr.open_dataset(era5_netcdf_filename)
+
+    # Extract all points from the netCDF-file:
+    points = []
+    for x in ds.longitude:
+        for y in ds.latitude:
+            points.append(Point(x, y))
+    return gpd.GeoSeries(points)
+
+
 def select_geometry(ds, area):
     """
     Select data for given geometry from dataset.

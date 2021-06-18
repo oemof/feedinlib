@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 def _get_cds_data(
     dataset_name="reanalysis-era5-single-levels",
     target_file=None,
-    chunks=None,
     cds_client=None,
     **cds_params,
 ):
@@ -32,12 +31,9 @@ def _get_cds_data(
         'Show API request', the short name is the string on the 6th line
         after 'c.retrieve('
     :param target_file: (str) name of the file to save downloaded locally
-    :param chunks: (dict)
     :param cds_client: handle to CDS client (if none is provided, then it is
         created)
     :param cds_params: (dict) parameter to pass to the CDS request
-
-    :return: CDS data in an xarray format
 
     """
 
@@ -101,18 +97,6 @@ def _get_cds_data(
 
     # Download the data in the target file
     result.download(target_file)
-
-    # Extract the data from the target file
-    answer = xr.open_dataset(target_file, chunks=chunks)
-
-    # Now that the data has been extracted the file path is removed if it was
-    # not provided. This will currently not work on windows if the dataset is
-    # too large as the file will be locked by the reading process.
-    if no_target_file_provided is True:
-        os.unlink(target_file)
-
-    # Here yield might be preferable in case of large datasets
-    return answer
 
 
 def _format_cds_request_datespan(start_date, end_date):
@@ -319,7 +303,6 @@ def get_cds_data_from_datespan_and_position(
         after 'c.retrieve('
     :param target_file: (str) name of the file in which downloading the data
         locally
-    :param chunks: (dict)
     :param cds_client: handle to CDS client (if none is provided, then it is
         created)
     :param cds_params: (dict) parameter to pass to the CDS request

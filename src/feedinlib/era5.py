@@ -10,12 +10,11 @@ from feedinlib.cds_request_tools import get_cds_data_from_datespan_and_position
 def get_era5_data_from_datespan_and_position(
     start_date,
     end_date,
+    target_file,
     variable="feedinlib",
     latitude=None,
     longitude=None,
     grid=None,
-    target_file=None,
-    chunks=None,
     cds_client=None,
 ):
     """
@@ -38,7 +37,6 @@ def get_era5_data_from_datespan_and_position(
         resolutions in deg. It needs to be an integer fraction of 90 deg.
     :param target_file: (str) name of the file in which to store downloaded
         data locally
-    :param chunks: (dict)
     :param cds_client: handle to CDS client (if none is provided, then it is
         created)
     :return: CDS data in an xarray format

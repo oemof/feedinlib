@@ -339,7 +339,10 @@ def select_geometry(ds, area):
         )
 
     # bind all conditions from the list
-    cond = np.logical_or(*logical_list[:2])
+    if len(logical_list[:2]) > 1:
+        cond = np.logical_or(*logical_list[:2])
+    else:
+        cond = logical_list[:2]
     for new_cond in logical_list[2:]:
         cond = np.logical_or(cond, new_cond)
 

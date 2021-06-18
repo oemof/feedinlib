@@ -67,7 +67,7 @@ class TestEra5MultiLocation:
         assert coords_round == [52.55, 13.35]
 
     def test_big_polygon(self):
-        lat_point_list = [52.1, 52.1, 52.65]
+        lat_point_list = [52.65, 52.65, 52.1]
         lon_point_list = [13.0, 13.4, 13.4]
         area = Polygon(zip(lon_point_list, lat_point_list))
         weather = weather_df_from_era5(
@@ -76,12 +76,12 @@ class TestEra5MultiLocation:
             area=area,
         )
         coords = weather.groupby(level=[1, 2]).mean().index
-        assert len(coords) == 2
+        assert len(coords) == 3
         coords_round = [round(p, 2) for c in coords for p in c]
-        assert coords_round == [52.3, 13.35, 52.55, 13.35]
+        assert coords_round == [52.3, 13.35, 52.55, 13.1, 52.55, 13.35]
 
     def test_empty_polygon(self):
-        lat_point_list = [53.1, 53.1, 53.65]
+        lat_point_list = [53.65, 53.65, 53.1]
         lon_point_list = [15.0, 15.4, 15.4]
         area = Polygon(zip(lon_point_list, lat_point_list))
         weather = weather_df_from_era5(
@@ -93,8 +93,8 @@ class TestEra5MultiLocation:
         assert isinstance(weather, pd.DataFrame)
 
     def test_small_polygon(self):
-        lat_point_list = [52.35, 52.35, 52.65]
-        lon_point_list = [13.0, 13.4, 13.4]
+        lat_point_list = [52.35, 52.35, 52.05]
+        lon_point_list = [13.0, 13.3, 13.3]
         area = Polygon(zip(lon_point_list, lat_point_list))
         weather = weather_df_from_era5(
             era5_netcdf_filename=self.era5_netcdf_file,
@@ -104,7 +104,7 @@ class TestEra5MultiLocation:
         coords = weather.groupby(level=[1, 2]).mean().index
         assert len(coords) == 1
         coords_round = [round(p, 2) for c in coords for p in c]
-        assert coords_round == [52.55, 13.35]
+        assert coords_round == [52.3, 13.1]
 
     def test_no_area(self):
         weather = weather_df_from_era5(

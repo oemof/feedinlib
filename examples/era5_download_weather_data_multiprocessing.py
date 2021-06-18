@@ -50,35 +50,41 @@ def download_era5(parameters):
     )
 
 
-# Define the locations:
-example_data = os.path.join(os.path.dirname(__file__), "example_data")
+def download_era5_multiprocessing_examples():
+    # Define the locations:
+    example_data = os.path.join(os.path.dirname(__file__), "example_data")
 
-locations = [
-    {
-        "latitude": 54.16,
-        "longitude": 9.08,
-        "start_date": "2019-01-01",
-        "end_date": "2019-12-31",
-        "variable": "feedinlib",
-        "target_file": os.path.join(
-            example_data, "era5_feedinlib_54-16_9-08_2019-01-01_2019-12-31.nc"
-        ),
-    },
-    {
-        "latitude": 54.43,
-        "longitude": 7.68,
-        "start_date": "2019-01-01",
-        "end_date": "2019-12-31",
-        "variable": "windpowerlib",
-        "target_file": os.path.join(
-            example_data,
-            "era5_windpowerlib_54-43_7-68_2019-01-01_2019-12-31.nc",
-        ),
-    },
-]
+    locations = [
+        {
+            "latitude": 54.16,
+            "longitude": 9.08,
+            "start_date": "2019-01-01",
+            "end_date": "2019-12-31",
+            "variable": "feedinlib",
+            "target_file": os.path.join(
+                example_data,
+                "era5_feedinlib_54-16_9-08_2019-01-01_2019-12-31.nc",
+            ),
+        },
+        {
+            "latitude": 54.43,
+            "longitude": 7.68,
+            "start_date": "2019-01-01",
+            "end_date": "2019-12-31",
+            "variable": "windpowerlib",
+            "target_file": os.path.join(
+                example_data,
+                "era5_windpowerlib_54-43_7-68_2019-01-01_2019-12-31.nc",
+            ),
+        },
+    ]
 
-# Download the data sets in parallel
-maximal_number_of_cores = math.ceil(multiprocessing.cpu_count() * 0.5)
-p = multiprocessing.Pool(maximal_number_of_cores)
-p.map(download_era5, locations)
-p.close()
+    # Download the data sets in parallel
+    maximal_number_of_cores = math.ceil(multiprocessing.cpu_count() * 0.5)
+    p = multiprocessing.Pool(maximal_number_of_cores)
+    p.map(download_era5, locations)
+    p.close()
+
+
+if __name__ == "__main__":
+    download_era5_multiprocessing_examples()

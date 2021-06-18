@@ -94,6 +94,12 @@ setup(
             "pytest",
             "sphinx_rtd_theme",
             "open_FRED-cli",
+            "SQLAlchemy < 1.4.0, >=1.3.0",
+            "oedialect >= 0.0.6.dev0",
+            "matplotlib",
+            # "descartes",
+            "requests",
+            "shapely",
         ],
         "openfred": [
             "open_FRED-cli",

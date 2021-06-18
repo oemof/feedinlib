@@ -351,7 +351,12 @@ def select_geometry(ds, area):
 
 
 def weather_df_from_era5(
-    era5_netcdf_filename, lib, start=None, end=None, area=None
+    era5_netcdf_filename,
+    lib,
+    start=None,
+    end=None,
+    area=None,
+    drop_coord_levels=False,
 ):
     """
     Gets ERA5 weather data from netcdf file and converts it to a pandas
@@ -376,6 +381,9 @@ def weather_df_from_era5(
         If you want data for an area you can provide a shape of this area or
         specify a rectangular area giving a list of the
         form [(lon west, lon east), (lat south, lat north)].
+    drop_coord_levels : bool
+        Decide whether the index levels of the coordinates will be dropped. A
+        ValueError is raised if there are more than one coordinates.
 
     Returns
     -------
@@ -411,8 +419,13 @@ def weather_df_from_era5(
 
     # drop latitude and longitude from index in case a single location
     # is given in parameter `area`
-    if area is not None and isinstance(area, list):
-        if np.size(area[0]) == 1 and np.size(area[1]) == 1:
+    if drop_coord_levels is True:
+        if len(df.groupby(level=[1, 2]).count()) > 1:
+            msg = ("You cannot drop the coordinate levels if there are more "
+                   "than one point. You will get duplicate entries in the "
+                   "index.")
+            raise ValueError(msg)
+        else:
             df.index = df.index.droplevel(level=[1, 2])
 
     if start is None:

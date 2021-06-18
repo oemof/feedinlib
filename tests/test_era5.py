@@ -5,12 +5,12 @@ import pandas as pd
 import pytest
 import requests
 from shapely.geometry import GeometryCollection
+from shapely.geometry import Point
 from shapely.geometry import Polygon
 from shapely.geometry import shape
-from shapely.geometry import Point
 
-from feedinlib.era5 import weather_df_from_era5
 from feedinlib.era5 import extract_coordinates_from_era5
+from feedinlib.era5 import weather_df_from_era5
 
 
 class TestEra5MultiLocation:

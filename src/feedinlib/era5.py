@@ -429,7 +429,10 @@ def weather_df_from_era5(
                    "index.")
             raise ValueError(msg)
         else:
+            lat = round(df.index.get_level_values(1)[0], 2)
+            lon = round(df.index.get_level_values(2)[0], 2)
             df.index = df.index.droplevel(level=[1, 2])
+            df.index.name = (lat, lon)
 
     if start is None:
         start = df.index[0]

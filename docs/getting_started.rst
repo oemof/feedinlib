@@ -1,6 +1,4 @@
-~~~~~~~~~~~~~~~~~~~~~~
-Getting started
-~~~~~~~~~~~~~~~~~~~~~~
+.. include:: ../README.rst
 
 The feedinlib is designed to calculate feed-in time series of photovoltaic and wind power plants.
 It is part of the oemof group but works as a standalone application.
@@ -41,10 +39,10 @@ Examples and basic usage
 The basic usage of the feedinlib is shown in the :ref:`examples_section_label` section.
 The examples are provided as jupyter notebooks that you can download here:
 
- * :download:`ERA5 weather data example <../example/load_era5_weather_data.ipynb>`
- * :download:`open_FRED weather data example <../example/load_open_fred_weather_data.ipynb>`
- * :download:`pvlib model example <../example/run_pvlib_model.ipynb>`
- * :download:`windpowerlib model example <../example/run_windpowerlib_turbine_model.ipynb>`
+ * :download:`ERA5 weather data example <../examples/load_era5_weather_data.ipynb>`
+ * :download:`open_FRED weather data example <../examples/load_open_fred_weather_data.ipynb>`
+ * :download:`pvlib model example <../examples/run_pvlib_model.ipynb>`
+ * :download:`windpowerlib model example <../examples/run_windpowerlib_turbine_model.ipynb>`
 
 Furthermore, you have to install the feedinlib with additional packages needed to run the notebooks, e.g. `jupyter`.
 

@@ -1,7 +1,5 @@
 Changelog
-~~~~~~~~~
-
-.. include:: ../CHANGELOG.rst
+=========
 
 These are new features and improvements of note in each release
 
@@ -9,6 +7,8 @@ These are new features and improvements of note in each release
     :depth: 1
     :local:
     :backlinks: top
+
+.. include:: ../CHANGELOG.rst
 
 .. include::  whatsnew/v0-1-0.rst
 .. include::  whatsnew/v00012.rst

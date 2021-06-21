@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 def _get_cds_data(
+    target_file,
     dataset_name="reanalysis-era5-single-levels",
-    target_file=None,
     cds_client=None,
     **cds_params,
 ):
@@ -340,4 +340,4 @@ def get_cds_data_from_datespan_and_position(
             )
     # in any other case no geographical subset is selected
 
-    return _get_cds_data(**cds_params)
+    _get_cds_data(**cds_params)

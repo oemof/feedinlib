@@ -58,7 +58,7 @@ def get_era5_data_from_datespan_and_position(
             "10u",
             "10v",
         ]
-    return get_cds_data_from_datespan_and_position(**locals())
+    get_cds_data_from_datespan_and_position(**locals())
 
 
 def format_windpowerlib(ds):

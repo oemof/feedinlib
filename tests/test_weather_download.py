@@ -1,6 +1,8 @@
-from feedinlib import era5
-import cdsapi
 from unittest import mock
+
+import cdsapi
+
+from feedinlib import era5
 
 
 def test_era5_download():

@@ -18,30 +18,41 @@ def get_era5_data_from_datespan_and_position(
     cds_client=None,
 ):
     """
-    Send request for era5 data to the Climate Data Store (CDS)
+    Download a netCDF file from the era5 weather data server for you position
+    and time range.
 
-    :param variable: (str or list of str) ERA5 variables to download. If you
-        want to download all variables necessary to use the pvlib, set
-        `variable` to 'pvlib'. If you want to download all variables necessary
-        to use the windpowerlib, set `variable` to 'windpowerlib'. To download
-        both variable sets for pvlib and windpowerlib, set `variable` to
-        'feedinlib'.
-    :param start_date: (str) start date of the date span in YYYY-MM-DD format
-    :param end_date: (str) end date of the date span in YYYY-MM-DD format
-    :param latitude: (number) latitude in the range [-90, 90] relative to the
-        equator, north corresponds to positive latitude.
-    :param longitude: (number) longitude in the range [-180, 180] relative to
-        Greenwich Meridian, east relative to the meridian corresponds to
-        positive longitude.
-    :param grid: (list of float) provide the latitude and longitude grid
-        resolutions in deg. It needs to be an integer fraction of 90 deg.
-    :param target_file: (str) name of the file in which to store downloaded
-        data locally
-    :param cds_client: handle to CDS client (if none is provided, then it is
-        created)
-    :return: CDS data in an xarray format
+    Parameters
+    ----------
+    start_date : str
+        Start date of the date span in YYYY-MM-DD format.
+    end_date : str
+        End date of the date span in YYYY-MM-DD format.
+    target_file : str
+        Name of the file in which to store downloaded data locally
+    variable : str
+        ERA5 variables to download. If you want to download all variables
+        necessary to use the pvlib, set `variable` to 'pvlib'. If you want to
+        download all variables necessary to use the windpowerlib, set
+        `variable` to 'windpowerlib'. To download both variable sets for pvlib
+        and windpowerlib, set `variable` to 'feedinlib'.
+    latitude : numeric
+        Latitude in the range [-90, 90] relative to the equator, north
+        corresponds to positive latitude.
+    longitude : numeric
+        Longitude in the range [-180, 180] relative to Greenwich Meridian, east
+        relative to the meridian corresponds to
+    grid : list or float
+        Provide the latitude and longitude grid resolutions in deg. It needs to
+        be an integer fraction of 90 deg.
+    cds_client : cdsapi.Client()
+        Handle to CDS client (if none is provided, then it is created)
+
+    Returns
+    -------
+    CDS data in an xarray format : xarray
 
     """
+
     if variable == "pvlib":
         variable = ["fdir", "ssrd", "2t", "10u", "10v"]
     elif variable == "windpowerlib":
@@ -115,9 +126,9 @@ def format_windpowerlib(ds):
     # the time stamp given by ERA5 for mean values (probably) corresponds to
     # the end of the valid time interval; the following sets the time stamp
     # to the middle of the valid time interval
-    df['time'] = df.time - pd.Timedelta(minutes=60)
+    df["time"] = df.time - pd.Timedelta(minutes=60)
 
-    df.set_index(['time', 'latitude', 'longitude'], inplace=True)
+    df.set_index(["time", "latitude", "longitude"], inplace=True)
     df.sort_index(inplace=True)
     df = df.tz_localize("UTC", level=0)
 
@@ -200,9 +211,9 @@ def format_pvlib(ds):
     # the time stamp given by ERA5 for mean values (probably) corresponds to
     # the end of the valid time interval; the following sets the time stamp
     # to the middle of the valid time interval
-    df['time'] = df.time - pd.Timedelta(minutes=30)
+    df["time"] = df.time - pd.Timedelta(minutes=30)
 
-    df.set_index(['time', 'latitude', 'longitude'], inplace=True)
+    df.set_index(["time", "latitude", "longitude"], inplace=True)
     df.sort_index(inplace=True)
     df = df.tz_localize("UTC", level=0)
 

@@ -4,10 +4,7 @@ Overview
 
 .. start-badges
 
-.. list-table::
-    :stub-columns: 1
-
-|workflow_pytests| |workflow_checks| |docs| |appveyor| |requires| |coveralls| |packaging|
+|workflow_pytests| |workflow_checks| |docs| |requires| |coveralls| |packaging|
 |version| |wheel| |supported-versions| |supported-implementations| |commits-since|
 
 .. |docs| image:: https://readthedocs.org/projects/feedinlib/badge/?style=flat
@@ -31,9 +28,9 @@ Overview
     :alt: Requirements Status
     :target: https://requires.io/github/oemof/feedinlib/requirements/?branch=master
 
-.. |coveralls| image:: https://coveralls.io/repos/oemof/feedinlib/badge.svg?branch=master&service=github
+.. |coveralls| image:: https://coveralls.io/repos/github/oemof/feedinlib/badge.svg?branch=dev
     :alt: Coverage Status
-    :target: https://coveralls.io/r/oemof/feedinlib
+    :target: https://coveralls.io/github/oemof/feedinlib?branch=dev
 
 .. |version| image:: https://img.shields.io/pypi/v/feedinlib.svg
     :alt: PyPI Package latest release

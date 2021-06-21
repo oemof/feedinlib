@@ -343,11 +343,9 @@ def select_geometry(ds, area):
             np.logical_and((ds.longitude == lon), (ds.latitude == lat))
         )
     # bind all conditions from the list
-    if len(logical_list[:2]) > 1:
-        cond = np.logical_or(*logical_list[:2])
-    else:
-        cond = logical_list[:2]
-    for new_cond in logical_list[2:]:
+    cond = logical_list[0]
+
+    for new_cond in logical_list[1:]:
         cond = np.logical_or(cond, new_cond)
 
     # apply the condition to where

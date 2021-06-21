@@ -117,9 +117,9 @@ def format_windpowerlib(ds):
     # the time stamp given by ERA5 for mean values (probably) corresponds to
     # the end of the valid time interval; the following sets the time stamp
     # to the middle of the valid time interval
-    df['time'] = df.time - pd.Timedelta(minutes=60)
+    df["time"] = df.time - pd.Timedelta(minutes=60)
 
-    df.set_index(['time', 'latitude', 'longitude'], inplace=True)
+    df.set_index(["time", "latitude", "longitude"], inplace=True)
     df.sort_index(inplace=True)
     df = df.tz_localize("UTC", level=0)
 
@@ -202,9 +202,9 @@ def format_pvlib(ds):
     # the time stamp given by ERA5 for mean values (probably) corresponds to
     # the end of the valid time interval; the following sets the time stamp
     # to the middle of the valid time interval
-    df['time'] = df.time - pd.Timedelta(minutes=30)
+    df["time"] = df.time - pd.Timedelta(minutes=30)
 
-    df.set_index(['time', 'latitude', 'longitude'], inplace=True)
+    df.set_index(["time", "latitude", "longitude"], inplace=True)
     df.sort_index(inplace=True)
     df = df.tz_localize("UTC", level=0)
 
@@ -271,6 +271,21 @@ def select_area(ds, lon, lat, g_step=0.25):
     return answer
 
 
+def extract_coordinates_from_era5(era5_netcdf_filename):
+    """
+    Extract all coordinates from a er5 netCDf-file and return them as a
+    geopandas.Series
+    """
+    ds = xr.open_dataset(era5_netcdf_filename)
+
+    # Extract all points from the netCDF-file:
+    points = []
+    for x in ds.longitude:
+        for y in ds.latitude:
+            points.append(Point(x, y))
+    return gpd.GeoSeries(points)
+
+
 def select_geometry(ds, area):
     """
     Select data for given geometry from dataset.
@@ -307,7 +322,12 @@ def select_geometry(ds, area):
     crs = {"init": "epsg:4326"}
     geo_df = gpd.GeoDataFrame(df, crs=crs, geometry=geometry)
 
-    inside_points = geo_df.within(area)
+    if isinstance(area, Point):
+        d = geo_df.apply(lambda row: area.distance(row.geometry), axis=1)
+        inside_points = (d == d.min())
+    else:
+        inside_points = geo_df.within(area)
+
     # if no points lie within area, return None
     if not inside_points.any():
         return None
@@ -322,10 +342,10 @@ def select_geometry(ds, area):
         logical_list.append(
             np.logical_and((ds.longitude == lon), (ds.latitude == lat))
         )
-
     # bind all conditions from the list
-    cond = np.logical_or(*logical_list[:2])
-    for new_cond in logical_list[2:]:
+    cond = logical_list[0]
+
+    for new_cond in logical_list[1:]:
         cond = np.logical_or(cond, new_cond)
 
     # apply the condition to where
@@ -333,7 +353,12 @@ def select_geometry(ds, area):
 
 
 def weather_df_from_era5(
-    era5_netcdf_filename, lib, start=None, end=None, area=None
+    era5_netcdf_filename,
+    lib,
+    start=None,
+    end=None,
+    area=None,
+    drop_coord_levels=False,
 ):
     """
     Gets ERA5 weather data from netcdf file and converts it to a pandas
@@ -350,7 +375,7 @@ def weather_df_from_era5(
     end : None or anything `pandas.to_datetime` can convert to a timestamp
         Get weather data upto this date. Defaults to None in which
         case the end date is set to the last time step in the dataset.
-    area : shapely compatible geometry object (i.e. Polygon,  Multipolygon, etc...) or list(float) or list(tuple)
+    area : shapely.geometry object (i.e. Polygon,  Multipolygon, etc...) or list(float) or list(tuple)
         Area specifies for which geographic area to return weather data. Area
         can either be a single location or an area.
         In case you want data for a single location provide a list in the
@@ -358,6 +383,12 @@ def weather_df_from_era5(
         If you want data for an area you can provide a shape of this area or
         specify a rectangular area giving a list of the
         form [(lon west, lon east), (lat south, lat north)].
+    lib : str
+        Format the weather data for a specific library. Possible values are
+        `windpowerlib` and `pvlib`.
+    drop_coord_levels : bool
+        Decide whether the index levels of the coordinates will be dropped. A
+        ValueError is raised if there are more than one coordinates.
 
     Returns
     -------
@@ -388,11 +419,22 @@ def weather_df_from_era5(
             "It must be either 'pvlib' or 'windpowerlib'."
         )
 
+    if len(df) == 0:
+        return pd.DataFrame()
+
     # drop latitude and longitude from index in case a single location
     # is given in parameter `area`
-    if area is not None and isinstance(area, list):
-        if np.size(area[0]) == 1 and np.size(area[1]) == 1:
+    if drop_coord_levels is True:
+        if len(df.groupby(level=[1, 2]).count()) > 1:
+            msg = ("You cannot drop the coordinate levels if there are more "
+                   "than one point. You will get duplicate entries in the "
+                   "index.")
+            raise ValueError(msg)
+        else:
+            lat = round(df.index.get_level_values(1)[0], 2)
+            lon = round(df.index.get_level_values(2)[0], 2)
             df.index = df.index.droplevel(level=[1, 2])
+            df.index.name = (lat, lon)
 
     if start is None:
         start = df.index[0]

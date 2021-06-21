@@ -82,21 +82,21 @@ class Pvlib(PhotovoltaicModelBase):
         azimuth (float)
             Azimuth angle of the module surface (South=180).
 
-            See also :pvlib:`PVSystem.surface_azimuth <pvlib.pvsystem.\
-            PVSystem.surface_azimuth>` in pvlib documentation.
+            See also surface_azimuth in :pvlib:`pvlib.pvsystem.PVSystem` in
+            pvlib documentation.
         tilt (float)
             Surface tilt angle in decimal degrees.
             The tilt angle is defined as degrees from horizontal
             (e.g. surface facing up = 0, surface facing horizon = 90).
 
-            See also :pvlib:`PVSystem.surface_tilt <pvlib.pvsystem.PVSystem.\
-            surface_tilt>` in pvlib documentation.
+            See also surface_tilt in :pvlib:`pvlib.pvsystem.PVSystem`
+            in pvlib documentation.
         albedo (float)
-            The ground albedo. See also :pvlib:`PVSystem.albedo <pvlib.\
-            pvsystem.PVSystem.albedo>` in pvlib documentation.
+            The ground albedo. See also albedo in
+            :pvlib:`pvlib.pvsystem.PVSystem` in pvlib documentation.
         surface_type (str)
             The ground surface type. See `SURFACE_ALBEDOS` in
-            `pvlib.irradiance <https://github.com/pvlib/pvlib-python/blob/master/pvlib/irradiance.py>`_ module for valid values.
+            `pvlib.irradiance <https://pvlib-python.readthedocs.io/en/stable/_modules/pvlib/irradiance.html>`_ module for valid values.
 
         References
         ----------
@@ -266,7 +266,7 @@ class Pvlib(PhotovoltaicModelBase):
 
         Parameters
         ----------
-        weather : :pandas:`pandas.DataFrame<dataframe>`
+        weather : :pandas:`pandas.DataFrame`
             Weather time series used to calculate feed-in. See `weather`
             parameter in pvlib's Modelchain :pvlib:`run_model <pvlib.\
             modelchain.ModelChain.run_model>` method for more information on
@@ -295,7 +295,7 @@ class Pvlib(PhotovoltaicModelBase):
 
         Returns
         -------
-        :pandas:`pandas.Series<series>`
+        :pandas:`pandas.Series`
             Power plant feed-in time series in Watt.
 
         """

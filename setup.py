@@ -91,7 +91,7 @@ setup(
         "pandas >= 1.0",
         "xarray >= 0.12.0",
         "descartes",
-        "SQLAlchemy < 1.4.0, >=1.3.0"
+        "SQLAlchemy < 1.4.0, >=1.3.0",
     ],
     extras_require={
         "dev": [
@@ -100,11 +100,9 @@ setup(
             "punch.py",
             "pytest",
             "sphinx_rtd_theme",
-            "open_FRED-cli"
-        ],
-        "data-sources": [
             "open_FRED-cli",
         ],
+        "data-sources": ["open_FRED-cli"],
         "examples": ["jupyter", "matplotlib", "descartes"],
     },
 )

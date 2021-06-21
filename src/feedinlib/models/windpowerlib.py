@@ -81,14 +81,14 @@ class WindpowerlibTurbine(WindpowerModelBase):
             See also :wind_turbine:`WindTurbine.hub_height <windpowerlib.\
             wind_turbine.WindTurbine.hub_height>` in windpowerlib
             documentation.
-        power_curve (:pandas:`pandas.DataFrame<frame>` or dict)
+        power_curve : :pandas:`pandas.DataFrame` or dict
             DataFrame/dictionary with wind speeds in m/s and corresponding
             power curve value in W.
 
             See also :wind_turbine:`WindTurbine.power_curve <windpowerlib.\
             wind_turbine.WindTurbine.power_curve>` in windpowerlib
             documentation.
-        power_coefficient_curve (:pandas:`pandas.DataFrame<frame>` or dict)
+        power_coefficient_curve : :pandas:`pandas.DataFrame` or dict
             DataFrame/dictionary with wind speeds in m/s and corresponding
             power coefficient.
 
@@ -133,9 +133,9 @@ class WindpowerlibTurbine(WindpowerModelBase):
         """
         Nominal power of wind turbine in Watt.
 
-        See :wind_turbine:`WindTurbine.nominal_power <windpowerlib.\
-        wind_turbine.WindTurbine.nominal_power>` in windpowerlib for further
-        information.
+        See :wind_turbine:`WindTurbine.nominal_power
+        <windpowerlib.wind_turbine.WindTurbine.nominal_power>` in windpowerlib
+        for further information.
 
         """
         if self.power_plant:
@@ -175,7 +175,7 @@ class WindpowerlibTurbine(WindpowerModelBase):
 
     def instantiate_turbine(self, **kwargs):
         """
-        Instantiates a :windpowerlib:`windpowerlib.WindTurbine \
+        Instantiates a :windpowerlib:`windpowerlib.WindTurbine
         <windpowerlib.wind_turbine.WindTurbine>` object.
 
         Parameters
@@ -203,7 +203,7 @@ class WindpowerlibTurbine(WindpowerModelBase):
 
         Parameters
         ----------
-        weather : :pandas:`pandas.DataFrame<dataframe>`
+        weather : :pandas:`pandas.DataFrame`
             Weather time series used to calculate feed-in. See `weather_df`
             parameter in windpowerlib's Modelchain :windpowerlib:`run_model \
             <windpowerlib.modelchain.ModelChain.run_model>` method for
@@ -223,7 +223,7 @@ class WindpowerlibTurbine(WindpowerModelBase):
 
         Returns
         -------
-        :pandas:`pandas.Series<series>`
+        :pandas:`pandas.Series`
             Power plant feed-in time series in Watt.
 
         """
@@ -293,7 +293,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
         <windpowerlib.wind_turbine_cluster.WindTurbineCluster>` please
         provide a list of `wind_farms`. See below for further information.
 
-        wind_turbine_fleet (:pandas:`pandas.DataFrame<frame>`)
+        wind_turbine_fleet : :pandas:`pandas.DataFrame`
             The wind turbine fleet specifies the turbine types and their
             corresponding number or total installed capacity in the wind farm.
             DataFrame must have columns 'wind_turbine' and either
@@ -316,7 +316,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
             The wind turbine fleet may also be provided as a list of
             :windpowerlib:`windpowerlib.WindTurbineGroup <windpowerlib.\
             wind_turbine.WindTurbineGroup>` as described there.
-        wind_farms (list(dict) or list(:windpowerlib:`windpowerlib.WindFarm <windpowerlib.wind_farm.WindFarm>`))
+        wind_farms : list(dict) or list(:windpowerlib:`windpowerlib.WindFarm <windpowerlib.wind_farm.WindFarm>`)
             List of wind farms in cluster. Wind farms in the list can either
             be provided as :windpowerlib:`windpowerlib.WindFarm \
             <windpowerlib.wind_farm.WindFarm>` or as dictionaries
@@ -527,7 +527,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
 
         Parameters
         ----------
-        weather : :pandas:`pandas.DataFrame<dataframe>`
+        weather : :pandas:`pandas.DataFrame`
             Weather time series used to calculate feed-in. See `weather_df`
             parameter in windpowerlib's TurbineClusterModelChain
             :windpowerlib:`run_model <windpowerlib.turbine_cluster_modelchain.\
@@ -546,7 +546,7 @@ class WindpowerlibTurbineCluster(WindpowerModelBase):
 
         Returns
         -------
-        :pandas:`pandas.Series<series>`
+        :pandas:`pandas.Series`
             Power plant feed-in time series in Watt.
 
         """  # noqa: E501

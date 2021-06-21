@@ -1,6 +1,9 @@
 sphinx>=1.4
 ipykernel
 nbsphinx
-psycopg2
 psycopg2-binary
 sphinx-rtd-theme
+geopandas
+xarray
+cdsapi
+pvlib

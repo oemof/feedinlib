@@ -1,8 +1,6 @@
 import logging
-import os
 from datetime import datetime
 from datetime import timedelta
-from tempfile import mkstemp
 
 import cdsapi
 import numpy as np

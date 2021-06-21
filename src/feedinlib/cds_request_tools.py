@@ -83,11 +83,9 @@ def _get_cds_data(
     # Send the data request to the server
     result = cds_client.retrieve(dataset_name, request)
 
-    no_target_file_provided = target_file is None
     # Create a file in a secure way if a target filename was not provided
-    if no_target_file_provided is True:
-        fd, target_file = mkstemp(suffix=".nc")
-        os.close(fd)
+    if target_file.split(".")[-1] != "nc":
+        target_file = target_file + ".nc"
 
     logger.info(
         "Downloading request for {} variables to {}".format(

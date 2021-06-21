@@ -23,10 +23,31 @@ copyright = '{0}, {1}'.format(year, author)
 version = release = '0.0.0'
 
 pygments_style = 'trac'
-templates_path = ['.']
+templates_path = ["_templates"]
 extlinks = {
-    'issue': ('https://github.com/oemof/feedinlib/issues/%s', '#'),
-    'pr': ('https://github.com/oemof/feedinlib/pull/%s', 'PR #'),
+    "pandas": (
+        "https://pandas.pydata.org/docs/reference/api/%s.html",
+        "",
+    ),
+    "pvlib": (
+        "https://pvlib-python.readthedocs.io/en/stable/generated/%s.html#",
+        "",
+    ),
+    "windpowerlib": (
+        "https://windpowerlib.readthedocs.io/en/stable/temp/%s.html#",
+        "",
+    ),
+    # work around for wind turbine attributes
+    "wind_turbine": (
+        "https://windpowerlib.readthedocs.io/en/stable/temp/windpowerlib.wind_turbine.WindTurbine.html#%s",
+        "",
+    ),
+    "shapely": (
+        "https://shapely.readthedocs.io/en/latest/manual.html#%s",
+        "shapely.",
+    ),
+    "issue": ("https://github.com/oemof/feedinlib/issues/%s", "#"),
+    "pr": ("https://github.com/oemof/feedinlib/pull/%s", "PR #"),
 }
 # on_rtd is whether we are on readthedocs.org
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'

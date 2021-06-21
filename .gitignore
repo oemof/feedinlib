@@ -73,3 +73,6 @@ docs/temp/*
 
 # Mypy Cache
 .mypy_cache/
+
+tests/test_data/*
+examples/example_data/*

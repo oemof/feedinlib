@@ -105,6 +105,6 @@ setup(
         "data-sources": [
             "open_FRED-cli",
         ],
-        "examples": ["jupyter", "matplotlib", "descartes"],
+        "examples": ["jupyter", "matplotlib"],
     },
 )

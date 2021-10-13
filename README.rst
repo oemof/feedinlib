@@ -7,12 +7,15 @@ Overview
 .. list-table::
     :stub-columns: 1
 
-|workflow_pytests| |workflow_checks| |docs| |appveyor| |requires| |coveralls| |packaging|
+|workflow_pytests| |workflow_checks| |docs| |binder| |appveyor| |requires| |coveralls| |packaging|
 |version| |wheel| |supported-versions| |supported-implementations| |commits-since|
 
 .. |docs| image:: https://readthedocs.org/projects/feedinlib/badge/?style=flat
     :target: https://feedinlib.readthedocs.io/
     :alt: Documentation Status
+
+.. |binder| image:: https://mybinder.org/badge_logo.svg
+    :target: https://mybinder.org/v2/gh/oemof/feedinlib/dev
 
 .. |workflow_pytests| image:: https://github.com/oemof/feedinlib/workflows/tox%20pytests/badge.svg?branch=revision/add-tox-github-workflows-src-directory-ci
     :target: https://github.com/oemof/feedinlib/actions?query=workflow%3A%22tox+pytests%22

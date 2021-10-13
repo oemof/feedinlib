@@ -1,0 +1,6 @@
+# Used by https://mybinder.org for setting up Docker container.
+#
+# Install extra packages to run all examples:
+python -m pip install matplotlib
+python -m pip install descartes
+python -m pip install open_FRED-cli

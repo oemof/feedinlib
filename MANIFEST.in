@@ -18,6 +18,8 @@ include LICENSE
 include README.rst
 
 exclude docs/temp/*.rst
+exclude examples/example_data/*
+exclude tests/test_data/*
 
 recursive-include docs *.ipynb
 recursive-include examples *.csv

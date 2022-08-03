@@ -90,7 +90,7 @@ def solar_angles(datetime,
 
     true_solar_time = (datetime.hour + (datetime.minute + datetime.second / 60
                                         + equation_of_time) / 60
-                       - longitude / 3)
+                       - longitude / 360 * 24)
     hour_angle = np.deg2rad(15 * (true_solar_time - 12))
     declination_angle = np.deg2rad(23.45) * np.sin(
         2 * np.pi / 365 * (284 + day_of_year))

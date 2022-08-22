@@ -66,13 +66,16 @@ Connect weather data interfaces with interfaces of wind and pv power models.
 Installation
 ============
 
-::
+On Linux systems, you can just::
 
     pip install feedinlib
 
 You can also install the in-development version with::
 
     pip install https://github.com/oemof/feedinlib/archive/master.zip
+    
+On Windows systems, some dependencies are not pip-installable. Thus, Windws
+users first have to manually install the dependencies e.g. using conda or mamba.
 
 
 Documentation

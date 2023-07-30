@@ -87,7 +87,7 @@ setup(
         "oedialect >= 0.0.6.dev0",
         "pvlib >= 0.7.0",
         "tables",
-        "open_FRED-cli"
+        "open_FRED-cli",
         "windpowerlib > 0.2.0",
         "pandas >= 1.0",
         "xarray >= 0.12.0",

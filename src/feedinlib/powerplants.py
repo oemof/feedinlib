@@ -116,7 +116,7 @@ class Base(ABC):
 
         Returns
         -------
-        feedin : :pandas:`pandas.Series<series>`
+        feedin : :pandas:`pandas.Series`
             Series with power plant feed-in in Watt.
 
         """
@@ -257,7 +257,7 @@ class Photovoltaic(Base):
 
         Returns
         -------
-        :pandas:`pandas.Series<series>`
+        :pandas:`pandas.Series`
             Series with PV system feed-in in Watt.
 
         """
@@ -361,7 +361,7 @@ class WindPowerPlant(Base):
 
         Returns
         -------
-        :pandas:`pandas.Series<series>`
+        :pandas:`pandas.Series`
             Series with wind power plant feed-in in Watt.
 
         """

@@ -135,7 +135,7 @@ class Base(ABC):
 
         Returns
         -------
-        feedin : :pandas:`pandas.Series<series>`
+        feedin : :pandas:`pandas.Series`
             Series with power plant feed-in for specified time span in Watt.
             If respective model does calculate AC and DC feed-in, AC feed-in
             should be returned by default. `mode` parameter can be used to
@@ -222,7 +222,7 @@ def get_power_plant_data(dataset, **kwargs):
           information.
         * windpowerlib wind turbine dataset: 'oedb_turbine_library'
 
-          See :windpowerlib:`get_turbine_types <windpowerlib.wind_turbine.\
+          See :windpowerlib:`get_turbine_types <windpowerlib.data.\
           get_turbine_types>` for further information.
 
     **kwargs

@@ -116,7 +116,7 @@ def format_windpowerlib(ds):
     drop_vars = [
         _
         for _ in ds_vars
-        if _ not in windpowerlib_vars + ["latitude", "longitude", "time"]
+        if _ not in windpowerlib_vars + ["latitude", "longitude", "valid_time"]
     ]
     ds = ds.drop(drop_vars)
 
@@ -126,9 +126,9 @@ def format_windpowerlib(ds):
     # the time stamp given by ERA5 for mean values (probably) corresponds to
     # the end of the valid time interval; the following sets the time stamp
     # to the middle of the valid time interval
-    df["time"] = df.time - pd.Timedelta(minutes=60)
+    df["valid_time"] = df.valid_time - pd.Timedelta(minutes=60)
 
-    df.set_index(["time", "latitude", "longitude"], inplace=True)
+    df.set_index(["valid_time", "latitude", "longitude"], inplace=True)
     df.sort_index(inplace=True)
     df = df.tz_localize("UTC", level=0)
 
@@ -201,7 +201,7 @@ def format_pvlib(ds):
     drop_vars = [
         _
         for _ in ds_vars
-        if _ not in pvlib_vars + ["latitude", "longitude", "time"]
+        if _ not in pvlib_vars + ["latitude", "longitude", "valid_time"]
     ]
     ds = ds.drop(drop_vars)
 
@@ -211,9 +211,9 @@ def format_pvlib(ds):
     # the time stamp given by ERA5 for mean values (probably) corresponds to
     # the end of the valid time interval; the following sets the time stamp
     # to the middle of the valid time interval
-    df["time"] = df.time - pd.Timedelta(minutes=30)
+    df["valid_time"] = df.valid_time - pd.Timedelta(minutes=30)
 
-    df.set_index(["time", "latitude", "longitude"], inplace=True)
+    df.set_index(["valid_time", "latitude", "longitude"], inplace=True)
     df.sort_index(inplace=True)
     df = df.tz_localize("UTC", level=0)
 
@@ -378,6 +378,9 @@ def weather_df_from_era5(
 
     """  # noqa: E501
     ds = xr.open_dataset(era5_netcdf_filename)
+
+    #if 'valid_time' in ds:
+    #    ds = ds.rename({'valid_time': 'time'})
 
     if area is not None:
         if isinstance(area, list):

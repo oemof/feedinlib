@@ -5,6 +5,7 @@ from datetime import timedelta
 import cdsapi
 import numpy as np
 import xarray as xr
+import zipfile
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +40,18 @@ def _get_cds_data(
     if cds_client is None:
         cds_client = cdsapi.Client()
 
+    # Create a file in a secure way if a target filename was not provided
+    if target_file.split(".")[-1] != "nc" and target_file.split(".")[-1] != "grib":
+        logger.info("No file format provided, assuming NetCDF format (.nc)")
+        target_file = target_file + ".nc"
+
+    data_format = "netcdf"
+    if ".grib" in target_file:
+        data_format = "grib"
+
     # Default request
     request = {
-        "format": "netcdf",
+        "data_format": data_format,
         "product_type": "reanalysis",
         "time": [
             "00:00",
@@ -81,10 +91,6 @@ def _get_cds_data(
     # Send the data request to the server
     result = cds_client.retrieve(dataset_name, request)
 
-    # Create a file in a secure way if a target filename was not provided
-    if target_file.split(".")[-1] != "nc":
-        target_file = target_file + ".nc"
-
     logger.info(
         "Downloading request for {} variables to {}".format(
             len(request["variable"]), target_file
@@ -93,6 +99,21 @@ def _get_cds_data(
 
     # Download the data in the target file
     result.download(target_file)
+
+    # Check if a zipped file was received, unzip the file
+    if zipfile.is_zipfile(target_file):
+        logger.info("The file that was downloaded seems to be zipped, unzipping the file")
+        with zipfile.ZipFile(target_file, 'r') as zip_ref:
+            zip_ref.extractall("")
+            # Load the two files that have been extracted
+            ds_1 = xr.open_dataset("data_stream-oper_stepType-accum.nc",
+                                   chunks=None,
+                                   decode_cf=True)
+            ds_2 = xr.open_dataset("data_stream-oper_stepType-instant.nc",
+                                   chunks=None,
+                                   decode_cf=True)
+            ds_combined = xr.merge([ds_1, ds_2])
+            ds_combined.to_netcdf(target_file)
 
 
 def _format_cds_request_datespan(start_date, end_date):

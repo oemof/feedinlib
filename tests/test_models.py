@@ -30,6 +30,7 @@ class Fixtures:
                 "temp_air": [10.0],
                 "dhi": [150.0],
                 "ghi": [300],
+                "dni": [610.11],
             },
             index=pd.date_range("1/1/1970 12:00", periods=1, tz="UTC"),
         )
@@ -61,6 +62,8 @@ class Fixtures:
             "azimuth": 180,
             "tilt": 30,
             "albedo": 0.2,
+            "module_type": "glass_glass",
+            "racking_model": "open_rack"
         }
 
     @pytest.fixture

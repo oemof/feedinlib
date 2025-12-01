@@ -301,7 +301,7 @@ class Weather:
     def location(self, point: Point):
         """ Get the measurement location closest to the given `point`.
         """
-        point = WKTE(point.to_wkt(), srid=4326)
+        point = WKTE(point.wkt, srid=4326)
         return (
             self.session.query(self.db["Location"])
             .order_by(self.db["Location"].point.distance_centroid(point))
@@ -311,7 +311,7 @@ class Weather:
     def within(self, region=None):
         """ Get all measurement locations within the given `region`.
         """
-        region = WKTE(region.to_wkt(), srid=4326)
+        region = WKTE(region.wkt, srid=4326)
         return (
             self.session.query(self.db["Location"])
             .filter(self.db["Location"].point.ST_Within(region))

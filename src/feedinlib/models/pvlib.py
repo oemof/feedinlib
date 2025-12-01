@@ -112,6 +112,8 @@ class Pvlib(PhotovoltaicModelBase):
             "module_name",
             ["albedo", "surface_type"],
             "inverter_name",
+            "module_type",
+            "racking_model"
         ]
         # ToDo @Günni: is this necessary?
         if super().power_plant_requires is not None:
@@ -146,9 +148,9 @@ class Pvlib(PhotovoltaicModelBase):
         """
         if self.power_plant:
             return (
-                self.power_plant.module_parameters.Area
-                * self.power_plant.strings_per_inverter
-                * self.power_plant.modules_per_string
+                self.power_plant.arrays[0].module_parameters.Area
+                * self.power_plant.arrays[0].strings
+                * self.power_plant.arrays[0].modules_per_string
             )
         else:
             return None
@@ -170,18 +172,18 @@ class Pvlib(PhotovoltaicModelBase):
         if self.power_plant:
             if self.mode == "ac":
                 return min(
-                    self.power_plant.module_parameters.Impo
-                    * self.power_plant.module_parameters.Vmpo
-                    * self.power_plant.strings_per_inverter
-                    * self.power_plant.modules_per_string,
+                    self.power_plant.arrays[0].module_parameters.Impo
+                    * self.power_plant.arrays[0].module_parameters.Vmpo
+                    * self.power_plant.arrays[0].strings
+                    * self.power_plant.arrays[0].modules_per_string,
                     self.power_plant.inverter_parameters.Paco,
                 )
             elif self.mode == "dc":
                 return (
-                    self.power_plant.module_parameters.Impo
-                    * self.power_plant.module_parameters.Vmpo
-                    * self.power_plant.strings_per_inverter
-                    * self.power_plant.modules_per_string
+                    self.power_plant.arrays[0].module_parameters.Impo
+                    * self.power_plant.arrays[0].module_parameters.Vmpo
+                    * self.power_plant.arrays[0].strings
+                    * self.power_plant.arrays[0].modules_per_string
                 )
             else:
                 raise ValueError(
@@ -315,9 +317,9 @@ class Pvlib(PhotovoltaicModelBase):
         mc.run_model(weather=weather)
 
         if self.mode == "ac":
-            return mc.ac
+            return mc.results.ac
         elif self.mode == "dc":
-            return mc.dc.p_mp
+            return mc.results.dc.p_mp
         else:
             raise ValueError(
                 "{} is not a valid `mode`. `mode` must "
